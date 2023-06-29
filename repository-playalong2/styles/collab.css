@@ -1,0 +1,450 @@
+* {
+  --theme-color1: rgb(241, 246, 237);
+  --theme-color2: rgb(137, 129, 65);
+  --theme-color3: rgb(230, 135, 21);
+  --theme-color4: rgb(208, 164, 100);
+  --theme-color5: rgb(237, 212, 167);
+  --theme-color6: rgb(101, 159, 129);
+  --theme-color7: rgb(129, 163, 145);
+  --theme-color8: rgb(184, 212, 198);
+  --theme-color9: rgb(142, 185, 163);
+
+  --score-color: #fffdf3;
+  --score-color2: #fafdfc;
+
+  --old-theme-1: #01313f;
+}
+
+:root {
+  --collab-layer-zIndex: 900;
+  --collab-layer-bradius: 5px;
+  --select-opacity: 0.2;
+}
+
+#collab-container,
+.comments {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  z-index: var(--collab-layer-zIndex);
+  /* border: 1px solid red; */
+}
+
+.single-select {
+  position: absolute;
+  z-index: var(--collab-layer-zIndex);
+  opacity: var(--select-opacity);
+
+  pointer-events: none;
+  border-radius: var(--collab-layer-bradius);
+}
+
+.cross-reference-single,
+.cross-reference-multi {
+  position: absolute;
+  z-index: var(--collab-layer-zIndex);
+
+  pointer-events: none;
+  border-radius: var(--collab-layer-bradius);
+}
+
+.users-div {
+  position: absolute;
+  z-index: var(--collab-layer-zIndex);
+  cursor: pointer;
+  pointer-events: bounding-box;
+
+  font-size: 0.7em;
+  font-weight: bold;
+
+  background-color: rgba(240, 240, 240, 0.8);
+  border: 1px solid black;
+
+  padding-inline-start: 0.1rem;
+  padding-inline-end: 0.1rem;
+}
+
+.context-menu-dropdown-item {
+  background-color: var(--light);
+  color: var(--dark) !important;
+  font-size: small;
+}
+
+.context-menu-dropdown-item:hover {
+  background-color: var(--primary);
+  color: var(--light) !important;
+}
+
+.note-info {
+  position: absolute;
+  right: 50px;
+  bottom: 50px;
+
+  /* width: 15vw; */
+  width: fit-content;
+  height: fit-content;
+
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, var(--select-opacity));
+
+  padding: 0.5rem;
+  z-index: var(--collab-layer-zIndex);
+}
+
+#select-area {
+  border: 1px dotted black;
+  background-color: rgba(0, 140, 220, var(--select-opacity));
+  position: absolute;
+  z-index: var(--collab-layer-zIndex);
+}
+
+.multi-select-area {
+  position: absolute;
+  z-index: var(--collab-layer-zIndex);
+  background-color: blue;
+  pointer-events: none;
+
+  border-radius: var(--collab-layer-bradius);
+}
+
+#highlight-container {
+  position: absolute;
+  width: 100%;
+  z-index: calc(var(--collab-layer-zIndex) + 20);
+  /* background-color: rgba(0, 140, 220, 0.05); */
+  pointer-events: none;
+}
+
+.highlight-area {
+  position: absolute;
+  background-color: blue;
+  pointer-events: none;
+
+  transition: transform 300ms ease-out;
+
+  border-radius: var(--collab-layer-bradius);
+}
+
+.highlight-color {
+  transform: scale(1);
+  background-color: rgba(0, 0, 255, 0.04);
+}
+
+.highlight-area-focus {
+  transform: scale(1.1) !important;
+  background-color: rgba(0, 0, 255, 0.3) !important;
+}
+
+#comment-create-svg {
+  transform: scale(1);
+  transition: transform 200ms ease-out;
+}
+
+#comment-create-svg:hover {
+  transform: scale(1.2);
+}
+
+.comment-with-replies {
+  cursor: pointer;
+  border-radius: 10px;
+
+  transition: transform 200ms ease-out;
+}
+
+.comment-with-replies:hover {
+  transform: translateY(10px) scale(1.05);
+}
+
+.toggle-comments {
+  position: absolute;
+  z-index: calc(var(--collab-layer-zIndex) + 40);
+}
+
+.comment-group-container {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  max-height: 30vh;
+  min-width: 15vw;
+
+  overflow: scroll;
+  overflow-x: scroll;
+  pointer-events: all;
+
+  padding-inline: 1rem;
+  padding-top: 0.5rem;
+
+  background-color: var(--theme-color9);
+  border-radius: 0.5rem;
+}
+
+.comment {
+  background-color: var(--score-color2);
+  margin-block: 0.3rem;
+  border-radius: 0.5rem;
+}
+
+.comment .card-text {
+  inline-size: 30ch;
+  overflow-wrap: break-word;
+}
+
+/* Source: https://usefulangle.com/post/377/css-animation-on-dom-insert */
+@keyframes append-single-comment-animate {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+.new-single-comment {
+  animation: append-single-comment-animate 0.3s ease-out;
+}
+
+@keyframes delete-single-comment-animate {
+  from {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.deleted-single-comment {
+  animation: delete-single-comment-animate 0.3s ease-out;
+}
+
+/* Given to note elements when selected */
+.selected {
+  filter: url(#highlight-shadow);
+}
+
+.single-note-select {
+  position: absolute;
+  z-index: var(--collab-layer-zIndex);
+  opacity: var(--select-opacity);
+
+  /* cursor: pointer; */
+  pointer-events: none;
+  border-radius: var(--collab-layer-bradius);
+}
+
+#output > svg {
+  user-select: none;
+}
+
+.user-list {
+  position: absolute;
+  width: 100px;
+  height: 30px;
+
+  z-index: 1000;
+}
+
+.dropdown-item:hover {
+  background-color: var(--theme-color6);
+  color: var(--theme-color1) !important;
+}
+
+.dropdown-item a:hover {
+  text-decoration: none;
+  color: var(--theme-color1) !important;
+}
+
+.dropdown-item {
+  background-color: var(--theme-color1);
+}
+
+/* Bootstrap nested Dropdown menu */
+.dropdown-menu li {
+  position: relative;
+}
+
+.dropdown-menu .dropdown-submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: -7px;
+}
+
+.dropdown-menu .dropdown-submenu-left {
+  right: 100%;
+  left: auto;
+}
+
+.dropdown-menu > li:hover > .dropdown-submenu {
+  display: block;
+}
+
+/* Draggable SVG items */
+#collab-container-svg {
+  z-index: var(--collab-layer-zIndex);
+  fill-opacity: var(--select-opacity);
+}
+
+.static-svg {
+  cursor: default;
+}
+
+.draggable-svg,
+.draggable-group-svg {
+  cursor: move;
+}
+/* Draggable SVG items */
+
+/* Collaborative menu */
+/* #collaborative-menu-hover-area {
+  position: sticky;
+  left: 100%;
+  bottom: 0%;
+  width: 20vw;
+  height: 100vh;
+  margin: 0;
+  pointer-events: none;
+} */
+
+#collab-menu-toolbar-toggle {
+  opacity: 1;
+  position: fixed;
+  top: 50%;
+  left: 0;
+  cursor: pointer;
+
+  transform: translateX(-2.5rem) rotate(180deg);
+  transition: transform 200ms ease-out;
+}
+
+.collab-menu-toolbar-toggle-open {
+  transform: translateX(15rem) rotate(0) !important;
+}
+
+#collab-menu-toolbar-toggle svg {
+  width: 5rem;
+  height: 5rem;
+}
+
+#collab-actions-buttons {
+  width: 100%;
+}
+
+#online-users {
+  padding: 0px 5%;
+  width: 100%;
+}
+
+.shown {
+  opacity: 1 !important;
+  transform: translateX(0%) !important;
+}
+
+#collaborative-menu-toolbar {
+  opacity: 0;
+  transform: translateX(-100%);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 15rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  border-radius: 0.1rem;
+  background-color: rgba(34, 34, 34, 0.9);
+
+  z-index: calc(var(--collab-layer-zIndex) * 2);
+
+  transition: opacity 300ms ease-out;
+  transition: transform 300ms ease-out;
+}
+
+.image-container {
+  display: flex;
+}
+
+.collab-menu-toolbar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.collab-menu-toolbar-item button {
+  transition: transform 200ms ease-out;
+}
+
+.collab-menu-toolbar-item button:hover:not(:disabled) {
+  transform: translateX(0.5rem) scale(1.03);
+}
+/* Collaborative menu */
+
+/* Action History */
+#action-history-container {
+  opacity: 0;
+  transform: translateX(100%);
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  overflow-y: scroll;
+
+  background-color: white;
+
+  z-index: calc(var(--collab-layer-zIndex) * 2);
+
+  transition: opacity 300ms ease-in-out;
+  transition: transform 300ms ease-in-out;
+}
+
+/* Hide body scrollbar while action history is open */
+body:has(#action-history-container.open) {
+  overflow-y: hidden !important;
+}
+
+#action-history-container.open {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+.action-history-btn:focus {
+  box-shadow: none !important;
+}
+
+.action-history-close {
+  background-color: transparent;
+  border: none;
+}
+
+/* .action-entry-header > h2 {
+  transform: translateY(0);
+  transition: transform 200ms ease-out;
+}
+
+.action-entry-header > h2:hover {
+  transform: translateY(-5%);
+} */
+
+.user-color-index {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+/* Action History */

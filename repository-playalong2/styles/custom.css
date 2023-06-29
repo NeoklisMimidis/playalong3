@@ -1,0 +1,229 @@
+.flash {
+  animation: flash 1000ms linear infinite;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes smooth-appear {
+  to {
+    bottom: 20px;
+    opacity: 1;
+  }
+}
+
+.notification {
+  z-index: 10;
+  position: fixed;
+  bottom: -100%;
+  opacity: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 10px;
+  animation: smooth-appear 1s ease forwards;
+}
+
+.outmost-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Δεν υπάρχει καπου στον κώδικα σου #waveform. Επίσης χρησιμοποιώ και εγώ τον ίδιο selector οπότε πρέπει να έχουμε unique selectors στα project μας αλλιώς προκύπτουν bugs! */
+/* #waveform {
+    width: 90vw;
+    height: 50px;  
+} */
+
+.waveform-class {
+  width: 90vw;
+  height: 50px;
+  margin: 0 auto;
+}
+
+.buttons-class {
+  width: 90vw;
+  height: 50px;
+  margin: 0 auto;
+}
+
+/* avoid styling in semantic HTML tags like form or label */
+/* form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+label {
+  margin-right: 10px;
+} */
+
+/* instead use your selectors like .form or .label */
+.form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  margin-right: 10px;
+}
+
+.smallslider {
+  width: 50px;
+}
+
+.file-input-wrapper {
+  position: relative;
+  width: 9%;
+  height: 2 rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-input-wrapper input[type='file'] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#waveform_mic {
+  width: 75vw;
+}
+/* users online section */
+
+.users-online-container {
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  z-index: 10;
+}
+
+.users-online-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+}
+
+#users-online {
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(450px);
+  transition: 0.5s ease all;
+  overflow-y: scroll;
+}
+
+#users-online.show {
+  display: block;
+  background-color: rgb(29, 33, 36);
+  height: 500px;
+  width: 250px;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0px);
+  transition: 0.5s ease all;
+  overflow-y: scroll;
+}
+
+.user-connection-status-list {
+  padding: 5% 5%;
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.user-connection-status-item {
+  position: relative;
+}
+
+.online-status {
+  background-color: rgb(54, 146, 0);
+  color: rgb(142, 255, 76);
+  box-shadow: rgb(14, 15, 15) 0px 0px 0px 2px;
+
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+
+  position: absolute;
+  box-sizing: border-box;
+  bottom: 0.4rem;
+  left: 2.8rem;
+
+  min-width: 8px;
+  padding: 0px;
+  height: 8px;
+  border-radius: 4px;
+
+  transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transform: scale(1) translate(50%, 50%);
+  transform-origin: 100% 100%;
+
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.offline-status {
+  background-color: red;
+  /* color: rgb(142, 255, 76); */
+  box-shadow: rgb(14, 15, 15) 0px 0px 0px 2px;
+
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+
+  position: absolute;
+  box-sizing: border-box;
+  bottom: 0.4rem;
+  left: 2.8rem;
+
+  min-width: 8px;
+  padding: 0px;
+  height: 8px;
+  border-radius: 4px;
+
+  transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transform: scale(1) translate(50%, 50%);
+  transform-origin: 100% 100%;
+
+  animation: none;
+}
+
+.recUser-offline {
+  filter: grayscale(100%);
+}

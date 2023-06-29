@@ -1,0 +1,987 @@
+:root {
+  --color-dark--1: #000000;
+  --color-dark--2: #0000003b;
+  --color-dark--3: #2d3439;
+  --color-dark--4: #42484d;
+
+  --color-light--1: #ffffff;
+  --color-light--2: #ececec;
+  --color-light--3: #d6dee0;
+
+  /* h1 (only for ChordFinder) */
+  --color-gradient--1: linear-gradient(to bottom, #8ec3e9, #c9dee9);
+  /* tippy waveform tooltips */ /* prettier-ignore */
+  /* --color-gradient--2: linear-gradient(to bottom right,#faf2d0, #90d9f4 ); */
+  --color-gradient--2: linear-gradient(to bottom right, #f4de7d, #fcf7e2);
+
+  /* play button hover*/
+  --color-highlight--1: #fa961bd1;
+  /* Follow playback button and modified chord label */
+  --color-highlight--2: #ffc247cc;
+  /* buttons audio player */
+  --color-highlight--3: #999999;
+  /* info, question and drag over */
+  --color-highlight--4: #ff4500;
+  /* buttons toolbar */
+  --color-highlight--5: #ff6347;
+  /* Region highlight */
+  --color-highlight--6: #e77314cc;
+  /* repeat-enabled */
+  --color-highlight--7: #008d8d;
+  /* chord editor hover */
+  --color-highlight--8: #ffffff13;
+
+  /* waveform background container */
+  --theme-color0: #f7f7f7;
+  /* main background musicolab */
+  --theme-color1: #fffcf1;
+  /* audio player */
+  --theme-color2: #f5f2e7;
+  /* toolbar */
+  --theme-color3: #f9f1d9;
+  /* toolbar controls */
+  --theme-color4: #f5f2e7;
+  /* marker labels */
+  --theme-color5: #0d6ab6cc;
+  /* marker labels background*/
+  --theme-color6: #d3d3d3b3;
+
+  --color-editing: #ffb545;
+  --color-waveform-background--2: #faf2d0b3;
+  --color-waveform-background--3: #a9d2e3;
+  --color-chord-editor: #00000080; /* chord editor background */
+
+  /* --theme-color2: #d3c8b4;
+  --theme-color3: #a09682;
+  --theme-color4: #726b5e;
+
+  --theme-color5: #d8d8d8;
+  --theme-color6: #a5a5a5;
+  --theme-color7: #4a4a4a; */
+
+  /* --color-audio-player: #f9f1d9; */
+  /* --color-audio-player: #fbf8e9; */
+  /* --color-toolbar: #fbf8e9; */
+  /* --color-toolbar: #faf2d0b3; */
+  /* --color-toolbar-controls: #f9f3e1; */
+  /* --color-toolbar-controls: #fffcf1; */
+
+  /* --color-waveform-background--1: #f9f3e1; */
+  /* --color-waveform-background--2: #a1d4f059; */
+
+  /* --color-marker-label: #0d6ab6cc; */
+  /* --color-marker-label-background: #d3d3d3b3; */
+
+  --progress-bar-height: 35px;
+  --progress-bar-color: #abb2bc;
+  --progress-bar-gradient-start: #9da5b0;
+  --progress-bar-gradient-end: #b6bcc6;
+  --progress-bar-border-radius: 35px;
+  --progress-bar-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 0 #fff;
+  --progress-color: #74d04c;
+  --progress-gradient: repeating-linear-gradient(
+    -30deg,
+    rgba(255, 255, 255, 0.17) 0%,
+    rgba(255, 255, 255, 0.17) 15px,
+    rgba(255, 255, 255, 0) 15px,
+    rgba(255, 255, 255, 0) 30px
+  );
+  --progress-shadow: inset 0 1px 0 #dbf383, inset 0 -1px 1px #58c43a;
+  --progress-border: 1px solid #4c8932;
+}
+
+body {
+  height: 100vh;
+  background: var(--theme-color1);
+  user-select: none;
+  /* prevent accidentally leaving page in chrome */
+  overscroll-behavior-x: none;
+  overflow-y: scroll;
+}
+
+#musicolab-logo {
+  position: absolute;
+  opacity: 0.8;
+  top: 1%;
+  left: 1.5%;
+  width: 15%;
+}
+
+h1 {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 4.5vw;
+  padding: 2.7rem 0 1.5rem;
+  text-align: center;
+  color: transparent;
+  background: var(--color-gradient--2);
+  background-clip: text;
+}
+
+/* SELECTOR CONTAINING THE WHOLE APPLICATION */
+#audio-player-and-controls-container {
+  max-width: 1300px;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  transform: translate(4.8%);
+}
+
+/* --------------------- */
+/* SELECTORS FOR TOOLBAR */
+/* --------------------- */
+#toolbar,
+.preface-audio-help,
+.preface-annotation-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  padding: 4.5px;
+  margin-bottom: 10px;
+  background-color: var(--theme-color3);
+  border: 1.5px solid var(--color-dark--1);
+  border-radius: 10px;
+  transform: translate(-3.5%);
+  width: 85%;
+  box-shadow: 1px 0.5px 1px var(--color-dark--4);
+
+  font-family: Verdana, Manrope, Great Vibes, sans-serif;
+}
+
+.preface-annotation-bar > * {
+  justify-content: space-around !important;
+  display: flex;
+  align-items: center;
+}
+
+#preface-annotation-help {
+  flex: 0.65;
+}
+
+#audio-file-name-preface {
+  flex: 0.3;
+}
+
+/* class for all 3, left + center + right toolbar-controls  */
+.preface-annotation-bar > *,
+.toolbar-controls {
+  background-color: var(--theme-color4);
+  padding: 0.5rem 0.5rem;
+  border: 0.5px ridge black;
+  border-radius: 15px;
+}
+
+#toolbar > * {
+  display: flex;
+  align-items: center;
+}
+
+#left-toolbar-controls {
+  flex: 0.1;
+  justify-content: center;
+}
+
+#annotation-list {
+  font-size: 15px;
+}
+
+#delete-annotation-btn:hover {
+  animation: fa-fade 1s infinite;
+}
+
+#right-toolbar-controls {
+  flex: 0.7;
+  justify-content: center;
+}
+
+#audio-file-name,
+#audio-file-name-preface {
+  white-space: nowrap;
+}
+
+#info-question {
+  flex: 0.05;
+  /* padding-right: 10px; */
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#info-question:hover {
+  color: var(--color-highlight--4);
+}
+
+#player-settings-menu {
+  width: 3%;
+  transition: transform 0.8s;
+}
+
+.rotate-right {
+  transform: rotate(45deg);
+}
+
+.rotate-left {
+  transform: rotate(-45deg);
+}
+
+#settingsModal {
+  left: 77.5%;
+  top: 20%;
+  width: 15%;
+  border-radius: 1rem;
+  display: none;
+}
+
+.menu-option {
+  /* padding-left: 1rem; */
+  padding-top: 0.5rem;
+}
+
+.menu-separator {
+  width: 100%;
+  /* margin: 2px 0; */
+  background-color: rgb(222 222 222);
+  height: 1px;
+  margin-top: 0.5rem;
+}
+
+.label-option {
+  padding-left: 0.5rem;
+}
+
+.radios-container {
+  padding-left: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  /* justify-content: space-evenly; */
+  gap: 15px;
+  margin-right: 0px;
+  padding-right: 0px !important;
+  margin-bottom: 8px;
+}
+
+.input-fields {
+  /* padding-left: 0rem; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-field {
+  margin: 0 10px;
+  position: relative;
+  width: 80px;
+  height: 40px;
+  border-radius: 40px;
+  border: 2px solid rgba(222, 222, 222, 1);
+  background: var(--theme-color1);
+  transition: 0.5s;
+}
+
+.input-field:hover {
+  -webkit-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  transform: scale(1.1);
+  border: 2px solid rgb(178, 177, 177);
+}
+
+/* .input-field:hover {
+  width: 90px;
+  border: 2px solid rgba(222, 222, 222, 1);
+  background: var(--theme-color1);
+} */
+
+.input-field .prev,
+.input-field .next {
+  position: absolute;
+  top: 50%;
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #000000;
+  border-left: 2px solid #000000;
+  z-index: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: 0.5s;
+}
+
+.input-field .prev {
+  left: 6px;
+  transform: translateY(-50%) rotate(315deg);
+}
+
+.input-field .next {
+  right: 6px;
+  transform: translateY(-50%) rotate(135deg);
+}
+
+.input-field:hover .prev {
+  opacity: 1;
+  left: 6px;
+}
+
+.input-field:hover .next {
+  opacity: 1;
+  right: 6px;
+}
+
+.input-field .box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-highlight--3);
+  font-size: 1vw;
+  font-weight: 700;
+  user-select: none;
+}
+
+.input-container .input-label {
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+/* // - */
+.editing-on {
+  background-color: var(--color-editing) !important;
+}
+
+/* On modal save annotation description */
+#annotationDescription {
+  text-align: justify;
+  white-space: pre-wrap;
+}
+
+.justified-text {
+  text-align: justify;
+}
+
+#toolbar .no-border:hover {
+  color: var(--color-highlight--5) !important;
+}
+
+.btn-edit-mode {
+  padding: 0;
+}
+
+/* -------------------------- */
+/* Wavesurfer generates several canvas elements, each containing only a segment of the audio waveform, rather than a single canvas with the complete duration. The maxCanvasWidth Wavesurfer Option allows for further customization of this feature using JavaScript. 
+Furthermore, Wavesurfer generates two parallel canvas elements to display two distinct waveforms: the basic waveform with z-index 2 (indicated as <canvas></canvas> element and the progressed waveform with z-index 3 indicated as <wave></wave>.
+/* -------------------------- */
+
+/* AUDIO PLAYER CONTAINER & CONTROLS SELECTOR */
+#audio-player {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+/* ------------------------------------ */
+/* SELECTORS FOR AUDIO PLAYER CONTAINER */
+/* ------------------------------------ */
+
+#audio-container {
+  /* display: block; */
+  width: 150%;
+  z-index: 20;
+  background-color: var(--theme-color2);
+}
+
+#wavetimeline {
+  width: 100%;
+  box-shadow: 1px 1px 1px var(--color-dark--4);
+  padding-top: 5px;
+  border-top-left-radius: 10px;
+  border: 1.5px solid black;
+}
+
+#waveform {
+  width: 100%;
+  border-left: 1.5px solid black;
+  border-right: 1.5px solid black;
+  /* opacity: 0; */
+  position: relative !important;
+  background-color: var(--theme-color0);
+}
+
+/* Displayed waveform + scrollbar (NO MINIMAP)*/
+/* 128 is the default height given in wavesurfer params, where 18px is the scrollbar.*/
+#waveform > wave {
+  position: relative !important;
+}
+
+#loading-spinner {
+  position: absolute;
+  top: 25%;
+  z-index: 20;
+  display: none;
+}
+
+/* // - */
+
+.waveform-loading-bar {
+  top: 38%;
+  position: absolute;
+  width: 100%;
+  height: var(--progress-bar-height);
+  background-color: var(--progress-bar-color);
+  background: linear-gradient(
+    var(--progress-bar-gradient-start),
+    var(--progress-bar-gradient-end)
+  );
+  border-radius: var(--progress-bar-border-radius);
+  box-shadow: var(--progress-bar-shadow);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+}
+
+.waveform-progress {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-end;
+  height: calc(var(--progress-bar-height) - 2px);
+  border-radius: var(--progress-bar-border-radius);
+  background-color: var(--progress-color);
+  background: var(--progress-gradient), linear-gradient(#9bdd62, #74d04c);
+  box-shadow: var(--progress-shadow);
+  border: var(--progress-border);
+  animation: animate-stripes 2s linear infinite;
+}
+
+@keyframes animate-stripes {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 44px 0;
+  }
+}
+
+.waveform-progress-value {
+  font-size: 1.2em;
+  line-height: var(--progress-bar-height);
+  padding-right: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  text-shadow: rgba(255, 255, 255, 0.45) 0 1px 0px;
+  white-space: nowrap;
+}
+
+/* // - */
+
+.drag-over {
+  position: relative;
+  animation: fa-fade 1s infinite;
+}
+
+.drag-over::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: dashed 2.5px var(--color-highlight--4);
+  pointer-events: none;
+  z-index: 20 !important;
+}
+
+.drag-text {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 3vw;
+  position: absolute;
+  color: black;
+  z-index: 20;
+  left: 25%;
+  transform: translateY(30px);
+}
+
+/* minimap remaining waveform background color*/
+#waveform > minimap {
+  background-color: var(--theme-color4);
+  /* 
+  opacity: 0;
+  pointer-events: none; */
+}
+/* minimap progress waveform background color*/
+#waveform > minimap > wave > wave {
+  background-color: var(--theme-color4);
+}
+/* prevent a scrollbar to appear on top of minimap and hide it */
+#waveform > minimap > wave {
+  overflow: hidden !important;
+}
+#waveform-bpm {
+  font-size: 95%;
+  position: absolute;
+  right: 1%;
+  top: 50%;
+  height: 20%;
+  padding: 0.15em;
+  border-radius: 4px;
+  box-shadow: 1px 1px 2px var(--color-dark--4);
+  background-color: var(--color-light--2);
+  z-index: 6;
+}
+
+.skip-cue {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  color: var(--color-light--2);
+  background-color: var(--color-dark--4);
+  opacity: 0.7;
+  font-size: 0.9em;
+  animation: fadeInOut 1.2s ease-out;
+  z-index: 10;
+  top: 12%;
+}
+
+#skip-forward {
+  display: none;
+  right: 1%;
+}
+
+#skip-forward .skip-cue-arrows i:nth-child(1) {
+  animation: fadeInOut 1.2s ease-out infinite;
+}
+
+#skip-forward .skip-cue-arrows i:nth-child(2) {
+  animation: fadeInOut 1.2s ease-out infinite;
+  animation-delay: 0.2s;
+}
+
+#skip-forward .skip-cue-arrows i:nth-child(3) {
+  animation: fadeInOut 1.2s ease-out infinite;
+  animation-delay: 0.4s;
+}
+
+#skip-backward {
+  display: none;
+  left: 1%;
+}
+
+#skip-backward .skip-cue-arrows i:nth-child(1) {
+  animation: fadeInOut 1.2s ease-out infinite;
+  animation-delay: 0.4s;
+}
+
+#skip-backward .skip-cue-arrows i:nth-child(2) {
+  animation: fadeInOut 1.2s ease-out infinite;
+  animation-delay: 0.2s;
+}
+
+#skip-backward .skip-cue-arrows i:nth-child(3) {
+  animation: fadeInOut 1.2s ease-out infinite;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.skip-cue-tooltip {
+  font-size: 72%;
+  /* font-weight: bold; */
+  font-family: Verdana, Manrope, sans-serif;
+}
+
+/* // - */
+
+/*  REGIONS  */
+.wavesurfer-region {
+  z-index: 1 !important;
+}
+
+/* .chord-region {
+  z-index: 2 !important;
+} */
+
+.region-highlight {
+  background-color: var(--color-highlight--6) !important;
+}
+
+.wavesurfer-region[data-id='loop-region'] {
+  z-index: 10 !important;
+}
+
+.region-loop-on {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.region-loop-on .remove-region-button {
+  /* pointer-events: auto; */
+  color: var(--theme-color3) !important;
+}
+
+/* MARKERS */
+.wavesurfer-marker {
+  z-index: 4 !important;
+  pointer-events: none;
+  overflow: visible !important;
+}
+/* // - */
+.span-chord-symbol {
+  justify-content: flex-start;
+  transform: translate(5px, 5px);
+  white-space: nowrap;
+  height: 2rem;
+  border-radius: 0.3em;
+  box-shadow: 2px 2px 0px var(--color-dark--4);
+  color: var(--theme-color5);
+  background-color: var(--theme-color6);
+}
+
+.span-chord-highlight {
+  background-color: var(--color-highlight--2) !important;
+}
+
+.marker-label svg {
+  margin-top: -22px;
+  position: absolute;
+  top: 15;
+  left: 0;
+}
+
+/* ----------------------------------- */
+/* SELECTORS FOR AUDIO PLAYER CONTROLS */
+/* ----------------------------------- */
+.player-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 5px;
+  background-color: var(--theme-color2);
+  border: 1.5px solid var(--color-dark--3);
+  border-bottom-left-radius: 10px;
+  box-shadow: 0 2px 0.5px var(--color-dark--4);
+  font-family: Verdana, Manrope, sans-serif;
+}
+
+.player-controls > * {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* gap: 1em; */
+}
+
+#left-player-controls {
+  flex-basis: 37%;
+  justify-content: flex-start;
+}
+
+#time-ruler-btn {
+  /* margin-left: auto; */
+  margin-left: 0.8em;
+  font-size: 160%;
+  color: var(--color-dark--4);
+}
+
+#center-player-controls {
+  flex-basis: 35%;
+  gap: 1.6em;
+  justify-content: center;
+}
+
+#right-player-controls {
+  flex-basis: 28%;
+  justify-content: space-evenly;
+}
+
+/* 
+  Normal transition: When appearing, there is a 0.5-second gradual opacity transition.
+  This gradual transition helps to avoid a buggy situation when both enabling 
+  and disabling autoscroll happen concurrently. If the no-opacity 
+  class is applied, the transition delay must be set to 0 for better user experience.
+*/
+#follow-playback-btn {
+  padding: 0.3em !important;
+  margin-right: auto;
+  border-radius: 1em;
+  box-shadow: 1px 1px 0px var(--color-dark--4);
+  color: var(--color-dark--4);
+  background-color: var(--color-highlight--2);
+  transition: opacity 0.5s;
+}
+#follow-playback-btn.no-opacity {
+  transition: opacity 0s !important;
+}
+
+.repeat-enabled {
+  color: var(--color-highlight--7);
+  animation: fa-fade 1s infinite;
+}
+
+.record-enabled {
+  animation: fa-fade 1s infinite;
+}
+
+.fa-play:hover {
+  color: var(--color-highlight--1) !important;
+  animation: fa-fade 1s infinite;
+}
+
+/* ----------------------------- */
+/* SIDEBAR SELECTORS (AUDIO I/O) */
+/* ----------------------------- */
+.audio-sidebar {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--theme-color2);
+  border: 1.5px solid var(--color-dark--3);
+  border-left: 0px solid var(--color-dark--3);
+  border-top: 1.5px solid var(--color-dark--3);
+  border-bottom: 1.5px solid var(--color-dark--3);
+  box-shadow: 0 2px 0px var(--color-dark--4);
+  transition: transform 0.3s ease-out;
+}
+
+#audio-sidebar-controls {
+  transform: translate(-100%);
+  opacity: 0;
+  justify-content: space-evenly;
+}
+
+#audio-sidebar-text {
+  writing-mode: vertical-rl;
+  font-weight: bold;
+  font-size: 19px;
+  transform: translate(-305%);
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+#audio-sidebar-text :hover {
+  color: var(--color-highlight--2);
+}
+
+/* class to reveal elements back to their un-transformed position */
+.shown {
+  opacity: 1 !important;
+  transform: translate(0) !important;
+}
+
+/* --------------------- */
+/* GENERAL USAGE CLASSES */
+/* --------------------- */
+/* gimmick class to hide marker-label span elements without using display:none; */
+.invisible-up {
+  margin-top: -100em;
+}
+
+.hidden {
+  display: none;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.enabled {
+  pointer-events: all;
+  opacity: 1 !important; /* this opacity cant work because of how CSS works when targeting the parent element */
+}
+
+.control-label {
+  font-size: x-small;
+  font-weight: bold;
+  width: 4.8rem;
+}
+
+.pointer-events-disabled {
+  pointer-events: none !important;
+}
+
+.no-opacity {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.no-border {
+  border: none;
+  background-color: transparent;
+}
+
+.no-border:hover {
+  color: var(--color-highlight--3) !important;
+}
+
+/* disable pointer events for no-border disabled buttons */
+.no-border:disabled {
+  pointer-events: none;
+}
+
+.no-padding {
+  padding: 0 !important;
+}
+
+/* --------------------------- */
+/* SELECTORS FOR FONT ELEMENTS */
+/* --------------------------- */
+@font-face {
+  font-family: 'SVG_fonts';
+  src: url('./SVG_fonts.otf');
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Rootslashbarsrepeats';
+  src: url('./Rootslashbarsrepeats-Regular.otf');
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* .svg-font is used for fonts in waveform marker labels */
+.svg-font {
+  font-family: SVG_fonts !important;
+  font-size: 25px !important;
+}
+
+.root {
+  font-size: 175%;
+  font-family: Rootslashbarsrepeats;
+}
+
+.accidental {
+  font-size: 150%;
+  font-family: SVG_fonts;
+}
+
+.variation {
+  font-size: 150%;
+  font-family: SVG_fonts;
+}
+
+.modal {
+  line-height: 1.2;
+  padding-top: 10vmin;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+/* (M) case */
+/* using id precedence over classes, to override font for some child table elements while still preserving the class */
+#disable-font-table {
+  font-family: Arial;
+  font-size: 115%;
+  font-weight: bold;
+  vertical-align: middle;
+  padding: 0;
+}
+
+.Chords td:hover {
+  background-color: var(--color-highlight--8);
+  cursor: pointer;
+}
+
+#show-chord-editor {
+  background-color: var(--color-chord-editor);
+  font-size: 1vw;
+  line-height: 1.2;
+}
+
+#chord-editor {
+  display: block;
+  z-index: 15;
+  position: relative;
+}
+
+#disable-font-label {
+  /* font-family: auto; */
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 80%;
+  white-space: pre;
+}
+
+/* ---------------------------- */
+/* CLASSES CUSTOMIZING TOOLTIPS */
+/* ---------------------------- */
+.tippy-box[data-theme~='custom'] {
+  background-image: var(--color-gradient--2);
+  /* transition: opacity 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important; */
+  /* transition: 0s; */
+  opacity: 0.85 !important;
+  color: black;
+}
+
+/* background-color: tomato; */
+/* color: burlywood; */
+/* background-image: linear-gradient(to bottom right, #21c994, #94dd89); */
+
+/* ------------------------ */
+/* Styling webkit scrollbar */
+/* ------------------------ */
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+  height: 18px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: var(--color-dark--2);
+}
+
+::-webkit-scrollbar-button:horizontal:start:decrement {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-color: var(--theme-color3);
+  border-radius: 16px;
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"%3E%3Cpolygon fill="%23000" points="2,8 10,0 10,16" transform="rotate(0 8 8)" /%3E%3C/svg%3E');
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-dark--4);
+}
+
+::-webkit-scrollbar-button:horizontal:start:decrement:hover,
+::-webkit-scrollbar-button:horizontal:end:increment:hover {
+  background-color: var(--color-light--1);
+}
+
+::-webkit-scrollbar-button:horizontal:end:increment {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-color: var(--theme-color3);
+  border-radius: 16px;
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"%3E%3Cpolygon fill="%23000" points="2,8 10,0 10,16" transform="rotate(180 8 8)" /%3E%3C/svg%3E');
+}
+
+/*  A FEW NOTES ABOUT STYLING WEBKIT SCROLLBAR:
+It's important to remember that styling scrollbar using the ::-webkit-scrollbar pseudo-elements only affects Webkit-based browsers and will not work in all browsers, like Firefox or Internet Explorer. For universal cross-browser scrollbar customization, you might have to use a JavaScript-based custom scrollbar library like perfect-scrollbar, SimpleBar, etc.
+*/
