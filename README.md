@@ -2,6 +2,13 @@
 
 Playalong application which incorporates ChordFinder as the audio player for the backing track.
 
+## Donwload project from Github
+
+* With git:
+```
+git clone https://github.com/NeoklisMimidis/playalong3.git
+```
+
 ## Deployment
 Playalong is hosted on [Netlify](https://playalong3.netlify.app/) with continuous integration from github.
 
@@ -12,7 +19,11 @@ Playalong is hosted on [Netlify](https://playalong3.netlify.app/) with continuou
 
 * Installing dependencies 
 ```
-npm install or npm i
+npm install
+```
+or
+```
+npm i
 ```
 
 * Start development server
