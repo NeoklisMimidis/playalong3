@@ -39,6 +39,9 @@ if (module.hot) {
 }
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
+export const metronomeSettingsMenu = document.querySelector('#metronome-icon');
+export const metronomeModal = document.querySelector('#metronomeSettingsModal');
+
 /* Elements */
 // Toolbar & pre-face instructions bars
 export const audioPlayerAndControlsContainer = document.getElementById(
@@ -208,18 +211,18 @@ function initWavesurfer() {
 
     // Η ΠΗΓΗ ΤΟΥ ΚΑΚΟΥ: cursor plugin
     plugins: [
-      // cursorPlugin.create({
-      //   showTime: true,
-      //   opacity: 1,
-      //   hideOnBlur: false,
-      //   customShowTimeStyle: {
-      //     backgroundColor: '#1996',
-      //     color: '#fff',
-      //     padding: '2px',
-      //     'font-size': '10px',
-      //     // transform: 'translate(0%, 150%)',
-      //   },
-      // }),
+      cursorPlugin.create({
+        showTime: true,
+        opacity: 1,
+        hideOnBlur: false,
+        customShowTimeStyle: {
+          backgroundColor: '#1996',
+          color: '#fff',
+          padding: '2px',
+          'font-size': '10px',
+          // transform: 'translate(0%, 150%)',
+        },
+      }),
       regionsPlugin.create({
         loop: true, // (default)
         drag: true, // (default)
@@ -512,3 +515,15 @@ function primaryLabelInterval(pxPerSec) {
 function secondaryLabelInterval(pxPerSec) {
   return Math.floor(1 / timeInterval(pxPerSec));
 }
+
+// -
+
+let metronomeModalEnabled = false;
+metronomeSettingsMenu.addEventListener('click', function () {
+  metronomeModalEnabled = !metronomeModalEnabled;
+  if (metronomeModalEnabled) {
+    metronomeModal.style.display = 'block';
+  } else {
+    metronomeModal.style.display = 'none';
+  }
+});

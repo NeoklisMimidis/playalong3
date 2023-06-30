@@ -985,3 +985,48 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 /*  A FEW NOTES ABOUT STYLING WEBKIT SCROLLBAR:
 It's important to remember that styling scrollbar using the ::-webkit-scrollbar pseudo-elements only affects Webkit-based browsers and will not work in all browsers, like Firefox or Internet Explorer. For universal cross-browser scrollbar customization, you might have to use a JavaScript-based custom scrollbar library like perfect-scrollbar, SimpleBar, etc.
 */
+
+#metronome-icon {
+  position: relative;
+}
+
+/* VIGLIS */
+#metronomeSettingsModal {
+  /* left: 55%; */
+  /* top: 10%; */
+  width: 13%;
+  border-radius: 1rem;
+  /* display: none; */
+  display: block;
+  position: absolute;
+  font-size: 1vw;
+
+  /* 
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0; */
+  /* display: flex; */
+  /* align-items: center;
+  justify-content: center;
+  color: var(--color-highlight--3);
+  font-weight: 700;
+  user-select: none; */
+}
+
+.input-lists {
+  /* padding-left: 0rem; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2%;
+}
+
+.input-list {
+  position: relative;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px;
+  border: 2px solid rgba(222, 222, 222, 1);
+  background: var(--theme-color1);
+}

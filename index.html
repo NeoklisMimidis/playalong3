@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎶 ChordFinder</title>
+    <title>Playalong</title>
     <link rel="icon" type="image/x-icon" href="./src/img/MCL_logo.png" />
 
     <link
@@ -447,6 +447,7 @@
             />
           </svg>
         </button>
+
         <button
           id="combineselectedButton"
           hidden
@@ -469,10 +470,149 @@
             />
           </svg>
         </button>
+        <!-- CHECK ME ! -->
+        <!-- CHECK ME ! -->
+        <!-- CHECK ME ! -->
+        <button id="metronome-icon" class="no-border">
+          <svg
+            version="1.1"
+            id="Icons"
+            xmlns="http://www.w3.org/2000/svg"
+            width="35"
+            height="35"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            viewBox="0 0 32 32"
+            xml:space="preserve"
+          >
+            <style type="text/css">
+              .st0 {
+                fill: none;
+                stroke: #000000;
+                stroke-width: 2;
+                stroke-linejoin: round;
+                stroke-miterlimit: 10;
+              }
+              .st1 {
+                fill: none;
+                stroke: #000000;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                stroke-miterlimit: 10;
+              }
+            </style>
+            <line class="st1" x1="16" y1="20" x2="29" y2="3" />
+            <line class="st1" x1="15" y1="7" x2="17" y2="7" />
+            <line class="st1" x1="15" y1="10" x2="17" y2="10" />
+            <line class="st1" x1="15" y1="13" x2="17" y2="13" />
+            <path
+              class="st1"
+              d="M22.7,16l2.5,9.7c0.4,1.7-0.8,3.3-2.6,3.3H9.3c-1.7,0-3-1.6-2.6-3.2l4.7-20.5C11.8,3.9,13,3,14.3,3h3.4c1.4,0,2.5,1,2.8,2.3l1.4,7"
+            />
+            <line class="st1" x1="7.4" y1="23" x2="24" y2="23" />
+          </svg>
+          <div
+            class="dropdown-menu"
+            id="metronomeSettingsModal"
+            aria-labelledby="metronome-settings-menu"
+          >
+            <h5 class="dropdown-header">Metronome Settings</h5>
+
+            <div id="tempo-menu" class="menu-option">
+              <label class="label-option" for="followPlayback"
+                ><strong>Tempo</strong></label
+              >
+              <div class="input-fields">
+                <div id="bpmInput" class="input-container">
+                  <div class="input-field">
+                    <span class="next"></span>
+                    <span class="box">0</span>
+                    <span class="prev"></span>
+                  </div>
+                  <label for="bpmInput" class="input-label">BPM</label>
+                </div>
+
+                <div id="tempoVolumeInput" class="input-container">
+                  <div class="input-field">
+                    <span class="next"></span>
+                    <span class="box">0</span>
+                    <span class="prev"></span>
+                  </div>
+                  <label for="tempoVolumeInput" class="input-label"
+                    >Volume</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="menu-separator"></div>
+
+            <div id="time-signature-resolution" class="menu-option">
+              <label class="label-option" for="followPlayback"
+                ><strong>Rhythm</strong></label
+              >
+              <div class="input-lists">
+                <div id="tempoVolumeInput" class="input-container">
+                  <div class="input-list">
+                    <select
+                      id="TSNumerator"
+                      onchange="setNumerator(this.value)"
+                      style="width: 35px"
+                      class="no-border"
+                    >
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                      <option value="7">7</option>
+                    </select>
+                    <span style="padding-right: 3px; padding-left: 3px">
+                      /
+                    </span>
+                    <select
+                      id="TSDenominator"
+                      onchange="setDenominator(this.value)"
+                      style="width: 40px; padding-right: 10px"
+                      class="no-border"
+                    >
+                      <option value="4">4</option>
+                      <option value="8">8</option>
+                    </select>
+                  </div>
+                  <label
+                    for="tempoVolumeInput"
+                    id="timeSignature"
+                    class="input-label"
+                    >Time Signature</label
+                  >
+                </div>
+
+                <div id="resolutionInput" class="input-container">
+                  <div class="input-list">
+                    <select
+                      id="resolution"
+                      onchange="setResolution(this.value)"
+                      style="width: 80px; padding-left: 10px"
+                      class="no-border"
+                    >
+                      <option value="4">4ths</option>
+                      <option value="8">8ths</option>
+                      <option value="16">16ths</option>
+                    </select>
+                  </div>
+                  <label class="input-label">Resolution</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="menu-separator"></div>
+          </div>
+        </button>
       </div>
 
       <div id="formats">Format: start recording to see sample rate</div>
-      <div>
+      <div class="d-none">
         <table
           border="0"
           width="80%"
@@ -662,7 +802,7 @@
       <!-- 🎶🎶✅✅✅✅🎶🎶 -->
       <!-- 🎶🎶🎶🎶🎶🎶🎶 -->
       <!-- 🎶🎶🎶🎶🎶🎶🎶 -->
-      <div class="container">
+      <div class="container d-none">
         <form action="/action_page.php" class="form">
           <h5>
             <p></p>
