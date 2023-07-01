@@ -473,10 +473,10 @@
         <!-- CHECK ME ! -->
         <!-- CHECK ME ! -->
         <!-- CHECK ME ! -->
-        <button id="metronome-icon" class="no-border">
+        <button id="metronome-btn" class="no-border">
           <svg
             version="1.1"
-            id="Icons"
+            id="metronome-icon"
             xmlns="http://www.w3.org/2000/svg"
             width="35"
             height="35"
@@ -1026,104 +1026,103 @@
               <i class="fa-solid fa-circle-info fa-xl d-none"></i>
             </div>
 
-            <img
-              id="player-settings-menu"
+            <button id="player-settings-btn" class="no-border">
+
+              <img
+              class="settings-icon"
               src="./src/img/settings_icon.png"
               alt="Settings"
             />
-          </div>
-
-          <div
-            class="dropdown-menu"
-            id="settingsModal"
-            aria-labelledby="player-settings-menu"
-          >
+            
+            <div class="dropdown-menu">
             <h5 class="dropdown-header">Player Settings</h5>
 
-            <div id="follow-playback-menu" class="menu-option">
-              <label class="label-option" for="followPlayback"
-                ><strong>Follow Playback</strong></label
-              >
-              <div class="radios-container">
-                <div class="form-check d-flex align-items-center">
-                  <label class="form-check-label" for="scroll">Scroll</label>
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    id="scroll"
-                    name="followPlayback"
-                  />
-                </div>
-                <div class="form-check d-flex align-items-center">
-                  <label class="form-check-label" for="pageTurn"
+              <div id="follow-playback-menu" class="menu-option">
+                <label class="label-option" for="followPlayback"
+                  ><strong>Follow Playback</strong></label
+                >
+                <div class="radios-container">
+                  <div class="form-check d-flex align-items-center">
+                    <label class="form-check-label" for="scroll">Scroll</label>
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      id="scroll"
+                      name="followPlayback"
+                    />
+                  </div>
+                  <div class="form-check d-flex align-items-center">
+                    <label class="form-check-label" for="pageTurn"
                     >Page Turn</label
-                  >
-                  <input
+                    >
+                    <input
                     class="form-check-input"
                     type="radio"
                     id="pageTurn"
                     name="followPlayback"
-                    checked
-                  />
-                </div>
-              </div>
-              <div class="input-fields">
-                <div id="firstInput" class="input-container">
-                  <div class="input-field">
-                    <span class="next"></span>
-                    <span class="box">0</span>
-                    <span class="prev"></span>
+                      checked
+                    />
                   </div>
-                  <label for="firstInput" class="input-label"
+                </div>
+                <div class="input-fields">
+                  <div id="firstInput" class="input-container">
+                    <div class="input-field">
+                      <span class="next"></span>
+                      <span class="box">0</span>
+                      <span class="prev"></span>
+                    </div>
+                    <label for="firstInput" class="input-label"
                     >Reset point</label
-                  >
-                </div>
-
-                <div id="secondInput" class="input-container">
-                  <div class="input-field">
-                    <span class="next"></span>
-                    <span class="box">0</span>
-                    <span class="prev"></span>
+                    >
                   </div>
-                  <label for="secondInput" class="input-label"
+                  
+                  <div id="secondInput" class="input-container">
+                    <div class="input-field">
+                      <span class="next"></span>
+                      <span class="box">0</span>
+                      <span class="prev"></span>
+                    </div>
+                    <label for="secondInput" class="input-label"
                     >Turn point</label
-                  >
+                    >
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="menu-separator"></div>
-            <div id="chord-categories-menu" class="menu-option form-group">
-              <label class="label-option" for="chordEditorCategories"
-                ><strong>Chord Editor Categories</strong></label
-              >
-              <div class="radios-container">
-                <div class="form-check d-flex align-items-center">
-                  <label class="form-check-label" for="onChordCategories"
-                    >On</label
-                  >
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    id="onChordCategories"
-                    name="chordEditorCategories"
-                  />
-                </div>
-                <div class="form-check d-flex align-items-center">
-                  <label class="form-check-label" for="offChordCategories"
-                    >Off</label
-                  >
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    id="offChordCategories"
-                    name="chordEditorCategories"
-                    checked
-                  />
+              <div class="menu-separator"></div>
+              <div id="chord-categories-menu" class="menu-option form-group">
+                <label class="label-option" for="chordEditorCategories"
+                  ><strong>Chord Editor Categories</strong></label
+                >
+                <div class="radios-container">
+                  <div class="form-check d-flex align-items-center">
+                    <label class="form-check-label" for="onChordCategories"
+                      >On</label
+                      >
+                      <input
+                      class="form-check-input"
+                      type="radio"
+                      id="onChordCategories"
+                      name="chordEditorCategories"
+                      />
+                    </div>
+                    <div class="form-check d-flex align-items-center">
+                      <label class="form-check-label" for="offChordCategories"
+                      >Off</label
+                      >
+                      <input
+                      class="form-check-input"
+                      type="radio"
+                      id="offChordCategories"
+                      name="chordEditorCategories"
+                      checked
+                      />
+                    </div>
                 </div>
               </div>
             </div>
           </div>
+        </button>
 
           <!-- settings ? -->
 
@@ -1133,12 +1132,12 @@
               <div id="wavetimeline"></div>
               <div id="waveform">
                 <!-- <div id="waveform" class="no-opacity"> -->
-                <!-- <img
-                  id="loading-spinner"
+                  <!-- <img
+                    id="loading-spinner"
                   src="./src/img/loading_spinner.gif"
                   alt="Loading..."
                   class="d-none"
-                /> -->
+                  /> -->
 
                 <div class="waveform-loading-bar no-opacity">
                   <div class="waveform-progress">

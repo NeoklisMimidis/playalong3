@@ -130,20 +130,21 @@ export function setupCancelEditingEvent() {
 }
 
 export function setupSettingsMenu() {
-  const playerSettingsMenu = document.querySelector('#player-settings-menu');
-  const settingsModal = document.querySelector('#settingsModal');
+  const playerSettingsBtn = document.querySelector('#player-settings-btn');
+  const playerSettingsIcon = playerSettingsBtn.querySelector('.settings-icon');
+  const playerSettingsModal = playerSettingsBtn.querySelector('.dropdown-menu');
 
   let rotateRight = true;
 
-  playerSettingsMenu.addEventListener('click', function () {
+  playerSettingsIcon.addEventListener('click', function () {
     if (rotateRight) {
-      playerSettingsMenu.classList.remove('rotate-left');
-      playerSettingsMenu.classList.add('rotate-right');
-      settingsModal.style.display = 'block';
+      playerSettingsIcon.classList.remove('rotate-left');
+      playerSettingsIcon.classList.add('rotate-right');
+      playerSettingsModal.style.display = 'block';
     } else {
-      playerSettingsMenu.classList.remove('rotate-right');
-      playerSettingsMenu.classList.add('rotate-left');
-      settingsModal.style.display = 'none';
+      playerSettingsIcon.classList.remove('rotate-right');
+      playerSettingsIcon.classList.add('rotate-left');
+      playerSettingsModal.style.display = 'none';
     }
     rotateRight = !rotateRight;
   });

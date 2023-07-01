@@ -39,9 +39,6 @@ if (module.hot) {
 }
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
-export const metronomeSettingsMenu = document.querySelector('#metronome-icon');
-export const metronomeModal = document.querySelector('#metronomeSettingsModal');
-
 /* Elements */
 // Toolbar & pre-face instructions bars
 export const audioPlayerAndControlsContainer = document.getElementById(
@@ -518,12 +515,26 @@ function secondaryLabelInterval(pxPerSec) {
 
 // -
 
-let metronomeModalEnabled = false;
-metronomeSettingsMenu.addEventListener('click', function () {
-  metronomeModalEnabled = !metronomeModalEnabled;
-  if (metronomeModalEnabled) {
-    metronomeModal.style.display = 'block';
-  } else {
-    metronomeModal.style.display = 'none';
-  }
-});
+function setupMetronomeMenu() {
+  const metronomeSettingsMenu = document.querySelector('#metronome-btn');
+  const metronomeSettingsIcon = document.querySelector('#metronome-icon');
+  const metronomeModal = metronomeSettingsMenu.querySelector('.dropdown-menu');
+
+  let metronomeModalEnabled = false;
+  metronomeSettingsMenu.addEventListener('click', function (e) {
+    console.log('-------------------------');
+
+    // close metronome modal only on metronome icon click
+    if (e.target.closest('#metronome-icon')) {
+      metronomeModalEnabled = !metronomeModalEnabled;
+      if (metronomeModalEnabled) {
+        metronomeModal.style.display = 'block';
+        metronomeSettingsIcon.classList.add('flip-horizontal');
+      } else {
+        metronomeModal.style.display = 'none';
+        metronomeSettingsIcon.classList.remove('flip-horizontal');
+      }
+    }
+  });
+}
+setupMetronomeMenu();
