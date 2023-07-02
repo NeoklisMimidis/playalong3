@@ -1,13 +1,5 @@
 // Creating beautiful tooltips!
-import tippy, {
-  createSingleton,
-  delegate,
-  followCursor,
-  getReferenceClientRect,
-  animateFill,
-  inlinePositioning,
-  sticky,
-} from 'tippy.js';
+import tippy, { createSingleton, delegate, followCursor } from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
 import 'tippy.js/themes/light-border.css';

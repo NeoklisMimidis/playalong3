@@ -4,6 +4,7 @@
   "description": "",
   "default": "index.html",
   "scripts": {
+    "vite": "vite",
     "start": "parcel index.html",
     "build": "parcel build index.html --public-url=./"
   },

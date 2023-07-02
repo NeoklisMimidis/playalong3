@@ -8,7 +8,7 @@ import timelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js
 import markersPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.markers.min.js';
 import minimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js';
 
-import { loadJAMS, tooltips } from './audio-player/render-annotations.js';
+import { loadJAMS } from './audio-player/render-annotations.js';
 
 import { toolbarStates } from './annotation-tools.js';
 
@@ -20,8 +20,8 @@ import {
   createTippySingleton,
 } from './components/tooltips.js';
 
-import Recorder from 'recorderjs';
-window.Recorder = Recorder;
+// import Recorder from 'recorderjs';
+// window.Recorder = Recorder;
 
 import {
   loadFile,
@@ -31,12 +31,12 @@ import {
   formatTime,
 } from './components/utilities.js';
 
-// Disable PARCEL Hot Module Reloading bcs it is buggy with Wavesurfer  // //
-if (module.hot) {
-  module.hot.dispose(() => {
-    window.location.reload();
-  });
-}
+// // Disable PARCEL Hot Module Reloading bcs it is buggy with Wavesurfer  // //
+// if (module.hot) {
+//   module.hot.dispose(() => {
+//     window.location.reload();
+//   });
+// }
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
 /* Elements */
@@ -127,8 +127,9 @@ fileSelectHandlers('#import-audio-btn', loadAudioFile);
 fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
 
 /* Loading files from repository */
-import audioFileURL1 from 'url:../../demo_files/test.mp3';
-import annotationFile1 from 'url:../../demo_files/test.jams';
+import audioFileURL1 from '../../demo_files/test.mp3';
+// import annotationFile1 from '../../demo_files/test.jams';
+import annotationFile1 from '../../demo_files/test.json';
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('fileName');

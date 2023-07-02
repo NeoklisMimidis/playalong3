@@ -5,7 +5,7 @@ import {
   playerStates,
 } from '../audio-player.js';
 import { createToggle } from '../components/utilities.js';
-import click from 'url:../../data/click_metronome.wav';
+import click from '../../data/click_metronome.wav';
 
 import {
   toolbarStates,
