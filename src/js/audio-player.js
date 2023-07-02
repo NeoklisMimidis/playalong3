@@ -1,12 +1,13 @@
 'use strict';
 
-import WaveSurfer from 'wavesurfer.js';
+// import WaveSurfer from 'wavesurfer.js';
 
-import cursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
+// import cursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
+import minimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js';
+
 import regionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
 import timelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js';
 import markersPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.markers.min.js';
-import minimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js';
 
 import { loadJAMS } from './audio-player/render-annotations.js';
 
@@ -128,13 +129,16 @@ fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
 
 /* Loading files from repository */
 import audioFileURL1 from '../../demo_files/test.mp3';
-// import annotationFile1 from '../../demo_files/test.jams';
-import annotationFile1 from '../../demo_files/test.json';
+const annotationFile1 = '../../demo_files/test.jams';
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('fileName');
 
 if (window.location.hostname === 'localhost') {
+  console.log('--------------------------------');
+  console.log('--------------------------------');
+  console.log('--------------------------------');
+  console.log('--------------------------------');
   // A) Localhost (preload audio):
   loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
@@ -209,7 +213,8 @@ function initWavesurfer() {
 
     // Η ΠΗΓΗ ΤΟΥ ΚΑΚΟΥ: cursor plugin
     plugins: [
-      cursorPlugin.create({
+      WaveSurfer.cursor.create({
+        // cursorPlugin.create({
         showTime: true,
         opacity: 1,
         hideOnBlur: false,
@@ -232,6 +237,7 @@ function initWavesurfer() {
       }),
       markersPlugin.create(),
       timelinePlugin.create({
+        // WaveSurfer.timeline.create({
         container: '#wavetimeline',
         formatTimeCallback: formatTimeCallback,
         timeInterval: timeInterval,

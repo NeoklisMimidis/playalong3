@@ -1,19 +1,19 @@
 {
-  "name": "chordfinder",
+  "name": "playalong-chordfinder",
   "version": "1.0.0",
   "description": "",
   "default": "index.html",
   "scripts": {
-    "vite": "vite",
-    "start": "parcel index.html",
-    "build": "parcel build index.html --public-url=./"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "author": "neoklis",
   "license": "ISC",
   "devDependencies": {
     "buffer": "^5.7.1",
-    "parcel": "^2.8.3",
-    "process": "^0.11.10"
+    "process": "^0.11.10",
+    "vite": "^4.3.9"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.0",
