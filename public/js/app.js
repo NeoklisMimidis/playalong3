@@ -184,7 +184,7 @@ function setPlaybackSpeed(s) {
   window.speed01 = speed01;
   var t = window.tempo;
   //console.log("tempo =", t * speed01);
-  // parent.metronome.setTempo(t);
+  parent.metronome.setTempo(t);
   //console.log("speed=", speed);
   //console.log("speed01=", speed01);
   var playButtons = document.querySelectorAll('.play-button');
@@ -451,10 +451,10 @@ function startRecording() {
     wavesurfer_mic.microphone.start();
     waveform_micContainer.removeAttribute('hidden');
 
-    //if (start_bar < stop_bar) parent.metronome.setPlayStop(true);
-    // setTimeout(function () {
-    //   parent.metronome.setPlayStop(true);
-    // }, delayedStart / speed01);
+    if (start_bar < stop_bar) parent.metronome.setPlayStop(true);
+    setTimeout(function () {
+      parent.metronome.setPlayStop(true);
+    }, delayedStart / speed01);
   });
   //}).catch(function(err) {
   //enable the record button if getUserMedia() fails
@@ -479,7 +479,7 @@ function pauseRecording() {
     wavesurfer_mic.microphone.pause();
     wavesurfer_mic.pause();
     //waveform_micContainer.setAttribute('hidden','true');
-    // parent.metronome.setPlayStop(false);
+    parent.metronome.setPlayStop(false);
     pauseButton.disabled = false;
     pauseButton.setAttribute('title', 'Resume recording');
     pauseButton.classList.add('flash');
@@ -504,7 +504,7 @@ function pauseRecording() {
     //waveform_micContainer.removeAttribute('hidden');
     rec.record();
     wavesurfer_mic.microphone.start();
-    // parent.metronome.setPlayStop(true);
+    parent.metronome.setPlayStop(true);
     pauseButton.disabled = false;
     pauseButton.setAttribute('title', 'Pause recording');
     pauseButton.classList.remove('flash');
@@ -580,7 +580,7 @@ function stopRecording() {
   waveform_micContainer.setAttribute('hidden', 'true');
 
   //stop metronome
-  // parent.metronome.setPlayStop(false);
+  parent.metronome.setPlayStop(false);
 
   //stop microphone access
   gumStream.getAudioTracks()[0].stop();

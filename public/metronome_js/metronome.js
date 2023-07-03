@@ -27,10 +27,17 @@ class Metronome {
     // and may or may not have played yet. {note, time}
     this.timerWorker = null; // The Web Worker used to fire timer messages
 
-    // viglis
-    var start_bar = 0;
-    var stop_bar = 2;
-    var continuous_play = false;
+    // viglis (Neoklis: problem with bundlers probably -- var not global)
+    window.start_bar = 0;
+    window.stop_bar = 2;
+    window.continuous_play = false;
+    // var start_bar = 0;
+    // var stop_bar = 2;
+    // var continuous_play = false;
+
+    console.log(start_bar);
+    console.log(stop_bar);
+    console.log(continuous_play);
 
     // my adjustments
     this.swing = 0.0;

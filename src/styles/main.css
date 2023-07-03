@@ -34,6 +34,7 @@
   /* waveform background container */
   --theme-color0: #f7f7f7;
   /* main background musicolab */
+  /* --theme-color1: rgb(255, 242, 194); */
   --theme-color1: #fffcf1;
   /* audio player */
   --theme-color2: #f5f2e7;
@@ -265,7 +266,7 @@ h1 {
   margin-bottom: 8px;
 }
 
-.input-fields {
+.inputs {
   /* padding-left: 0rem; */
   display: flex;
   justify-content: center;
@@ -1008,13 +1009,10 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   border-radius: 1rem;
   font-size: 15px;
   /* display: block; */
+  cursor: auto;
 }
 
-.input-lists {
-  /* padding-left: 0rem; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+#metronomeSettingsModal .inputs {
   gap: 15px;
 }
 
@@ -1025,4 +1023,18 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   border-radius: 5px;
   border: 2px solid rgba(222, 222, 222, 1);
   background: var(--theme-color1);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#bpmInput .input-field .box {
+  font-size: 15px;
+  font-weight: 700;
+  /* user-select: none; */
+}
+
+#number-box {
+  border: 2px solid rgba(222, 222, 222, 1);
 }

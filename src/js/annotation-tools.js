@@ -84,6 +84,8 @@ export const toolbarStates = {
   IS_MODAL_TABLE_ACTIVE: false, // useful to disable some events while modal active
 };
 
+window.toolbarStates = toolbarStates;
+
 // - EVENTS
 export function initAnnotationTools() {
   if (annotationToolsInitialized) return;
