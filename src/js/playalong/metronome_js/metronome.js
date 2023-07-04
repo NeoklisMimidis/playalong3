@@ -55,12 +55,12 @@ class Metronome {
 
     // audio clicks
     this.click = true;
-    this.smallClick1 = new Audio('metronome_sounds/metroSmall.wav');
+    this.smallClick1 = new Audio(new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href);
     this.smallClick1.crossOrigin = 'anonymous';
-    this.smallClick2 = new Audio('metronome_sounds/metroSmall.wav');
+    this.smallClick2 = new Audio(new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href);
     this.smallClick2.crossOrigin = 'anonymous';
     this.playSmall1 = true;
-    this.bigClick = new Audio('metronome_sounds/metroBig.wav');
+    this.bigClick = new Audio(new URL('../metronome_sounds/metroBig.wav', import.meta.url).href);
     this.bigClick.crossOrigin = 'anonymous';
 
     this.smallClick1_source =
@@ -73,7 +73,7 @@ class Metronome {
       this.audioManager.audioContext.createMediaElementSource(this.bigClick);
     this.audioManager.receiveAudioFromNode(this.bigClick_source);
 
-    this.timerWorker = new Worker('metronome_js/metronomeworker.js');
+    this.timerWorker = new Worker(new URL('./metronomeworker.js', import.meta.url));
 
     this.timerWorker.onmessage = function (e) {
       if (e.data == 'tick') {
@@ -472,3 +472,4 @@ class Metronome {
   }
   // \viglis
 }
+window.Metronome = Metronome;
