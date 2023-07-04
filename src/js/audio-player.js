@@ -128,8 +128,8 @@ fileSelectHandlers('#import-audio-btn', loadAudioFile);
 fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
 
 /* Loading files from repository */
-import audioFileURL1 from '../../demo_files/test.mp3';
-const annotationFile1 = '../../demo_files/test.jams';
+import audioFileURL1 from '../demo_files/test.mp3';
+const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url).href;
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('fileName');
