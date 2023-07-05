@@ -1,8 +1,8 @@
 'use strict';
 
-// import WaveSurfer from 'wavesurfer.js';
+import WaveSurfer from 'wavesurfer.js';
 
-// import cursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
+import cursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
 import minimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js';
 
 import regionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
@@ -21,9 +21,6 @@ import {
   createTippySingleton,
 } from './components/tooltips.js';
 
-// import Recorder from 'recorderjs';
-// window.Recorder = Recorder;
-
 import {
   loadFile,
   fileSelectHandlers,
@@ -32,12 +29,6 @@ import {
   formatTime,
 } from './components/utilities.js';
 
-// // Disable PARCEL Hot Module Reloading bcs it is buggy with Wavesurfer  // //
-// if (module.hot) {
-//   module.hot.dispose(() => {
-//     window.location.reload();
-//   });
-// }
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
 /* Elements */
@@ -129,7 +120,8 @@ fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
 
 /* Loading files from repository */
 import audioFileURL1 from '../demo_files/test.mp3';
-const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url).href;
+const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url)
+  .href;
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('fileName');
@@ -213,8 +205,7 @@ function initWavesurfer() {
 
     // Η ΠΗΓΗ ΤΟΥ ΚΑΚΟΥ: cursor plugin
     plugins: [
-      WaveSurfer.cursor.create({
-        // cursorPlugin.create({
+      cursorPlugin.create({
         showTime: true,
         opacity: 1,
         hideOnBlur: false,
@@ -237,7 +228,6 @@ function initWavesurfer() {
       }),
       markersPlugin.create(),
       timelinePlugin.create({
-        // WaveSurfer.timeline.create({
         container: '#wavetimeline',
         formatTimeCallback: formatTimeCallback,
         timeInterval: timeInterval,
@@ -519,147 +509,3 @@ function primaryLabelInterval(pxPerSec) {
 function secondaryLabelInterval(pxPerSec) {
   return Math.floor(1 / timeInterval(pxPerSec));
 }
-
-// -
-
-// function setupMetronomeMenu() {
-//   const metronomeSettingsMenu = document.querySelector('#metronome-btn');
-//   const metronomeSettingsIcon = document.querySelector('#metronome-icon');
-//   const metronomeModal = metronomeSettingsMenu.querySelector('.dropdown-menu');
-
-//   let metronomeModalEnabled = false;
-//   metronomeSettingsMenu.addEventListener('click', function (e) {
-//     console.log('-------------------------');
-
-//     // close metronome modal only on metronome icon click
-//     if (e.target.closest('#metronome-icon')) {
-//       metronomeModalEnabled = !metronomeModalEnabled;
-//       if (metronomeModalEnabled) {
-//         toolbarStates.IS_MODAL_TABLE_ACTIVE = true;
-//         metronomeModal.style.display = 'block';
-//         metronomeSettingsIcon.classList.add('flip-horizontal');
-//       } else {
-//         toolbarStates.IS_MODAL_TABLE_ACTIVE = false;
-//         metronomeModal.style.display = 'none';
-//         metronomeSettingsIcon.classList.remove('flip-horizontal');
-//       }
-//     }
-//   });
-
-//   metronomeSettingsTempo();
-// }
-// setupMetronomeMenu();
-
-// function metronomeSettingsTempo() {
-//   const bpmInput = document.querySelector('#bpmInput');
-//   const bpmOptions = {
-//     default: 60,
-//     step: 1.0,
-//     min: 30,
-//     max: 300,
-//     current: null,
-//   };
-//   assignInputFieldEvents(bpmInput, bpmOptions);
-// }
-
-// function assignInputFieldEvents(selector, options) {
-//   const box = selector.querySelector('.box');
-//   const next = selector.querySelector('.next');
-//   const prev = selector.querySelector('.prev');
-
-//   box.innerText = options.default;
-//   options.current = options.default;
-
-//   next.addEventListener('click', () => {
-//     let currentValue = parseFloat(box.innerText);
-//     if (currentValue < options.max) {
-//       currentValue += options.step;
-//       box.innerText = currentValue;
-//       options.current = currentValue;
-//     }
-//   });
-
-//   prev.addEventListener('click', () => {
-//     let currentValue = parseFloat(box.innerText);
-//     if (currentValue > options.min) {
-//       currentValue -= options.step;
-//       box.innerText = currentValue;
-//       options.current = currentValue;
-//     }
-//   });
-
-//   box.addEventListener('keypress', e => {
-//     let maxLength = Math.max(
-//       options.min.toString().length,
-//       options.max.toString().length
-//     );
-
-//     let inputChar = String.fromCharCode(e.which);
-//     let caretPosition = window.getSelection().anchorOffset;
-//     let nextValue =
-//       box.innerText.slice(0, caretPosition) +
-//       inputChar +
-//       box.innerText.slice(caretPosition);
-
-//     // Only accept numeric input
-//     if (!inputChar.match(/[0-9]/)) {
-//       e.preventDefault();
-//     }
-//     // Don't allow values larger than options.max and length bigger than maxLength
-//     else if (+nextValue > options.max || nextValue.length > maxLength) {
-//       e.preventDefault();
-//     }
-//   });
-
-//   box.addEventListener('keydown', e => {
-//     if (e.key === 'Enter') {
-//       e.preventDefault();
-//       box.blur();
-//     }
-//   });
-
-//   box.addEventListener('blur', () => {
-//     let currentValue = parseInt(box.innerText);
-//     if (isNaN(currentValue)) {
-//       box.innerText = options.default;
-//       options.current = options.default;
-//     } else if (currentValue < options.min) {
-//       box.innerText = options.min;
-//       options.current = options.min;
-//     } else if (currentValue > options.max) {
-//       box.innerText = options.max;
-//       options.current = options.max;
-//     } else {
-//       box.innerText = currentValue;
-//       options.current = currentValue;
-//     }
-//   });
-// }
-
-// var dial = new Nexus.Dial('#dial', {
-//   size: [35, 35],
-//   interaction: 'vertical', // "radial", "vertical", or "horizontal"
-//   mode: 'absolute', // "absolute" or "relative"
-//   min: 0,
-//   max: 1,
-//   step: 0,
-//   value: 0,
-// });
-
-// dial.value = 0.5;
-// // dial.colorize('fill', '#fffcf1');
-// // dial.colorize('accent', 'rgb(255, 242, 194)');
-// // dial.colorize('accent', '#111');
-// // dial.colorize('accent', '#ff0');
-// dial.colorize('accent', '#777');
-
-// var number = new Nexus.Number('#number-box', {
-//   size: [50, 25],
-//   value: 0,
-//   min: 0,
-//   max: 1,
-//   step: 0.05,
-// });
-
-// number.link(dial);
-// // number.colorize('accent', 'rgb(255, 242, 194)');
