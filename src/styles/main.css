@@ -704,6 +704,13 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   justify-content: flex-start;
 }
 
+#zoom-in-btn {
+  cursor: zoom-in;
+}
+#zoom-out-btn {
+  cursor: zoom-out;
+}
+
 #time-ruler-btn {
   /* margin-left: auto; */
   margin-left: 0.8em;
@@ -1035,6 +1042,6 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   /* user-select: none; */
 }
 
-#number-box {
+/* #number-box {
   border: 2px solid rgba(222, 222, 222, 1);
-}
+} */
