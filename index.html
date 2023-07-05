@@ -79,7 +79,10 @@
     <script type="text/javascript" src="/js/audioSources.js"></script>
     <!-- workbench loads metronome -->
 
-    <script type="module" src="/src/js/playalong/metronome_js/metronome.js"></script>
+    <script
+      type="module"
+      src="/src/js/playalong/metronome_js/metronome.js"
+    ></script>
     <script type="text/javascript" src="/js/main.js" defer></script>
 
     <!-- Accept Jitsi meeting room name modal-->
@@ -514,10 +517,10 @@
 
             <div class="menu-separator"></div>
 
-            <div id="time-signature-resolution" class="menu-option">
+            <div class="menu-option">
               <label class="label-option"><strong>Rhythm</strong></label>
               <div class="inputs">
-                <div id="tempoVolumeInput" class="input-container">
+                <div class="input-container">
                   <div class="input-list">
                     <select
                       id="TSNumerator"
@@ -545,15 +548,10 @@
                       <option value="8">8</option>
                     </select>
                   </div>
-                  <label
-                    for="tempoVolumeInput"
-                    id="timeSignature"
-                    class="input-label"
-                    >Time Signature</label
-                  >
+                  <label class="input-label">Time Signature</label>
                 </div>
 
-                <div id="resolutionInput" class="input-container">
+                <div class="input-container">
                   <div class="input-list">
                     <select
                       id="resolution"
@@ -581,8 +579,8 @@
                   <div class="input-list">
                     <select id="precount" class="no-border">
                       <option value="0">0 measures</option>
-                      <option selected value="1">1 measure</option>
-                      <option value="2">2 measures</option>
+                      <option value="1">1 measure</option>
+                      <option selected value="2">2 measures</option>
                     </select>
                   </div>
                   <label for="precount">Pre-count</label>
@@ -590,20 +588,20 @@
                 <div id="count-on-off" class="input-container">
                   <div class="radios-container">
                     <div class="form-check d-flex align-items-center">
-                      <label class="form-check-label" for="onCount">On</label>
+                      <label class="form-check-label" for="countOn">On</label>
                       <input
                         class="form-check-input"
                         type="radio"
-                        id="onCount"
+                        id="countOn"
                         name="count-on-off"
                       />
                     </div>
                     <div class="form-check d-flex align-items-center">
-                      <label class="form-check-label" for="ofCount">Off</label>
+                      <label class="form-check-label" for="countOff">Off</label>
                       <input
                         class="form-check-input"
                         type="radio"
-                        id="ofCount"
+                        id="countOff"
                         name="count-on-off"
                         checked
                       />
@@ -615,191 +613,6 @@
             </div>
           </div>
         </button>
-      </div>
-
-      <div class="d-none">
-        <table
-          border="0"
-          width="80%"
-          style="vertical-align: center; text-align: left"
-          align="center"
-        >
-          <tr style="border-top: solid">
-            <td rowspan="2">
-              <svg
-                version="1.1"
-                id="Icons"
-                xmlns="http://www.w3.org/2000/svg"
-                width="55"
-                height="55"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                viewBox="0 0 32 32"
-                xml:space="preserve"
-              >
-                <style type="text/css">
-                  .st0 {
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 2;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 10;
-                  }
-
-                  .st1 {
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 2;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 10;
-                  }
-                </style>
-                <line class="st1" x1="16" y1="20" x2="29" y2="3" />
-                <line class="st1" x1="15" y1="7" x2="17" y2="7" />
-                <line class="st1" x1="15" y1="10" x2="17" y2="10" />
-                <line class="st1" x1="15" y1="13" x2="17" y2="13" />
-                <path
-                  class="st1"
-                  d="M22.7,16l2.5,9.7c0.4,1.7-0.8,3.3-2.6,3.3H9.3c-1.7,0-3-1.6-2.6-3.2l4.7-20.5C11.8,3.9,13,3,14.3,3h3.4c1.4,0,2.5,1,2.8,2.3l1.4,7"
-                />
-                <line class="st1" x1="7.4" y1="23" x2="24" y2="23" />
-              </svg>
-            </td>
-
-            <td style="vertical-align: top; width: 35%">
-              Tempo:
-              <span style="padding-left: 5px"></span>
-              <input
-                type="range"
-                min="10"
-                max="200"
-                value="90"
-                class="slider"
-                id="tempoSlider"
-                oninput="setTempo(this.value)"
-              />
-              <span id="tempoValue" style="padding-left: 10px"> -- </span>
-              <span>bpm</span>
-            </td>
-            <td style="text-align: center">
-              <span id="timeSignature" style="text-align: left">
-                Time Signature:
-              </span>
-              <select
-                id="TSNumerator"
-                onchange="setNumerator(this.value)"
-                style="width: 35px"
-              >
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-              </select>
-              <span style="padding-right: 3px; padding-left: 3px"> / </span>
-              <select
-                id="TSDenominator"
-                onchange="setDenominator(this.value)"
-                style="width: 40px; padding-right: 10px"
-              >
-                <option value="4">4</option>
-                <option value="8">8</option>
-              </select>
-            </td>
-            <td rowspan="2" style="text-align: center">
-              <span>Metronome for </span>
-              <span>
-                <input
-                  type="number"
-                  id="metro_measures"
-                  onchange="setMetroMeasures(this.value)"
-                  value="2"
-                  size="3"
-                  style="text-align: center"
-                  maxlength="3"
-                  min="0"
-                  max="9999"
-                  step="1"
-                />
-              </span>
-              <span>
-                <input
-                  hidden
-                  type="text"
-                  id="metro_infinite"
-                  value="&infin;"
-                  size="3"
-                  style="text-align: center"
-                />
-              </span>
-              <span>measures. (infinite: </span>
-              <input
-                hidden
-                type="number"
-                id="startBarInput"
-                value="0"
-                onchange="setStartBar(this.value)"
-                size="3"
-              />
-              <input
-                hidden
-                type="number"
-                id="stopBarInput"
-                value="2"
-                onchange="setStopBar(this.value)"
-                size="3"
-              />
-              <input
-                hidden
-                type="checkbox"
-                id="playStop"
-                onclick="setPlayStop(this.checked)"
-                style="padding-right: 10px"
-              />
-              <input
-                type="checkbox"
-                id="metroCont"
-                onclick="setMetroCont(this.checked)"
-                style="padding-right: 10px"
-              />
-              <span>)</span>
-            </td>
-          </tr>
-          <tr style="border-bottom-width: 1; border-bottom: solid">
-            <td>
-              Volume:
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value="95"
-                class="volume-slider"
-                id="volumeSlider"
-                oninput="setVolume(this.value)"
-              />
-              <span
-                id="volumeValue"
-                style="padding-left: 10px; padding-right: 0px"
-              >
-                --
-              </span>
-              <span>%</span>
-            </td>
-            <td style="text-align: center">
-              <span id="resolution_span"> Resolution: </span>
-              <select
-                id="resolution"
-                onchange="setResolution(this.value)"
-                style="width: 80px; padding-left: 10px"
-              >
-                <option value="4">4ths</option>
-                <option value="8">8ths</option>
-                <option value="16">16ths</option>
-              </select>
-            </td>
-          </tr>
-        </table>
       </div>
 
       <!-- 🎶🎶🎶🎶🎶🎶🎶 -->
@@ -1242,7 +1055,7 @@
                   <button
                     id="record-btn"
                     data-tooltip="Enable recording (r)"
-                    class="no-border enabled"
+                    class="no-border enabled d-none"
                   >
                     <i
                       class="fa-solid fa-circle fa-lg"

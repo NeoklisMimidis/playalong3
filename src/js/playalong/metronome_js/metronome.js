@@ -55,12 +55,18 @@ class Metronome {
 
     // audio clicks
     this.click = true;
-    this.smallClick1 = new Audio(new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href);
+    this.smallClick1 = new Audio(
+      new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href
+    );
     this.smallClick1.crossOrigin = 'anonymous';
-    this.smallClick2 = new Audio(new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href);
+    this.smallClick2 = new Audio(
+      new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href
+    );
     this.smallClick2.crossOrigin = 'anonymous';
     this.playSmall1 = true;
-    this.bigClick = new Audio(new URL('../metronome_sounds/metroBig.wav', import.meta.url).href);
+    this.bigClick = new Audio(
+      new URL('../metronome_sounds/metroBig.wav', import.meta.url).href
+    );
     this.bigClick.crossOrigin = 'anonymous';
 
     this.smallClick1_source =
@@ -73,7 +79,9 @@ class Metronome {
       this.audioManager.audioContext.createMediaElementSource(this.bigClick);
     this.audioManager.receiveAudioFromNode(this.bigClick_source);
 
-    this.timerWorker = new Worker(new URL('./metronomeworker.js', import.meta.url));
+    this.timerWorker = new Worker(
+      new URL('./metronomeworker.js', import.meta.url)
+    );
 
     this.timerWorker.onmessage = function (e) {
       if (e.data == 'tick') {
@@ -138,6 +146,7 @@ class Metronome {
     });
 
     var that = this;
+    console.log(that);
 
     function nextNote() {
       // Advance current note and time by a 16th note...
@@ -216,7 +225,11 @@ class Metronome {
         that.beatEvent.beatNum = that.beat;
         document.dispatchEvent(that.beatEvent);
         // viglis
+        console.log(that.bar);
+        console.log(stop_bar);
+        console.log(continuous_play);
         if (that.bar >= stop_bar && continuous_play == false) {
+          console.log('hi!!');
           //if (continuous_play==true) then keep metronome clicking
           //console.log("STOP Metronome"); // stop metronome
           parent.metronome.setPlayStop(false);
