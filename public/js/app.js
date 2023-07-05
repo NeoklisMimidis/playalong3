@@ -451,15 +451,8 @@ function startRecording() {
     wavesurfer_mic.microphone.start();
     waveform_micContainer.removeAttribute('hidden');
 
-    console.log('----check me ----');
-    console.log(start_bar);
-    console.log(stop_bar);
-    console.log(window.continuous_play);
-    console.log('----check me ----');
-
-    if (start_bar < stop_bar) {
-      parent.metronome.setPlayStop(true);
-    } else if (window.continuous_play && stop_bar === 0) {
+    // Enable metronome: 1) Pre-count case & 2) Count is enabled case
+    if (start_bar < stop_bar || (window.continuous_play && stop_bar === 0)) {
       parent.metronome.setPlayStop(true);
     }
   });

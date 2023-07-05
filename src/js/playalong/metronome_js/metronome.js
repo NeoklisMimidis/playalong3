@@ -35,10 +35,6 @@ class Metronome {
     // var stop_bar = 2;
     // var continuous_play = false;
 
-    console.log(start_bar);
-    console.log(stop_bar);
-    console.log(continuous_play);
-
     // my adjustments
     this.swing = 0.0;
     this.beat16Length = 16;
@@ -225,11 +221,7 @@ class Metronome {
         that.beatEvent.beatNum = that.beat;
         document.dispatchEvent(that.beatEvent);
         // viglis
-        console.log(that.bar);
-        console.log(stop_bar);
-        console.log(continuous_play);
         if (that.bar >= stop_bar && continuous_play == false) {
-          console.log('hi!!');
           //if (continuous_play==true) then keep metronome clicking
           //console.log("STOP Metronome"); // stop metronome
           parent.metronome.setPlayStop(false);
