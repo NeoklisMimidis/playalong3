@@ -170,7 +170,8 @@ const urlFileName = urlParams.get('fileName');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  loadFilesInOrder(audioFileURL1, annotationFile1);
+  resetAudioPlayer();
+  // loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
