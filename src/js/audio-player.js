@@ -157,7 +157,15 @@ function updateProgressBar(totalTime, updateIntervalInSeconds = 0.2) {
 }
 
 document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
-  sendAudioAndFetchAnalysis();
+  const message = `Analysis may require some time.<br><br><span class="text-info">Are you sure you want to proceed?</span>🤷‍♂️`;
+
+  renderModalMessage(message)
+    .then(() => {
+      sendAudioAndFetchAnalysis();
+    })
+    .catch(() => {
+      // User canceled || DON'T EXECUTE ANALYSIS
+    });
 });
 
 /* Loading files from repository */
@@ -170,8 +178,8 @@ const urlFileName = urlParams.get('fileName');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  resetAudioPlayer();
-  // loadFilesInOrder(audioFileURL1, annotationFile1);
+  // resetAudioPlayer();
+  loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
