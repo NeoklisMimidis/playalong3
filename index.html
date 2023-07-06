@@ -759,14 +759,28 @@
           </div>
 
           <div class="preface-annotation-bar d-none">
-            <div id="preface-annotation-help">
-              <span>
-                Now select an annotation with the
-                <strong>Analyze</strong> button in 'Audio I/O' controls (this
-                process later on will be automatic by fetching a file from the
-                MusiColab server)</span
-              >
+            <div id="preface-annotation" class="d-non">
+              <div id="preface-annotation-help">
+                <span>
+                  Now execute chord analysis with the
+                  <strong>Analyze</strong> button</span
+                >
+              </div>
+
+              <button id="analyze-chords-btn">
+                <i class="fa-solid fa-file-audio fa-xl"></i>
+                <span class="control-labe">Analyze</span>
+              </button>
             </div>
+
+            <div id="analysis-loading-bar" class="loading-bar-container d-none">
+              <div class="loading-bar-progress">
+                <span class="loading-bar-progress-value"
+                  >Processing <strong>1%</strong></span
+                >
+              </div>
+            </div>
+
             <div id="audio-file-name-preface">---</div>
           </div>
 
@@ -955,10 +969,13 @@
                   class="d-none"
                   /> -->
 
-                <div class="waveform-loading-bar no-opacity">
-                  <div class="waveform-progress">
-                    <span class="waveform-progress-value"
-                      >Processing <strong>79%</strong></span
+                <div
+                  id="waveform-loading-bar"
+                  class="loading-bar-container no-opacity"
+                >
+                  <div class="loading-bar-progress">
+                    <span class="loading-bar-progress-value"
+                      >Processing <strong>1%</strong></span
                     >
                   </div>
                 </div>
@@ -1050,16 +1067,6 @@
                     <i class="fa-solid fa-forward fa-lg"></i>
                   </button>
                   <button
-                    id="record-btn"
-                    data-tooltip="Enable recording (r)"
-                    class="no-border enabled d-none"
-                  >
-                    <i
-                      class="fa-solid fa-circle fa-lg"
-                      style="color: #f70808"
-                    ></i>
-                  </button>
-                  <button
                     id="repeat-btn"
                     data-tooltip="Enable loop (𝓁)"
                     class="no-border"
@@ -1100,13 +1107,17 @@
             <div id="audio-sidebar-controls" class="audio-sidebar">
               <button id="import-audio-btn" class="no-border">
                 <i class="fa-solid fa-upload fa-xl"></i>
-                <div class="control-label">Import Audio</div>
+                <div class="control-label">Import from disk</div>
               </button>
 
-              <button id="analyze-chords-btn" class="no-border disabled">
+              <button id="import-repository" class="no-border">
+                <i class="fa-solid fa-file-audio fa-xl"></i>
+                <div class="control-label">Import from repository</div>
+              </button>
+              <!-- <button id="analyze-chords-btn" class="no-border disabled">
                 <i class="fa-solid fa-file-audio fa-xl"></i>
                 <div class="control-label">Analyze</div>
-              </button>
+              </button> -->
 
               <button id="download-jams-btn" class="no-border disabled">
                 <i class="fa-solid fa-download fa-xl"></i>
