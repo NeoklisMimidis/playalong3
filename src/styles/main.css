@@ -930,6 +930,10 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   white-space: pre;
 }
 
+.buttons-inactive {
+  pointer-events: none;
+}
+
 /* ---------------------------- */
 /* CLASSES CUSTOMIZING TOOLTIPS */
 /* ---------------------------- */

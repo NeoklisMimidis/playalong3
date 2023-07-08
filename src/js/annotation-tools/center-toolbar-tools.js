@@ -32,14 +32,14 @@ import {
  */
 export function setupAnnotationListEvents() {
   // On annotationList change, Clear previous & render the new selected annotation
-  annotationList.addEventListener('change', () => {
+  annotationList.addEventListener('change', function (event) {
     // DESTROY previous tooltips (new ones are created with renderAnnotations)
     tooltips.markersSingleton.destroy();
 
     // clear previous markers and regions
     wavesurfer.clearMarkers();
     wavesurfer.clearRegions();
-    console.log(jamsFile);
+    console.log({value: this.value, jamsFile});
 
     // render new selected annotations
     renderAnnotations(selectedAnnotationData(jamsFile));
@@ -48,7 +48,13 @@ export function setupAnnotationListEvents() {
     findPrevNextBeatsStartTime(
       wavesurfer.getCurrentTime() / wavesurfer.getDuration()
     );
+
+    //collably changing the annotation selected
+    event.isTrusted
+      ? window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam})
+      : null;
   });
+
   deleteAnnotationBtn.addEventListener('click', () => {
     deleteAnnotation();
   });
@@ -58,7 +64,15 @@ export function setupAnnotationListEvents() {
  *  [Edit] Grants access to Edit mode and a set of tools designed for modifying selected annotations.
  */
 export function setupToggleEditEvent() {
-  toggleEditBtn.addEventListener('click', toggleEdit);
+  toggleEditBtn.addEventListener('click', function () {
+    //collably initiating edit
+    window.awareness.setLocalStateField('bTrackEdit', {
+      status: `${bTeditor ? 'editCompleted' : 'editInitiated'}`,
+      editTime: wavesurfer.getCurrentTime(),
+    });
+
+    toggleEdit();
+  } );
 }
 
 // - Center controls

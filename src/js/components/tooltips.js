@@ -234,6 +234,13 @@ export const MARKERS_SINGLETON_PROPS = {
   },
 };
 
+export const COLLAB_CHORD_SELECTION_TIPPY_PROPS = {
+  placement: 'bottom',
+  trigger: 'manual',
+  theme: 'translucent'
+}
+
+
 // NOTE markers singleton is initialized (or updated) in render-annotations every time a new marker is created
 
 // - Delegate instances styling

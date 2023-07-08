@@ -23,9 +23,11 @@ const baseUrl =
     ? 'http://localhost:5500'
     : 'https://musicolab.hmu.gr:8080';
 
-const deletedUserImageSrc = `${baseUrl}/images/deletedUser.svg`;
+//const deletedUserImageSrc = `${baseUrl}/images/deletedUser.svg`;
 
+//turn into global variables and move to global_variables.js?
 let otherUserRecording;
+var bTeditor;
 
 // Create an instance of wavesurfer for the audio file to be followed
 let wavesurfer0 = {};

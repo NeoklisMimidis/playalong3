@@ -58,6 +58,14 @@ export function loadJAMS(input) {
 
       createAnnotationsList(jamsFile);
 
+      //set collab annotation selection
+      if (Collab) {
+        const annotationSelected = window.sharedBTEditParams?.get('annotationSel')?.value;
+        annotationSelected
+          ? annotationList.value = annotationSelected
+          : null;
+      }
+
       // Render first annotation
       annotatedChordsAtBeatsData = selectedAnnotationData(jamsFile);
       renderAnnotations(annotatedChordsAtBeatsData);
@@ -114,6 +122,8 @@ export function createAnnotationsList(jamsFile) {
 export function selectedAnnotationData(jamsFile) {
   const selectedAnnotation = jamsFile.annotations[annotationList.selectedIndex];
   const currDataSource = selectedAnnotation.annotation_metadata.data_source;
+
+  console.log({index: annotationList.selectedIndex, currDataSource});
 
   if (currDataSource === 'program') {
     deleteAnnotationBtn.classList.add('disabled');
@@ -440,25 +450,10 @@ function _setStyleOnMarker(marker, prevChord, index) {
   if (index === 0) {
     markerLabel.style.marginLeft = '4px';
   }
+  
   wavesurfer.util.style(markerLabel, {
     pointerEvents: toolbarStates.EDIT_MODE ? 'auto' : 'none',
   });
-
-  // proceed with the following ONLY when changes are saved
-  if (!toolbarStates.SAVED) return;
-
-  // b) Style marker line depending on edit state
-  const markerLine = marker.elLine;
-  if (index === 0) {
-    markerLine.style.width = '0px';
-  } else {
-    wavesurfer.util.style(
-      markerLine,
-      toolbarStates.EDIT_MODE
-        ? EDIT_MODE_ENABLED_STYLE
-        : EDIT_MODE_DISABLED_STYLE
-    );
-  }
 
   // c) Hide marker-labels depending on edit mode state
   const chordSymbolSpan = marker.elChordSymbolSpan;
@@ -466,7 +461,7 @@ function _setStyleOnMarker(marker, prevChord, index) {
   const chordLabel = marker.mirLabel;
   if (chordLabel === 'N') {
     // Handle the No chord 'N' case || only visible on edit
-    if (toolbarStates.EDIT_MODE) {
+    if (toolbarStates.EDIT_MODE || toolbarStates.COLLAB_EDIT_MODE) {
       {
         chordSymbolSpan.classList.remove('invisible-up');
       }
@@ -483,9 +478,25 @@ function _setStyleOnMarker(marker, prevChord, index) {
     }
 
     // Display labels & tooltip on edit
-    if (toolbarStates.EDIT_MODE) {
+    if (toolbarStates.EDIT_MODE || toolbarStates.COLLAB_EDIT_MODE) {
       chordSymbolSpan.classList.toggle('invisible-up');
     }
+  }
+
+  // proceed with the following ONLY when changes are saved
+  if (!toolbarStates.SAVED) return;
+
+  // b) Style marker line depending on edit state
+  const markerLine = marker.elLine;
+  if (index === 0) {
+    markerLine.style.width = '0px';
+  } else {
+    wavesurfer.util.style(
+      markerLine,
+      toolbarStates.EDIT_MODE || toolbarStates.COLLAB_EDIT_MODE
+        ? EDIT_MODE_ENABLED_STYLE
+        : EDIT_MODE_DISABLED_STYLE
+    );
   }
 
   // d) revert background color (cases where a chord was change with Edit chord)

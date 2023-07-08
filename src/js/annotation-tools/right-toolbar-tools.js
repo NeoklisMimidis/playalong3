@@ -74,14 +74,37 @@ let chord = {
  */
 export function setupEditChordEvents() {
   // Edit selected chord onPressingEditChordButton (enables button)
-  wavesurfer.on('marker-click', enableEditChordButtonFunction);
+  wavesurfer.on('marker-click', (selMarker) => {
+    if (!!Collab) {
+      window.sharedBTEditParams.set('selectedMarker',selMarker.time);
+    }
+
+    enableEditChordButtonFunction(selMarker);
+  });
   wavesurfer.on('seek', disableEditChordButtonFunction);
-  editChordBtn.addEventListener('click', showChordEditor);
+  editChordBtn.addEventListener('click', function () {
+    showChordEditor();
+
+    //collably chord editing initiating
+    if (!!Collab) {
+      window.awareness.setLocalStateField('bTrackEdit', {
+        status: 'editInProgress'
+      });
+
+      window.awareness.setLocalStateField('chordEdit', {
+        status: 'started',
+        selection: chord.current
+      })
+    }
+});
 
   // /* Chord Editor Modal related events: */
   chordEditor.addEventListener('click', event => {
-    // Proceed if click is on el with class Root, Accidental or Variation
-    if (event.target.tagName !== 'TD' && event.target.tagName !== 'TEXT') {
+
+    if (
+      (event.target.tagName !== 'TD' && event.target.tagName !== 'TEXT') // Proceed if click is on el with class Root, Accidental or Variation
+      || (!!Collab && bTeditor !== userParam) //if in collab mode and i am not the editor, return
+    ) {
       return;
     }
 
@@ -106,10 +129,27 @@ export function setupEditChordEvents() {
   cancelBtn.addEventListener('click', () => {
     editChord(true);
     closeModal();
+
+    //collably chord editing completing
+    if (!!Collab) {
+      window.awareness.setLocalStateField('chordEdit', {
+        status: 'completed',
+        completingAction: 'canceled',
+      });
+    }
   });
 
   // apply click
   applyBtn.addEventListener('click', () => {
+    //collably chord editing completing
+    if (!!Collab) {
+      window.awareness.setLocalStateField('chordEdit', {
+        status: 'completed',
+        completingAction: 'applied',
+        chordSelection: chord.new
+      });
+    }
+
     disableAnnotationListAndDeleteAnnotation();
     closeModal();
   });
@@ -177,16 +217,24 @@ function settingsMenuChordEditorCategories() {
 }
 
 // -
-function editChord(cancel = false) {
+export function editChord(cancel = false, selection) {
   // revertChord: is the marker that is now being edited
   const revertChord = _mapChordSymbolToText(chord.current);
 
   // selectedChord returns the label in marker.mirLabel format
-  const selectedChord = _mapChordSymbolToText(chord.new);
-
+  const selectedChord = toolbarStates.COLLAB_EDIT_MODE
+    ? _mapChordSymbolToText(selection) //its given as argument only when function is called inside collab functions in setup.js
+    : _mapChordSymbolToText(chord.new);
+  
   // remove the selected marker because ...
-  const lastSelectedMarkerTime = lastSelectedMarker.time;
-  wavesurfer.markers.remove(lastSelectedMarker);
+  const lastSelectedMarkerTime = toolbarStates.COLLAB_EDIT_MODE //lastSelectedMarker does not hold the last selection in collab non editors
+    ? window.sharedBTEditParams.get('selectedMarker')
+    : lastSelectedMarker.time;
+  toolbarStates.COLLAB_EDIT_MODE
+    ? wavesurfer.markers.remove(
+        wavesurfer.markers.markers.find(m => m.time==lastSelectedMarkerTime)
+      )
+    : wavesurfer.markers.remove(lastSelectedMarker);
 
   // ... a later one will replace him with:
   // selectedChord or on Cancel revertChord
@@ -203,14 +251,24 @@ function editChord(cancel = false) {
   );
 
   // Colorizing again the span (label element font color NOT BACKGROUND)
-  _setMarkerSpanColor(
-    newSelectedMarker,
-    lastSelectedMarker,
-    MARKER_LABEL_SPAN_COLOR
-  );
+  if (toolbarStates.COLLAB_EDIT_MODE) {
+    _setMarkerSpanColor(
+      newSelectedMarker,
+      wavesurfer.markers.markers.find(m => m.time==lastSelectedMarkerTime),
+      MARKER_LABEL_SPAN_COLOR
+    );
 
-  // Update lastSelectedMarker with the new one
-  lastSelectedMarker = newSelectedMarker;
+    newSelectedMarker.elChordSymbolSpan.classList.add('span-chord-highlight')
+  } else {
+    _setMarkerSpanColor(
+      newSelectedMarker,
+      lastSelectedMarker,
+      MARKER_LABEL_SPAN_COLOR
+    );
+    // Update lastSelectedMarker with the new one
+    lastSelectedMarker = newSelectedMarker;
+  }
+
 
   updateMarkerDisplayWithColorizedRegions();
 }
@@ -373,7 +431,7 @@ function _setMarkerSpanColor(selMarker, lastSelectedMarker, color) {
   symbolSpan.style.color = color;
 
   if (lastSelectedMarker !== undefined) {
-    if (selMarker !== lastSelectedMarker) {
+    if (selMarker !== lastSelectedMarker) { //auto einai panta true giati oi 2 metavlites poy sygkrinontai einai objects.
       const lastSymbolSpan = lastSelectedMarker.elChordSymbolSpan;
       symbolSpan.style.color = color;
       lastSymbolSpan.style.color = '';
@@ -385,22 +443,29 @@ function _setMarkerSpanColor(selMarker, lastSelectedMarker, color) {
 }
 
 // - Modal Chord Editor
-function showChordEditor() {
+export function showChordEditor(collabEditSelection) {
   // Set the flag to indicate that the modal is active
   toolbarStates.IS_MODAL_TABLE_ACTIVE = true;
 
-  console.log(lastSelectedMarker, '🌍🌍🌍');
-  chord.current.root = stripHtmlTags(lastSelectedMarker.symbolParts.root); // (removing <strong></strong>)
-  chord.current.accidental = lastSelectedMarker.symbolParts.accidental;
-  chord.current.variation = lastSelectedMarker.symbolParts.variation;
+  if (!toolbarStates.COLLAB_EDIT_MODE) {
+    console.log(lastSelectedMarker, '🌍🌍🌍');
+    chord.current.root = stripHtmlTags(lastSelectedMarker.symbolParts.root); // (removing <strong></strong>)
+    chord.current.accidental = lastSelectedMarker.symbolParts.accidental;
+    chord.current.variation = lastSelectedMarker.symbolParts.variation;
 
-  console.log(chord.current);
-  console.log(lastSelectedMarker.symbolParts.root);
+    console.log(chord.current);
+    console.log(lastSelectedMarker.symbolParts.root);
+  }
   // Open chord editor indicating the last selected chord
-  _colorizeTableSelections(chord.current);
+  !toolbarStates.COLLAB_EDIT_MODE
+    ? _colorizeTableSelections(chord.current)
+    : _colorizeTableSelections(collabEditSelection);
 
   modalChordEditor.style.display = 'block';
   applyBtn.style.visibility = 'hidden';
+  toolbarStates.COLLAB_EDIT_MODE
+    ? cancelBtn.style.visibility = 'hidden'
+    : null;
 }
 
 function select(selection, component) {
@@ -416,9 +481,14 @@ function select(selection, component) {
   } else {
     applyBtn.style.visibility = 'hidden';
   }
+
+  //transmitting the selection if in collab mode
+  !!Collab
+    ? window.sharedBTEditParams.set('chordSel', {value: chord.new, selector: userParam})
+    : null; 
 }
 
-function closeModal() {
+export function closeModal() {
   modalChordEditor.style.display = 'none';
   toolbarStates.IS_MODAL_TABLE_ACTIVE = false;
 }
@@ -428,7 +498,8 @@ function closeModal() {
  * If an element's `innerHTML` matches any of the non-empty values in `chord.new.root`, `chord.new.accidental`, or `chord.new.variation`, the element is colored (according to config.js TABLE_SELECTION_COLOR).
  * Otherwise, the color of the element is reset to an empty string.
  */
-function _colorizeTableSelections(chordParts) {
+export function _colorizeTableSelections(chordParts) {
+  let selectedElements = [];
   tableElements.forEach(element => {
     const matchingChordPart = Object.values(chordParts).find(chordPart => {
       return chordPart !== '' && element.innerHTML.trim() === chordPart;
@@ -436,10 +507,12 @@ function _colorizeTableSelections(chordParts) {
 
     if (matchingChordPart) {
       element.style.color = TABLE_SELECTION_COLOR;
+      selectedElements.push(element);
     } else {
       element.style.color = ''; // Reset color if no match is found
     }
   });
+  return selectedElements;
 }
 
 function _updateChordVariable(selection, component) {
