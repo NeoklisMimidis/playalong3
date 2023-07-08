@@ -1,153 +1,66 @@
-var start_bar_no = 0;
-var stop_bar_no = 2;
-var metro_measures = 2;
-
-// initialise UI
-
+/* Elements */
 // Tempo
-var tempoValue = document.getElementById('tempoValue');
-var tempoVolume = document.getElementById('volumeValue');
-
-var tempoInputValue = document.getElementById('tempoSlider');
-var tempoInputVolumeValue = document.getElementById('volumeSlider');
-
-var tempoInput = document.getElementById('bpmInput');
-var tempoVolumeInput = document.getElementById('number-box');
-// console.log(tempoInput.innerHTML);
-// console.log(tempoVolumeInput.innerHTML);
-
-// tempo-menu
-// // bpmInput
-// // // next box prev
-// // tempoVolumeInput
-// // // dial & number-box
-
-//
-tempoValue.innerHTML = document.getElementById('tempoSlider').value;
-tempoVolume.innerHTML = document.getElementById('volumeSlider').value;
-
-// tempoValue.innerHTML = tempoInput.
-tempoVolume.innerHTML = document.getElementById('volumeSlider').value;
+const tempoInput = document.querySelector('#bpmInput .box');
+let dial, numberBox; // *  tempoVolume Controls: dial & numberBox
 
 // Rhythm
-var timeSignatureNumerator = document.getElementById('TSNumerator');
-var timeSignatureDenominator = document.getElementById('TSDenominator');
-var resolution = document.getElementById('resolution');
-var playStop = document.getElementById('playStop');
+const timeSignatureNumerator = document.getElementById('TSNumerator');
+const timeSignatureDenominator = document.getElementById('TSDenominator');
+const resolution = document.getElementById('resolution');
 
-// Initial values
-timeSignatureNumerator.selectedIndex = 5;
-timeSignatureDenominator.selectedIndex = 1;
-resolution.selectedIndex = 2;
-playStop.checked = false;
+/* Initial variables values & initialize UI*/
+// Tempo
+const bpmOptions = {
+  default: 90,
+  step: 1.0,
+  min: 30,
+  max: 300,
+  current: null,
+};
+const defaultTempoVolume = 0.5;
 
+setVolume(defaultTempoVolume * 100); //takes values from 0-100
+
+// Rhythm
+timeSignatureNumerator.selectedIndex = 0; // 2
+timeSignatureDenominator.selectedIndex = 0; // 4
+resolution.selectedIndex = 0; // 4ths
+setNumerator(2);
+setDenominator(4);
+setResolution(4);
+
+setupMetronomeMenu();
+
+// - - - - - -
+// Metronome functionality
 // 1 -- communicate changes to the metronome through these functions
+function setTempo(t) {
+  parent.metronome.setTempo(t);
+  window.playerConfig?.set('tempoValue', t);
+}
+function setVolume(vo) {
+  parent.metronome.setVolume(vo);
+}
+
 function setNumerator(v) {
-  //console.log('numerator changed to: ', v);
+  // console.log('numerator changed to: ', v);
   parent.metronome.setNumerator(v);
   window.playerConfig?.set('numerator', v);
 }
 function setDenominator(v) {
-  //console.log('denominator changed to: ', v);
+  // console.log('denominator changed to: ', v);
   parent.metronome.setDenominator(v);
   window.playerConfig?.set('denominator', v);
 }
-function setTempo(t) {
-  parent.metronome.setTempo(t);
-  document.getElementById('tempoValue').innerHTML = t;
-  window.playerConfig?.set('tempoValue', t);
-}
 function setResolution(r) {
-  //console.log('resolution changed to: ', r);
+  // console.log('resolution changed to: ', r);
   parent.metronome.setResolution(r);
 }
-function setPlayStop(b) {
-  parent.metronome.setPlayStop(b);
-  //console.log('playStop changed to: ', b);
-}
-
-// viglis
-function setMetroCont(c) {
-  parent.metronome.setMetroCont(c);
-  //console.log('Metronome will play continuously during recording:',c);
-  if (c == true) {
-    document.getElementById('startBarInput').disabled = true;
-    document.getElementById('stopBarInput').disabled = true;
-    document.getElementById('metro_measures').setAttribute('hidden', 'true');
-    document.getElementById('metro_infinite').removeAttribute('hidden');
-    //console.log("metronome will play for ever");
-    //console.log("no input allowed");
-  } else {
-    document.getElementById('startBarInput').disabled = false;
-    document.getElementById('stopBarInput').disabled = false;
-    document.getElementById('metro_measures').removeAttribute('hidden');
-    document.getElementById('metro_infinite').setAttribute('hidden', 'true');
-    //console.log("metronome will play for ",metro_measures,"measures");
-    //console.log("input allowed");
-  }
-}
-
-function setVolume(vo) {
-  parent.metronome.setVolume(vo);
-  document.getElementById('volumeValue').innerHTML = vo;
-}
-
-function setStartBar(start_value) {
-  const numberValue = Number(start_value);
-
-  if (isNaN(numberValue) || numberValue < -5 || numberValue > stop_bar_no) {
-    // If the value is not within the allowed range, display an error message
-    alert('Please enter a valid bar# greater than -5 ');
-    document.getElementById('startBarInput').value = start_bar_no;
-    return;
-  } else {
-    // If the value is within the allowed range, update the UI
-    start_bar_no = start_value;
-    document.getElementById('startBarInput').value = start_value;
-    // and send the value to metronome.js
-    parent.metronome.setStartBar(start_value);
-    //console.log('metronome will start from bar# ',start_value);
-  }
-}
-
-function setStopBar(stop_value) {
-  const numberValue = Number(stop_value);
-  if (isNaN(numberValue) || numberValue < start_bar_no) {
-    // If the value is not within the allowed range, display an error message
-    alert('Please enter a valid bar#');
-    document.getElementById('stopBarInput').value = stop_bar_no;
-    return;
-  } else {
-    // If the value is within the allowed range, update the UI
-    stop_bar_no = stop_value;
-    document.getElementById('stopBarInput').value = stop_value;
-    // and send the value to metronome.js
-    parent.metronome.setStopBar(stop_value);
-    //console.log('metronome will stop at the beginning of bar# ',stop_value);
-  }
-}
-
-function setMetroMeasures(m) {
-  //console.log("metronome will play for ",m,"measures");
-  metro_measures = m;
-  stop_bar_no = start_bar_no + m;
-  //console.log("stop_bar_no=",stop_bar_no);
-  setStopBar(stop_bar_no);
-}
-// \viglis
-
-parent.document.addEventListener('startedSoundEvent', function (e) {
-  document.getElementById('playStop').checked = true;
-});
-parent.document.addEventListener('stoppedEvent', function (e) {
-  document.getElementById('playStop').checked = false;
-});
 
 // Set metronome values on collaboration mode
 function setTempoValueRemote(tempo) {
   parent.metronome.setTempo(tempo);
-  document.getElementById('tempoSlider').value = tempo;
-  document.getElementById('tempoValue').innerHTML = tempo;
+  tempoInput = tempo;
 }
 
 function setNumeratorRemote(v) {
@@ -159,18 +72,20 @@ function setDenominatorRemote(v) {
   timeSignatureDenominator.value = v;
 }
 
-// -
-
+// - - - - - -
+//  Metronome settings menu
 function setupMetronomeMenu() {
   const metronomeSettingsMenu = document.querySelector('#metronome-btn');
   const metronomeSettingsIcon = document.querySelector('#metronome-icon');
   const metronomeModal = metronomeSettingsMenu.querySelector('.dropdown-menu');
 
+  metronomeSettingsTempo();
+
   let metronomeModalEnabled = false;
   metronomeSettingsMenu.addEventListener('click', function (e) {
     console.log('-------------------------');
 
-    // close metronome modal only on metronome icon click
+    // Show/hide metronome settings menu || Tempo BPM || Measures Pre-count & Count
     if (e.target.closest('#metronome-icon')) {
       metronomeModalEnabled = !metronomeModalEnabled;
       if (metronomeModalEnabled) {
@@ -182,25 +97,68 @@ function setupMetronomeMenu() {
         metronomeModal.style.display = 'none';
         metronomeSettingsIcon.classList.remove('flip-horizontal');
       }
+    } else if (e.target.closest('#bpmInput')) {
+      setTempo(bpmOptions.current);
+    } else if (e.target.closest('#precount')) {
+      const preCountEl = e.target.closest('#precount');
+      parent.metronome.setStopBar(preCountEl.selectedIndex);
+    } else if (e.target.closest('#countOn')) {
+      parent.metronome.setMetroCont(true);
+    } else if (e.target.closest('#countOff')) {
+      parent.metronome.setMetroCont(false);
     }
   });
 
-  metronomeSettingsTempo();
+  // Tempo Volume (dial & numberBox)
+  dial.on('change', function (v) {
+    setVolume(+v.toFixed(2) * 100);
+  });
+
+  numberBox.on('change', function (v) {
+    setVolume(+v.toFixed(2) * 100);
+  });
+
+  // Rhythm  Time signature & Resolution
+  timeSignatureNumerator.addEventListener('change', function (event) {
+    setNumerator(event.target.value);
+  });
+
+  timeSignatureDenominator.addEventListener('change', function (event) {
+    setDenominator(event.target.value);
+  });
+
+  resolution.addEventListener('change', function (event) {
+    setResolution(event.target.value);
+  });
 }
-setupMetronomeMenu();
 
 function metronomeSettingsTempo() {
   const bpmInput = document.querySelector('#bpmInput');
-  const bpmOptions = {
-    default: 60,
-    step: 1.0,
-    min: 30,
-    max: 300,
-    current: null,
-  };
   assignInputFieldEvents(bpmInput, bpmOptions);
+  createVolumeDialAndNumberBox();
 }
 
+// - - - - - -
+// Utilities functions for the creation of custom inputs
+
+/**
+ * This function assigns appropriate event handlers to a custom number input component. It manages user interactions
+ * including increment, decrement and direct input, and ensures the input values stay within the defined min-max range.
+ *
+ * @param {Object} selector - DOM element that encapsulates the custom input component.
+ * @param {Object} options - An object defining the properties of the custom number input.
+ * @param {Number} options.default - The default value of the input.
+ * @param {Number} options.step - The increment/decrement step for the next and previous actions.
+ * @param {Number} options.min - The minimum value that the input can take.
+ * @param {Number} options.max - The maximum value that the input can take.
+ * @param {Number} options.current - The current value of the input, updated upon user interaction.
+ *
+ * The function:
+ * 1. Assigns click event listeners to the 'next' and 'previous' controls to increment/decrement the value.
+ * 2. Handles direct input from the user ensuring it is numeric, within the defined range and of a valid length.
+ * 3. Handles 'Enter' keydown event to defocus the input field.
+ * 4. Handles 'blur' event to sanitize and set the input value according to defined constraints.
+ */
 function assignInputFieldEvents(selector, options) {
   const box = selector.querySelector('.box');
   const next = selector.querySelector('.next');
@@ -234,11 +192,16 @@ function assignInputFieldEvents(selector, options) {
     );
 
     let inputChar = String.fromCharCode(e.which);
-    let caretPosition = window.getSelection().anchorOffset;
+
+    let selection = window.getSelection();
+    console.log(selection);
+    let startPosition = Math.min(selection.anchorOffset, selection.focusOffset);
+    let endPosition = Math.max(selection.anchorOffset, selection.focusOffset);
+
     let nextValue =
-      box.innerText.slice(0, caretPosition) +
+      box.innerText.slice(0, startPosition) +
       inputChar +
-      box.innerText.slice(caretPosition);
+      box.innerText.slice(endPosition);
 
     // Only accept numeric input
     if (!inputChar.match(/[0-9]/)) {
@@ -258,7 +221,9 @@ function assignInputFieldEvents(selector, options) {
   });
 
   box.addEventListener('blur', () => {
+    console.log('blur');
     let currentValue = parseInt(box.innerText);
+
     if (isNaN(currentValue)) {
       box.innerText = options.default;
       options.current = options.default;
@@ -272,33 +237,35 @@ function assignInputFieldEvents(selector, options) {
       box.innerText = currentValue;
       options.current = currentValue;
     }
+
+    // Also trigger a click event to update caller only with addEventLister on click
+    box.click();
   });
 }
 
-var dial = new Nexus.Dial('#dial', {
-  size: [35, 35],
-  interaction: 'vertical', // "radial", "vertical", or "horizontal"
-  mode: 'absolute', // "absolute" or "relative"
-  min: 0,
-  max: 1,
-  step: 0,
-  value: 0,
-});
+function createVolumeDialAndNumberBox() {
+  dial = new Nexus.Dial('#dial', {
+    size: [35, 35],
+    interaction: 'vertical', // "radial", "vertical", or "horizontal"
+    mode: 'absolute', // "absolute" or "relative"
+    min: 0,
+    max: 1,
+    step: 0,
+    value: 0,
+  });
 
-dial.value = 0.5;
-// dial.colorize('fill', '#fffcf1');
-// dial.colorize('accent', 'rgb(255, 242, 194)');
-// dial.colorize('accent', '#111');
-// dial.colorize('accent', '#ff0');
-dial.colorize('accent', '#777');
+  dial.value = defaultTempoVolume;
+  // dial.colorize('fill', '#fffcf1'); 'rgb(255, 242, 194)'
+  dial.colorize('accent', '#777');
 
-var number = new Nexus.Number('#number-box', {
-  size: [50, 25],
-  value: 0,
-  min: 0,
-  max: 1,
-  step: 0.05,
-});
+  numberBox = new Nexus.Number('#number-box', {
+    size: [50, 25],
+    value: 0,
+    min: 0,
+    max: 1,
+    step: 0.05,
+  });
 
-number.link(dial);
-// number.colorize('accent', 'rgb(255, 242, 194)');
+  numberBox.link(dial);
+  numberBox.colorize('accent', '#777');
+}

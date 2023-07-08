@@ -453,10 +453,10 @@ function startRecording() {
     wavesurfer_mic.microphone.start();
     waveform_micContainer.removeAttribute('hidden');
 
-    if (start_bar < stop_bar) parent.metronome.setPlayStop(true);
-    setTimeout(function () {
+    // Enable metronome: 1) Pre-count case & 2) Count is enabled case
+    if (start_bar < stop_bar || (window.continuous_play && stop_bar === 0)) {
       parent.metronome.setPlayStop(true);
-    }, delayedStart / speed01);
+    }
   });
   //}).catch(function(err) {
   //enable the record button if getUserMedia() fails

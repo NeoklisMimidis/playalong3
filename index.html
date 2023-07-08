@@ -79,7 +79,10 @@
     <script type="text/javascript" src="/js/audioSources.js"></script>
     <!-- workbench loads metronome -->
 
-    <script type="module" src="/src/js/playalong/metronome_js/metronome.js"></script>
+    <script
+      type="module"
+      src="/src/js/playalong/metronome_js/metronome.js"
+    ></script>
     <script type="text/javascript" src="/js/main.js" defer></script>
 
     <!-- Accept Jitsi meeting room name modal-->
@@ -440,9 +443,7 @@
             />
           </svg>
         </button>
-        <!-- CHECK ME ! -->
-        <!-- CHECK ME ! -->
-        <!-- CHECK ME ! -->
+
         <button id="metronome-btn" class="no-border">
           <svg
             version="1.1"
@@ -514,14 +515,13 @@
 
             <div class="menu-separator"></div>
 
-            <div id="time-signature-resolution" class="menu-option">
+            <div class="menu-option">
               <label class="label-option"><strong>Rhythm</strong></label>
               <div class="inputs">
-                <div id="tempoVolumeInput" class="input-container">
+                <div class="input-container">
                   <div class="input-list">
                     <select
                       id="TSNumerator"
-                      onchange="setNumerator(this.value)"
                       style="width: 35px"
                       class="no-border"
                     >
@@ -537,7 +537,6 @@
                     </span>
                     <select
                       id="TSDenominator"
-                      onchange="setDenominator(this.value)"
                       style="width: 40px; padding-right: 10px"
                       class="no-border"
                     >
@@ -545,19 +544,13 @@
                       <option value="8">8</option>
                     </select>
                   </div>
-                  <label
-                    for="tempoVolumeInput"
-                    id="timeSignature"
-                    class="input-label"
-                    >Time Signature</label
-                  >
+                  <label class="input-label">Time Signature</label>
                 </div>
 
-                <div id="resolutionInput" class="input-container">
+                <div class="input-container">
                   <div class="input-list">
                     <select
                       id="resolution"
-                      onchange="setResolution(this.value)"
                       style="width: 80px; padding-left: 10px"
                       class="no-border"
                     >
@@ -581,8 +574,8 @@
                   <div class="input-list">
                     <select id="precount" class="no-border">
                       <option value="0">0 measures</option>
-                      <option selected value="1">1 measure</option>
-                      <option value="2">2 measures</option>
+                      <option value="1">1 measure</option>
+                      <option selected value="2">2 measures</option>
                     </select>
                   </div>
                   <label for="precount">Pre-count</label>
@@ -590,20 +583,20 @@
                 <div id="count-on-off" class="input-container">
                   <div class="radios-container">
                     <div class="form-check d-flex align-items-center">
-                      <label class="form-check-label" for="onCount">On</label>
+                      <label class="form-check-label" for="countOn">On</label>
                       <input
                         class="form-check-input"
                         type="radio"
-                        id="onCount"
+                        id="countOn"
                         name="count-on-off"
                       />
                     </div>
                     <div class="form-check d-flex align-items-center">
-                      <label class="form-check-label" for="ofCount">Off</label>
+                      <label class="form-check-label" for="countOff">Off</label>
                       <input
                         class="form-check-input"
                         type="radio"
-                        id="ofCount"
+                        id="countOff"
                         name="count-on-off"
                         checked
                       />
@@ -615,191 +608,26 @@
             </div>
           </div>
         </button>
-      </div>
 
-      <div class="d-none">
-        <table
-          border="0"
-          width="80%"
-          style="vertical-align: center; text-align: left"
-          align="center"
-        >
-          <tr style="border-top: solid">
-            <td rowspan="2">
-              <svg
-                version="1.1"
-                id="Icons"
-                xmlns="http://www.w3.org/2000/svg"
-                width="55"
-                height="55"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                viewBox="0 0 32 32"
-                xml:space="preserve"
-              >
-                <style type="text/css">
-                  .st0 {
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 2;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 10;
-                  }
-
-                  .st1 {
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 2;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 10;
-                  }
-                </style>
-                <line class="st1" x1="16" y1="20" x2="29" y2="3" />
-                <line class="st1" x1="15" y1="7" x2="17" y2="7" />
-                <line class="st1" x1="15" y1="10" x2="17" y2="10" />
-                <line class="st1" x1="15" y1="13" x2="17" y2="13" />
-                <path
-                  class="st1"
-                  d="M22.7,16l2.5,9.7c0.4,1.7-0.8,3.3-2.6,3.3H9.3c-1.7,0-3-1.6-2.6-3.2l4.7-20.5C11.8,3.9,13,3,14.3,3h3.4c1.4,0,2.5,1,2.8,2.3l1.4,7"
-                />
-                <line class="st1" x1="7.4" y1="23" x2="24" y2="23" />
-              </svg>
-            </td>
-
-            <td style="vertical-align: top; width: 35%">
-              Tempo:
-              <span style="padding-left: 5px"></span>
-              <input
-                type="range"
-                min="10"
-                max="200"
-                value="90"
-                class="slider"
-                id="tempoSlider"
-                oninput="setTempo(this.value)"
-              />
-              <span id="tempoValue" style="padding-left: 10px"> -- </span>
-              <span>bpm</span>
-            </td>
-            <td style="text-align: center">
-              <span id="timeSignature" style="text-align: left">
-                Time Signature:
-              </span>
-              <select
-                id="TSNumerator"
-                onchange="setNumerator(this.value)"
-                style="width: 35px"
-              >
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-              </select>
-              <span style="padding-right: 3px; padding-left: 3px"> / </span>
-              <select
-                id="TSDenominator"
-                onchange="setDenominator(this.value)"
-                style="width: 40px; padding-right: 10px"
-              >
-                <option value="4">4</option>
-                <option value="8">8</option>
-              </select>
-            </td>
-            <td rowspan="2" style="text-align: center">
-              <span>Metronome for </span>
-              <span>
-                <input
-                  type="number"
-                  id="metro_measures"
-                  onchange="setMetroMeasures(this.value)"
-                  value="2"
-                  size="3"
-                  style="text-align: center"
-                  maxlength="3"
-                  min="0"
-                  max="9999"
-                  step="1"
-                />
-              </span>
-              <span>
-                <input
-                  hidden
-                  type="text"
-                  id="metro_infinite"
-                  value="&infin;"
-                  size="3"
-                  style="text-align: center"
-                />
-              </span>
-              <span>measures. (infinite: </span>
-              <input
-                hidden
-                type="number"
-                id="startBarInput"
-                value="0"
-                onchange="setStartBar(this.value)"
-                size="3"
-              />
-              <input
-                hidden
-                type="number"
-                id="stopBarInput"
-                value="2"
-                onchange="setStopBar(this.value)"
-                size="3"
-              />
-              <input
-                hidden
-                type="checkbox"
-                id="playStop"
-                onclick="setPlayStop(this.checked)"
-                style="padding-right: 10px"
-              />
-              <input
-                type="checkbox"
-                id="metroCont"
-                onclick="setMetroCont(this.checked)"
-                style="padding-right: 10px"
-              />
-              <span>)</span>
-            </td>
-          </tr>
-          <tr style="border-bottom-width: 1; border-bottom: solid">
-            <td>
-              Volume:
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value="95"
-                class="volume-slider"
-                id="volumeSlider"
-                oninput="setVolume(this.value)"
-              />
-              <span
-                id="volumeValue"
-                style="padding-left: 10px; padding-right: 0px"
-              >
-                --
-              </span>
-              <span>%</span>
-            </td>
-            <td style="text-align: center">
-              <span id="resolution_span"> Resolution: </span>
-              <select
-                id="resolution"
-                onchange="setResolution(this.value)"
-                style="width: 80px; padding-left: 10px"
-              >
-                <option value="4">4ths</option>
-                <option value="8">8ths</option>
-                <option value="16">16ths</option>
-              </select>
-            </td>
-          </tr>
-        </table>
+        <div class="d-non">
+          <span
+            id="playback_speed"
+            style="padding-left: 30px; padding-right: 15px"
+          >
+            Playback speed:</span
+          >
+          <input
+            id="speedSlider"
+            type="range"
+            min="10"
+            max="200"
+            step="10"
+            value="100"
+            class="slider"
+            oninput="setSpeed(this.value)"
+          />
+          <span id="speedValue" style="padding-left: 10px"> 100% </span>
+        </div>
       </div>
 
       <!-- 🎶🎶🎶🎶🎶🎶🎶 -->
@@ -941,22 +769,51 @@
       <div id="audio-player-and-controls-container" class="d-none">
         <center>
           <div class="preface-audio-help">
-            <div>
-              To import an audio file, either <strong>drag and drop</strong> it
-              in the space below or use the 'Audio I/O' controls to
-              <strong>select</strong> the file.
+            <div class="column1">
+              Get started with your audio journey! Choose one of these simple
+              ways to load your audio files:
+            </div>
+            <div class="column2">
+              <ul>
+                <li>
+                  <strong>Drag and drop</strong> the file into the space below.
+                </li>
+                <li>
+                  Create a recording using the <strong>Record</strong> button.
+                </li>
+              </ul>
+            </div>
+            <div class="column3">
+              <ul>
+                <li><strong>Import from disk</strong>. (Audio I/O)</li>
+                <li><strong>Import from repository</strong>. (Audio I/O)</li>
+              </ul>
             </div>
           </div>
 
           <div class="preface-annotation-bar d-none">
-            <div id="preface-annotation-help">
-              <span>
-                Now select an annotation with the
-                <strong>Analyze</strong> button in 'Audio I/O' controls (this
-                process later on will be automatic by fetching a file from the
-                MusiColab server)</span
-              >
+            <div id="preface-annotation" class="d-non">
+              <div id="preface-annotation-help">
+                <span>
+                  Now execute chord analysis with the
+                  <strong>Analyze</strong> button</span
+                >
+              </div>
+
+              <button id="analyze-chords-btn">
+                <i class="fa-solid fa-file-audio fa-xl"></i>
+                <span class="control-labe">Analyze</span>
+              </button>
             </div>
+
+            <div id="analysis-loading-bar" class="loading-bar-container d-none">
+              <div class="loading-bar-progress">
+                <span class="loading-bar-progress-value"
+                  >Processing <strong>1%</strong></span
+                >
+              </div>
+            </div>
+
             <div id="audio-file-name-preface">---</div>
           </div>
 
@@ -1145,10 +1002,13 @@
                   class="d-none"
                   /> -->
 
-                <div class="waveform-loading-bar no-opacity">
-                  <div class="waveform-progress">
-                    <span class="waveform-progress-value"
-                      >Processing <strong>79%</strong></span
+                <div
+                  id="waveform-loading-bar"
+                  class="loading-bar-container no-opacity"
+                >
+                  <div class="loading-bar-progress">
+                    <span class="loading-bar-progress-value"
+                      >Processing <strong>1%</strong></span
                     >
                   </div>
                 </div>
@@ -1240,16 +1100,6 @@
                     <i class="fa-solid fa-forward fa-lg"></i>
                   </button>
                   <button
-                    id="record-btn"
-                    data-tooltip="Enable recording (r)"
-                    class="no-border enabled"
-                  >
-                    <i
-                      class="fa-solid fa-circle fa-lg"
-                      style="color: #f70808"
-                    ></i>
-                  </button>
-                  <button
                     id="repeat-btn"
                     data-tooltip="Enable loop (𝓁)"
                     class="no-border"
@@ -1289,13 +1139,44 @@
             <!-- Sidebar -->
             <div id="audio-sidebar-controls" class="audio-sidebar">
               <button id="import-audio-btn" class="no-border">
-                <i class="fa-solid fa-upload fa-xl"></i>
-                <div class="control-label">Import Audio</div>
+                <!-- <i class="fa-solid fa-upload fa-xl"></i> -->
+                <svg
+                  width="30px"
+                  height="30px"
+                  viewBox="4 1 25 25"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V7C19 7.55228 19.4477 8 20 8C20.5523 8 21 7.55228 21 7V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM12.5 24C13.8807 24 15 22.8807 15 21.5V12.8673L20 12.153V18.05C19.8384 18.0172 19.6712 18 19.5 18C18.1193 18 17 19.1193 17 20.5C17 21.8807 18.1193 23 19.5 23C20.8807 23 22 21.8807 22 20.5V11C22 10.7101 21.8742 10.4345 21.6552 10.2445C21.4362 10.0546 21.1456 9.96905 20.8586 10.0101L13.8586 11.0101C13.3659 11.0804 13 11.5023 13 12V19.05C12.8384 19.0172 12.6712 19 12.5 19C11.1193 19 10 20.1193 10 21.5C10 22.8807 11.1193 24 12.5 24Z"
+                    fill="#000000"
+                  />
+                </svg>
+                <div class="control-label">Import from disk</div>
               </button>
 
-              <button id="analyze-chords-btn" class="no-border disabled">
-                <i class="fa-solid fa-file-audio fa-xl"></i>
-                <div class="control-label">Analyze</div>
+              <button
+                type="button"
+                id="repository-input-button"
+                class="no-border"
+                data-toggle="modal"
+                data-target="#repository-files-modal"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="30"
+                  height="30"
+                  fill="currentColor"
+                  class="bi bi-database"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M4.318 2.687C5.234 2.271 6.536 2 8 2s2.766.27 3.682.687C12.644 3.125 13 3.627 13 4c0 .374-.356.875-1.318 1.313C10.766 5.729 9.464 6 8 6s-2.766-.27-3.682-.687C3.356 4.875 3 4.373 3 4c0-.374.356-.875 1.318-1.313ZM13 5.698V7c0 .374-.356.875-1.318 1.313C10.766 8.729 9.464 9 8 9s-2.766-.27-3.682-.687C3.356 7.875 3 7.373 3 7V5.698c.271.202.58.378.904.525C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777A4.92 4.92 0 0 0 13 5.698ZM14 4c0-1.007-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1s-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4v9c0 1.007.875 1.755 1.904 2.223C4.978 15.71 6.427 16 8 16s3.022-.289 4.096-.777C13.125 14.755 14 14.007 14 13V4Zm-1 4.698V10c0 .374-.356.875-1.318 1.313C10.766 11.729 9.464 12 8 12s-2.766-.27-3.682-.687C3.356 10.875 3 10.373 3 10V8.698c.271.202.58.378.904.525C4.978 9.71 6.427 10 8 10s3.022-.289 4.096-.777A4.92 4.92 0 0 0 13 8.698Zm0 3V13c0 .374-.356.875-1.318 1.313C10.766 14.729 9.464 15 8 15s-2.766-.27-3.682-.687C3.356 13.875 3 13.373 3 13v-1.302c.271.202.58.378.904.525C4.978 12.71 6.427 13 8 13s3.022-.289 4.096-.777c.324-.147.633-.323.904-.525Z"
+                  />
+                </svg>
+                <div class="control-label">Import from repository</div>
               </button>
 
               <button id="download-jams-btn" class="no-border disabled">

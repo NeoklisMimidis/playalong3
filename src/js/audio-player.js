@@ -1,8 +1,8 @@
 'use strict';
 
-// import WaveSurfer from 'wavesurfer.js';
+import WaveSurfer from 'wavesurfer.js';
 
-// import cursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
+import cursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
 import minimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js';
 
 import regionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
@@ -21,9 +21,6 @@ import {
   createTippySingleton,
 } from './components/tooltips.js';
 
-// import Recorder from 'recorderjs';
-// window.Recorder = Recorder;
-
 import {
   loadFile,
   fileSelectHandlers,
@@ -32,12 +29,6 @@ import {
   formatTime,
 } from './components/utilities.js';
 
-// // Disable PARCEL Hot Module Reloading bcs it is buggy with Wavesurfer  // //
-// if (module.hot) {
-//   module.hot.dispose(() => {
-//     window.location.reload();
-//   });
-// }
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
 /* Elements */
@@ -59,6 +50,8 @@ export const mainWaveform = document.getElementById('waveform');
 export const skipForwardCue = mainWaveform.querySelector('#skip-forward');
 export const skipBackwardCue = mainWaveform.querySelector('#skip-backward');
 export const mainWaveformBPM = mainWaveform.querySelector('#waveform-bpm');
+const waveformLoadingBar = document.getElementById('waveform-loading-bar');
+const analysisLoadingBar = document.getElementById('analysis-loading-bar');
 // Audio I/O (Sidebar)
 export const audioSidebarText = document.getElementById('audio-sidebar-text');
 export const audioSidebarControls = document.getElementById(
@@ -83,7 +76,6 @@ export const playPauseBtn = playerControls.querySelector('#play-pause-btn');
 export const playBtn = playPauseBtn.querySelector('.fa-play');
 export const pauseBtn = playPauseBtn.querySelector('.fa-pause');
 export const forwardBtn = playerControls.querySelector('#forward-btn');
-export const recordBtn = playerControls.querySelector('#record-btn');
 export const repeatBtn = playerControls.querySelector('#repeat-btn');
 // a) Right
 export const followPlaybackBtn = playerControls.querySelector(
@@ -107,7 +99,6 @@ export const playerStates = {
     scroll: false, // if scroll false then page turn
   },
   REPEAT: false,
-  RECORD: false,
   LOOP_REGION: null,
   LOOP_SELECTION: false,
 };
@@ -124,22 +115,70 @@ export let wavesurfer = initWavesurfer();
 // a) Importing audio
 dragDropHandlers('#waveform', loadAudioFile, 'drag-over');
 fileSelectHandlers('#import-audio-btn', loadAudioFile);
-// b) Displaying annotation (JAMS)
+// b) Displaying annotation (JAMS) // TODO function that sends audio file to server and fetches analysis on completion
 fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
+
+// TODO later on instead of fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams') use :
+// analyzeChordsBtn.addEventListener('click', function () {
+//   console.log('click');
+//   sendAudioAndFetchAnalysis();
+// });
+
+function sendAudioAndFetchAnalysis() {
+  // 0) (now for testing show preface & hide annotation)
+  toolbar.classList.add('d-none');
+  prefaceAnnotationBar.classList.remove('d-none');
+
+  // 1) send audio to server TODO
+
+  // 2) hide analysis description and button and then display analysis loading bar
+  document.getElementById(`preface-annotation`).classList.add('d-none');
+  document.getElementById(`analysis-loading-bar`).classList.remove('d-none');
+
+  // 3) estimate time of upload audio and analysis TODO function?
+  const estimatedTime = 5;
+
+  // 4) update progress bar and on completion visualize annotation
+  updateProgressBar(estimatedTime, 0.1);
+}
+
+function updateProgressBar(totalTime, updateIntervalInSeconds = 0.2) {
+  let elapsedTime = 0;
+  let intervalId = setInterval(() => {
+    elapsedTime += updateIntervalInSeconds;
+    let percent = (elapsedTime / totalTime) * 100;
+    animateProgressBar(analysisLoadingBar, percent);
+
+    if (elapsedTime >= totalTime) {
+      clearInterval(intervalId);
+      loadJAMS(annotationFile1);
+    }
+  }, updateIntervalInSeconds * 1000);
+}
+
+document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
+  const message = `Analysis may require some time.<br><br><span class="text-info">Are you sure you want to proceed?</span>🤷‍♂️`;
+
+  renderModalMessage(message)
+    .then(() => {
+      sendAudioAndFetchAnalysis();
+    })
+    .catch(() => {
+      // User canceled || DON'T EXECUTE ANALYSIS
+    });
+});
 
 /* Loading files from repository */
 import audioFileURL1 from '../demo_files/test.mp3';
-const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url).href;
+const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url)
+  .href;
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('fileName');
 
 if (window.location.hostname === 'localhost') {
-  console.log('--------------------------------');
-  console.log('--------------------------------');
-  console.log('--------------------------------');
-  console.log('--------------------------------');
   // A) Localhost (preload audio):
+  // resetAudioPlayer();
   loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
@@ -161,9 +200,8 @@ if (window.location.hostname === 'localhost') {
 }
 
 wavesurfer.on('loading', function (percent) {
-  console.log('loading', percent);
-
-  animateProgress(percent);
+  // console.log('loading', percent);
+  animateProgressBar(waveformLoadingBar, percent);
 });
 
 // catching wavesurfer errors
@@ -176,9 +214,6 @@ wavesurfer.on('ready', function () {
   const totalAudioDuration = formatTime(wavesurfer.getDuration());
   const displayedTotalDuration = `/ ${totalAudioDuration}`;
   audioDurationValue.textContent = displayedTotalDuration;
-
-  //  make sure progress is 100% and then hide loading bar
-  animateProgress(100, true);
 
   console.log('Waveform ready! 👍');
   console.log('     ------       ');
@@ -213,8 +248,7 @@ function initWavesurfer() {
 
     // Η ΠΗΓΗ ΤΟΥ ΚΑΚΟΥ: cursor plugin
     plugins: [
-      WaveSurfer.cursor.create({
-        // cursorPlugin.create({
+      cursorPlugin.create({
         showTime: true,
         opacity: 1,
         hideOnBlur: false,
@@ -237,7 +271,6 @@ function initWavesurfer() {
       }),
       markersPlugin.create(),
       timelinePlugin.create({
-        // WaveSurfer.timeline.create({
         container: '#wavetimeline',
         formatTimeCallback: formatTimeCallback,
         timeInterval: timeInterval,
@@ -354,7 +387,6 @@ function resetAudioPlayer() {
   wavesurfer.empty();
 
   // Audio I/O
-  analyzeChordsBtn.classList.add('disabled');
   downloadJAMSBtn.classList.add('disabled');
 
   console.log('resetAudioPlayer is complete 😁');
@@ -389,22 +421,12 @@ function activateAudioPlayerControls() {
   prefaceAudioHelp.classList.add('d-none');
   prefaceAnnotationBar.classList.remove('d-none');
 
-  // enable analyze button
-  analyzeChordsBtn.classList.remove('disabled');
-
   // Re-enable player controls (new audio file is loaded)
   playerControls.classList.remove('disabled');
-
-  // Left controls
-  // zoomInBtn.classList.remove('disabled');
-  // zoomOutBtn.classList.remove('disabled');
 
   // Center controls
   playBtn.classList.remove('d-none');
   pauseBtn.classList.add('d-none');
-
-  recordBtn.classList.remove('record-enabled');
-  playerStates.RECORD = false;
 
   repeatBtn.classList.remove('repeat-enabled');
   playerStates.REPEAT = false;
@@ -419,28 +441,34 @@ function activateAudioPlayerControls() {
   console.log('activateAudioPlayerControls is complete 😁');
 }
 
-function animateProgress(progress, loadingComplete = false) {
-  const loadingBar = document.querySelector('.waveform-loading-bar');
-  const progressBar = document.querySelector('.waveform-progress');
-  const progressValue = document.querySelector('.waveform-progress-value');
+function animateProgressBar(selector, progress, callbackOnComplete = false) {
+  const loadingBarContainer = selector;
+  const loadingBarProgress = selector.querySelector('.loading-bar-progress');
+  const loadingBarProgressValue = selector.querySelector(
+    '.loading-bar-progress-value'
+  );
 
   // reveal loading bar
-  loadingBar.classList.remove('no-opacity');
+  loadingBarContainer.classList.remove('no-opacity');
 
   // update loading bar progress width, and displayed values
-  progressBar.style.width = progress + '%';
+  loadingBarProgress.style.width = progress + '%';
 
   if (Math.ceil(progress) >= 100) {
-    progressValue.innerHTML = `<strong>Done!</strong>`;
+    loadingBarProgressValue.innerHTML = `<strong>Done!</strong>`;
   } else {
-    progressValue.innerHTML = `Processing <strong>${Math.ceil(
+    loadingBarProgressValue.innerHTML = `Processing <strong>${Math.ceil(
       progress
     )}%</strong>`;
   }
 
   //  hide the loading bar on command
-  if (loadingComplete) {
-    setTimeout(loadingBar.classList.add('no-opacity'), 100);
+  if (progress === 100) {
+    setTimeout(function () {
+      loadingBarContainer.classList.add('no-opacity');
+
+      if (callbackOnComplete) callbackOnComplete();
+    }, 500);
   }
 }
 
@@ -519,147 +547,3 @@ function primaryLabelInterval(pxPerSec) {
 function secondaryLabelInterval(pxPerSec) {
   return Math.floor(1 / timeInterval(pxPerSec));
 }
-
-// -
-
-// function setupMetronomeMenu() {
-//   const metronomeSettingsMenu = document.querySelector('#metronome-btn');
-//   const metronomeSettingsIcon = document.querySelector('#metronome-icon');
-//   const metronomeModal = metronomeSettingsMenu.querySelector('.dropdown-menu');
-
-//   let metronomeModalEnabled = false;
-//   metronomeSettingsMenu.addEventListener('click', function (e) {
-//     console.log('-------------------------');
-
-//     // close metronome modal only on metronome icon click
-//     if (e.target.closest('#metronome-icon')) {
-//       metronomeModalEnabled = !metronomeModalEnabled;
-//       if (metronomeModalEnabled) {
-//         toolbarStates.IS_MODAL_TABLE_ACTIVE = true;
-//         metronomeModal.style.display = 'block';
-//         metronomeSettingsIcon.classList.add('flip-horizontal');
-//       } else {
-//         toolbarStates.IS_MODAL_TABLE_ACTIVE = false;
-//         metronomeModal.style.display = 'none';
-//         metronomeSettingsIcon.classList.remove('flip-horizontal');
-//       }
-//     }
-//   });
-
-//   metronomeSettingsTempo();
-// }
-// setupMetronomeMenu();
-
-// function metronomeSettingsTempo() {
-//   const bpmInput = document.querySelector('#bpmInput');
-//   const bpmOptions = {
-//     default: 60,
-//     step: 1.0,
-//     min: 30,
-//     max: 300,
-//     current: null,
-//   };
-//   assignInputFieldEvents(bpmInput, bpmOptions);
-// }
-
-// function assignInputFieldEvents(selector, options) {
-//   const box = selector.querySelector('.box');
-//   const next = selector.querySelector('.next');
-//   const prev = selector.querySelector('.prev');
-
-//   box.innerText = options.default;
-//   options.current = options.default;
-
-//   next.addEventListener('click', () => {
-//     let currentValue = parseFloat(box.innerText);
-//     if (currentValue < options.max) {
-//       currentValue += options.step;
-//       box.innerText = currentValue;
-//       options.current = currentValue;
-//     }
-//   });
-
-//   prev.addEventListener('click', () => {
-//     let currentValue = parseFloat(box.innerText);
-//     if (currentValue > options.min) {
-//       currentValue -= options.step;
-//       box.innerText = currentValue;
-//       options.current = currentValue;
-//     }
-//   });
-
-//   box.addEventListener('keypress', e => {
-//     let maxLength = Math.max(
-//       options.min.toString().length,
-//       options.max.toString().length
-//     );
-
-//     let inputChar = String.fromCharCode(e.which);
-//     let caretPosition = window.getSelection().anchorOffset;
-//     let nextValue =
-//       box.innerText.slice(0, caretPosition) +
-//       inputChar +
-//       box.innerText.slice(caretPosition);
-
-//     // Only accept numeric input
-//     if (!inputChar.match(/[0-9]/)) {
-//       e.preventDefault();
-//     }
-//     // Don't allow values larger than options.max and length bigger than maxLength
-//     else if (+nextValue > options.max || nextValue.length > maxLength) {
-//       e.preventDefault();
-//     }
-//   });
-
-//   box.addEventListener('keydown', e => {
-//     if (e.key === 'Enter') {
-//       e.preventDefault();
-//       box.blur();
-//     }
-//   });
-
-//   box.addEventListener('blur', () => {
-//     let currentValue = parseInt(box.innerText);
-//     if (isNaN(currentValue)) {
-//       box.innerText = options.default;
-//       options.current = options.default;
-//     } else if (currentValue < options.min) {
-//       box.innerText = options.min;
-//       options.current = options.min;
-//     } else if (currentValue > options.max) {
-//       box.innerText = options.max;
-//       options.current = options.max;
-//     } else {
-//       box.innerText = currentValue;
-//       options.current = currentValue;
-//     }
-//   });
-// }
-
-// var dial = new Nexus.Dial('#dial', {
-//   size: [35, 35],
-//   interaction: 'vertical', // "radial", "vertical", or "horizontal"
-//   mode: 'absolute', // "absolute" or "relative"
-//   min: 0,
-//   max: 1,
-//   step: 0,
-//   value: 0,
-// });
-
-// dial.value = 0.5;
-// // dial.colorize('fill', '#fffcf1');
-// // dial.colorize('accent', 'rgb(255, 242, 194)');
-// // dial.colorize('accent', '#111');
-// // dial.colorize('accent', '#ff0');
-// dial.colorize('accent', '#777');
-
-// var number = new Nexus.Number('#number-box', {
-//   size: [50, 25],
-//   value: 0,
-//   min: 0,
-//   max: 1,
-//   step: 0.05,
-// });
-
-// number.link(dial);
-// // number.colorize('accent', 'rgb(255, 242, 194)');

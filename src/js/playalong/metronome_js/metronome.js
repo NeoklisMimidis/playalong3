@@ -35,10 +35,6 @@ class Metronome {
     // var stop_bar = 2;
     // var continuous_play = false;
 
-    console.log(start_bar);
-    console.log(stop_bar);
-    console.log(continuous_play);
-
     // my adjustments
     this.swing = 0.0;
     this.beat16Length = 16;
@@ -55,12 +51,18 @@ class Metronome {
 
     // audio clicks
     this.click = true;
-    this.smallClick1 = new Audio(new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href);
+    this.smallClick1 = new Audio(
+      new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href
+    );
     this.smallClick1.crossOrigin = 'anonymous';
-    this.smallClick2 = new Audio(new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href);
+    this.smallClick2 = new Audio(
+      new URL('../metronome_sounds/metroSmall.wav', import.meta.url).href
+    );
     this.smallClick2.crossOrigin = 'anonymous';
     this.playSmall1 = true;
-    this.bigClick = new Audio(new URL('../metronome_sounds/metroBig.wav', import.meta.url).href);
+    this.bigClick = new Audio(
+      new URL('../metronome_sounds/metroBig.wav', import.meta.url).href
+    );
     this.bigClick.crossOrigin = 'anonymous';
 
     this.smallClick1_source =
@@ -73,7 +75,9 @@ class Metronome {
       this.audioManager.audioContext.createMediaElementSource(this.bigClick);
     this.audioManager.receiveAudioFromNode(this.bigClick_source);
 
-    this.timerWorker = new Worker(new URL('./metronomeworker.js', import.meta.url));
+    this.timerWorker = new Worker(
+      new URL('./metronomeworker.js', import.meta.url)
+    );
 
     this.timerWorker.onmessage = function (e) {
       if (e.data == 'tick') {
@@ -138,6 +142,7 @@ class Metronome {
     });
 
     var that = this;
+    console.log(that);
 
     function nextNote() {
       // Advance current note and time by a 16th note...

@@ -30,7 +30,6 @@ import {
   playPauseBtn,
   playBtn,
   pauseBtn,
-  recordBtn,
   repeatBtn,
   // Right
   muteUnmuteBtn,
@@ -159,29 +158,6 @@ function keyboardAudioPlayerShortcuts(e) {
     // console.log(wavesurfer.regions.list);
     // console.log(wavesurfer.markers.markers);
   }
-}
-
-// - testing button
-
-function record(e) {
-  // DON'T USE  e.target.closest bcs the event bugs when it is triggered from the keyboard shortcut
-
-  // if not already enabled then  enable it
-  if (playerStates.RECORD) {
-    playerStates.RECORD = false;
-    recordBtn.classList.remove('record-enabled');
-    recordBtn._tippy.setContent('Enable recording (r)');
-  } else {
-    playerStates.RECORD = true;
-    recordBtn.classList.add('record-enabled');
-    recordBtn._tippy.setContent('Disable recording (r)');
-  }
-
-  console.log('O lalalal');
-  // TODO the rest of Viglis code goes here
-
-  // console.log('-----------')
-  // console.log('1, 2, 3 .. testing!');
 }
 
 export function zoomIn(e) {
