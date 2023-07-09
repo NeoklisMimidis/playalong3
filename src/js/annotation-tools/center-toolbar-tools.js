@@ -50,7 +50,7 @@ export function setupAnnotationListEvents() {
     );
 
     //collably changing the annotation selected
-    event.isTrusted
+    !!Collab && event.isTrusted
       ? window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam})
       : null;
   });
@@ -66,10 +66,12 @@ export function setupAnnotationListEvents() {
 export function setupToggleEditEvent() {
   toggleEditBtn.addEventListener('click', function () {
     //collably initiating edit
-    window.awareness.setLocalStateField('bTrackEdit', {
-      status: `${bTeditor ? 'editCompleted' : 'editInitiated'}`,
-      editTime: wavesurfer.getCurrentTime(),
-    });
+    !!Collab
+      ? window.awareness.setLocalStateField('bTrackEdit', {
+        status: `${bTeditor ? 'editCompleted' : 'editInitiated'}`,
+        editTime: wavesurfer.getCurrentTime(),
+      })
+      : null;
 
     toggleEdit();
   } );
