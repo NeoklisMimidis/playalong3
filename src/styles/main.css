@@ -134,6 +134,7 @@ h1 {
   margin-right: auto;
   margin-left: auto;
   transform: translate(4.8%);
+  font-family: Verdana, 'Noto Sans', Manrope, Great Vibes, sans-serif;
 }
 
 /* --------------------- */
@@ -155,10 +156,10 @@ h1 {
   width: 85%;
   box-shadow: 1px 0.5px 1px var(--color-dark--4);
 
-  font-family: Verdana, Manrope, Great Vibes, sans-serif;
-
   position: relative;
   z-index: 100;
+
+  font-size: 90%;
 }
 
 .preface-audio-help ul {
@@ -167,14 +168,14 @@ h1 {
 }
 
 .preface-audio-help .column1 {
-  flex-basis: 35%;
+  flex-basis: 34%;
 }
 
 .preface-audio-help .column2 {
   flex-basis: 35%;
 }
 .preface-audio-help .column3 {
-  flex-basis: 30%;
+  flex-basis: 31%;
 }
 
 .preface-annotation-bar > * {
@@ -184,12 +185,13 @@ h1 {
 }
 
 #preface-annotation {
-  flex: 0.52;
+  flex: 0.55;
 }
 
 #analyze-chords-btn {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   border-radius: 0.85em;
   box-shadow: 1px 1px 0px var(--color-dark--4);
   color: var(--color-dark--4);
@@ -210,7 +212,7 @@ h1 {
 
 /* #preface-annotation, */
 #analysis-loading-bar {
-  flex: 0.52;
+  flex: 0.55;
   padding: 0 0;
   border: none;
   box-shadow: none;
@@ -296,6 +298,7 @@ h1 {
   border-radius: 1rem;
   position: absolute;
   /* display: block; */
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .menu-option {
@@ -529,7 +532,6 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 }
 
 .drag-text {
-  font-family: Helvetica, Arial, sans-serif;
   font-size: 3vw;
   position: absolute;
   color: black;
@@ -637,7 +639,6 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 .skip-cue-tooltip {
   font-size: 72%;
   /* font-weight: bold; */
-  font-family: Verdana, Manrope, sans-serif;
 }
 
 /* // - */
@@ -710,7 +711,6 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   border: 1.5px solid var(--color-dark--3);
   border-bottom-left-radius: 10px;
   box-shadow: 0 2px 0.5px var(--color-dark--4);
-  font-family: Verdana, Manrope, sans-serif;
 }
 
 .player-controls > * {
@@ -802,13 +802,14 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   transform: translate(-100%);
   opacity: 0;
   justify-content: space-evenly;
+  font-family: Helvetica, sans-serif;
 }
 
 #audio-sidebar-text {
   writing-mode: vertical-rl;
   font-weight: bold;
-  font-size: 19px;
-  transform: translate(-305%);
+  font-size: 17px;
+  transform: translate(-340%);
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
 }
@@ -952,7 +953,6 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 }
 
 #disable-font-label {
-  /* font-family: auto; */
   font-family: Arial, Helvetica, sans-serif;
   font-size: 80%;
   white-space: pre;
