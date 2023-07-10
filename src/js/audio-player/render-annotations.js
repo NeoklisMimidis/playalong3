@@ -60,10 +60,9 @@ export function loadJAMS(input) {
 
       //set collab annotation selection
       if (Collab) {
-        const annotationSelected = window.sharedBTEditParams?.get('annotationSel')?.value;
-        annotationSelected
-          ? annotationList.value = annotationSelected
-          : null;
+        const annotationSelected =
+          window.sharedBTEditParams?.get('annotationSel')?.value;
+        annotationSelected ? (annotationList.value = annotationSelected) : null;
       }
 
       // Render first annotation
@@ -123,7 +122,7 @@ export function selectedAnnotationData(jamsFile) {
   const selectedAnnotation = jamsFile.annotations[annotationList.selectedIndex];
   const currDataSource = selectedAnnotation.annotation_metadata.data_source;
 
-  console.log({index: annotationList.selectedIndex, currDataSource});
+  console.log({ index: annotationList.selectedIndex, currDataSource });
 
   if (currDataSource === 'program') {
     deleteAnnotationBtn.classList.add('disabled');
@@ -450,12 +449,12 @@ function _setStyleOnMarker(marker, prevChord, index) {
   if (index === 0) {
     markerLabel.style.marginLeft = '4px';
   }
-  
+
   wavesurfer.util.style(markerLabel, {
     pointerEvents: toolbarStates.EDIT_MODE ? 'auto' : 'none',
   });
 
-  // c) Hide marker-labels depending on edit mode state
+  // b) Hide marker-labels depending on edit mode state
   const chordSymbolSpan = marker.elChordSymbolSpan;
 
   const chordLabel = marker.mirLabel;
@@ -470,8 +469,7 @@ function _setStyleOnMarker(marker, prevChord, index) {
     }
   }
 
-  if (chordLabel === 'N') return;
-  if (chordLabel === prevChord) {
+  if (chordLabel === prevChord && chordLabel !== 'N') {
     // add class ONLY if satisfying Element doesn't contain it
     if (!chordSymbolSpan.classList.contains('invisible-up')) {
       chordSymbolSpan.classList.toggle('invisible-up');
@@ -486,7 +484,7 @@ function _setStyleOnMarker(marker, prevChord, index) {
   // proceed with the following ONLY when changes are saved
   if (!toolbarStates.SAVED) return;
 
-  // b) Style marker line depending on edit state
+  // c) Style marker line depending on edit state
   const markerLine = marker.elLine;
   if (index === 0) {
     markerLine.style.width = '0px';

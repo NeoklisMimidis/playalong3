@@ -13,13 +13,13 @@
 export const variations = [
   {
     shorthand: 'N',
-    simplified: 'N.C.',
+    simplified: 'No Chord',
     description: 'No Chord',
     encoded: '<text id="disable-font-label">N.C.</text>',
   },
   {
     shorthand: 'X',
-    simplified: '??',
+    simplified: 'Unknown',
     description: 'Unknown',
     encoded: '<text id="disable-font-label">??</text>',
   },
