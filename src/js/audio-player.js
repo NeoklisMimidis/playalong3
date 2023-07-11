@@ -231,7 +231,7 @@ function toggleAudioInOutSidebarControls() {
 function initWavesurfer() {
   const wavesurfer = WaveSurfer.create({
     container: '#waveform', // html element
-    progressColor: 'rgba(244, 180, 38, 0.85)',
+    progressColor: 'rgba(244, 180, 38, 0.70)',
     minPxPerSec: 152,
 
     scrollParent: true,
