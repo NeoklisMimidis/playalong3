@@ -41,7 +41,7 @@ import {
 // Extract selectors IN TOOLTIPS.JS TODO
 
 // State variables
-let prevVolumeSliderValue = 0.5;
+let prevVolumeSliderValue = 1;
 let timeoutSkipForward;
 let timeoutSkipBackward;
 
@@ -79,6 +79,77 @@ export function setupPlayerControlsEvents() {
   waveformOnlyNoMinimap.addEventListener('mousedown', e => {
     disableFollowPlaybackWhenMovingScrollbar(e); // also removes previous loop-region accordingly!
   });
+
+  wavesurfer.on('ready', () => {
+    console.log('123123--------------------');
+  });
+
+  // - function setupPlaybackSpeedEvents()
+  // - TAKE!!
+  wavesurfer.on('ready', function () {
+    console.log(`🚀: - SoundTouch:`);
+    let st = new window.soundtouch.SoundTouch(wavesurfer.backend.ac.sampleRate);
+
+    let buffer = wavesurfer.backend.buffer;
+    let channels = buffer.numberOfChannels;
+    let l = buffer.getChannelData(0);
+    let r = channels > 1 ? buffer.getChannelData(1) : l;
+    let length = buffer.length;
+    let seekingPos = null;
+    let seekingDiff = 0;
+
+    let source = {
+      extract: function (target, numFrames, position) {
+        if (seekingPos != null) {
+          seekingDiff = seekingPos - position;
+          seekingPos = null;
+        }
+        position += seekingDiff;
+        for (let i = 0; i < numFrames; i++) {
+          target[i * 2] = l[i + position];
+          target[i * 2 + 1] = r[i + position];
+        }
+        return Math.min(numFrames, length - position);
+      },
+    };
+
+    let soundtouchNode;
+    console.log(`🚀: - SoundTouch2:`, soundtouchNode);
+
+    wavesurfer.on('play', function () {
+      seekingPos = ~~(wavesurfer.backend.getPlayedPercents() * length);
+      st.tempo = wavesurfer.getPlaybackRate();
+
+      if (st.tempo === 1) {
+        wavesurfer.backend.disconnectFilters();
+      } else {
+        if (!soundtouchNode) {
+          let filter = new window.soundtouch.SimpleFilter(source, st);
+          soundtouchNode = window.soundtouch.getWebAudioNode(
+            wavesurfer.backend.ac,
+            filter
+          );
+        } else {
+        }
+        wavesurfer.backend.setFilter(soundtouchNode);
+      }
+    });
+
+    wavesurfer.on('pause', function () {
+      soundtouchNode && soundtouchNode.disconnect();
+    });
+
+    wavesurfer.on('seek', function () {
+      seekingPos = ~~(wavesurfer.backend.getPlayedPercents() * length);
+    });
+    wavesurfer.on('finish', function () {
+      speedSliderEnableCheck();
+    });
+  });
+
+  // - TAKE!!
+
+  // -
 }
 
 function audioPlayerControls(e) {
@@ -264,9 +335,14 @@ function playPause(e) {
 
   if (wavesurfer.isPlaying()) {
     wavesurfer.pause();
+    speedSliderEnableCheck();
+
     playPauseBtn._tippy.setContent('Play (space)');
   } else {
+    wavesurfer.setPlaybackRate(speed01); // !this needs to be before play to modify buffers with soundtouch
     wavesurfer.play();
+    document.getElementById('speedSlider').disabled = true;
+
     playPauseBtn._tippy.setContent('Pause (space)');
   }
 }
@@ -331,38 +407,47 @@ function setupLoopRegionEvents() {
 function muteUnmute(e) {
   const muted = muteBtn.classList.contains('d-none');
   if (muted) {
+    wavesurfer.setMute(true);
     volumeSlider.value = 0;
     muteBtn.classList.remove('d-none');
     unmuteBtn.classList.add('d-none');
-    wavesurfer.setVolume(0);
 
     muteUnmuteBtn._tippy.setContent('Unmute (m)');
   } else {
     if (prevVolumeSliderValue === 0) {
       // ..do nothing
     } else {
+      wavesurfer.setMute(false);
       volumeSlider.value = prevVolumeSliderValue;
       muteBtn.classList.add('d-none');
       unmuteBtn.classList.remove('d-none');
-      wavesurfer.setVolume(prevVolumeSliderValue);
 
       muteUnmuteBtn._tippy.setContent('Mute (m)');
     }
   }
+
+  setPlaybackVolume();
 }
 
-function setVolumeWithSlider(volumeValue) {
-  volumeValue = parseFloat(volumeValue);
+function setVolumeWithSlider(value) {
+  const volumeValue = parseFloat(value);
+  console.log(volumeValue);
 
   prevVolumeSliderValue = volumeValue;
   if (volumeValue === 0) {
+    wavesurfer.setMute(true);
     muteBtn.classList.remove('d-none');
     unmuteBtn.classList.add('d-none');
   } else {
+    wavesurfer.setMute(false);
     muteBtn.classList.add('d-none');
     unmuteBtn.classList.remove('d-none');
   }
-  wavesurfer.setVolume(volumeValue);
+
+  wavesurfer.setVolume(volumeValue * backingTrackVolumeFactor);
+  wavesurfer.savedVolume = wavesurfer.backend.getVolume();
+
+  setPlaybackVolume(); // balanced audio playback between recordings and backing track
 }
 
 function setVolumeWithSliderShortcut(stepValue) {

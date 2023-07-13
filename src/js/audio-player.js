@@ -105,11 +105,20 @@ export const playerStates = {
 
 window.playerStates = playerStates;
 
+const AUDIO_PLAYER_CONTROLS = {
+  playPauseBtn,
+  stopBtn,
+};
+window.AUDIO_PLAYER_CONTROLS = AUDIO_PLAYER_CONTROLS;
+
+window.backingTrackVolumeFactor = 1;
+
 // - Start of the application ||
 
 toggleAudioInOutSidebarControls();
 
 export let wavesurfer = initWavesurfer();
+window.backingTrack = wavesurfer;
 
 /* Loading file with Handlers about selection or dragging the appropriate files for app initialization */
 // a) Importing audio
@@ -123,38 +132,6 @@ fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
 //   console.log('click');
 //   sendAudioAndFetchAnalysis();
 // });
-
-function sendAudioAndFetchAnalysis() {
-  // 0) (now for testing show preface & hide annotation)
-  toolbar.classList.add('d-none');
-  prefaceAnnotationBar.classList.remove('d-none');
-
-  // 1) send audio to server TODO
-
-  // 2) hide analysis description and button and then display analysis loading bar
-  document.getElementById(`preface-annotation`).classList.add('d-none');
-  document.getElementById(`analysis-loading-bar`).classList.remove('d-none');
-
-  // 3) estimate time of upload audio and analysis TODO function?
-  const estimatedTime = 5;
-
-  // 4) update progress bar and on completion visualize annotation
-  updateProgressBar(estimatedTime, 0.1);
-}
-
-function updateProgressBar(totalTime, updateIntervalInSeconds = 0.2) {
-  let elapsedTime = 0;
-  let intervalId = setInterval(() => {
-    elapsedTime += updateIntervalInSeconds;
-    let percent = (elapsedTime / totalTime) * 100;
-    animateProgressBar(analysisLoadingBar, percent);
-
-    if (elapsedTime >= totalTime) {
-      clearInterval(intervalId);
-      loadJAMS(annotationFile1);
-    }
-  }, updateIntervalInSeconds * 1000);
-}
 
 document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
   const message = `Analysis may require some time.<br><br><span class="text-info">Are you sure you want to proceed?</span>🤷‍♂️`;
@@ -178,9 +155,9 @@ const urlFileName = urlParams.get('fileName');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  // resetAudioPlayer();
+  resetAudioPlayer();
   // loadFilesInOrder(audioFileURL1);
-  loadFilesInOrder(audioFileURL1, annotationFile1);
+  // loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
@@ -228,10 +205,42 @@ function toggleAudioInOutSidebarControls() {
   });
 }
 
+function sendAudioAndFetchAnalysis() {
+  // 0) (now for testing show preface & hide annotation)
+  toolbar.classList.add('d-none');
+  prefaceAnnotationBar.classList.remove('d-none');
+
+  // 1) send audio to server TODO
+
+  // 2) hide analysis description and button and then display analysis loading bar
+  document.getElementById(`preface-annotation`).classList.add('d-none');
+  document.getElementById(`analysis-loading-bar`).classList.remove('d-none');
+
+  // 3) estimate time of upload audio and analysis TODO function?
+  const estimatedTime = 5;
+
+  // 4) update progress bar and on completion visualize annotation
+  updateProgressBar(estimatedTime, 0.1);
+}
+
+function updateProgressBar(totalTime, updateIntervalInSeconds = 0.2) {
+  let elapsedTime = 0;
+  let intervalId = setInterval(() => {
+    elapsedTime += updateIntervalInSeconds;
+    let percent = (elapsedTime / totalTime) * 100;
+    animateProgressBar(analysisLoadingBar, percent);
+
+    if (elapsedTime >= totalTime) {
+      clearInterval(intervalId);
+      loadJAMS(annotationFile1);
+    }
+  }, updateIntervalInSeconds * 1000);
+}
+
 function initWavesurfer() {
   const wavesurfer = WaveSurfer.create({
     container: '#waveform', // html element
-    progressColor: 'rgba(244, 180, 38, 0.85)',
+    progressColor: 'rgba(244, 180, 38, 0.70)',
     minPxPerSec: 152,
 
     scrollParent: true,
@@ -314,6 +323,7 @@ function loadAudioFile(input) {
   function loadAudio() {
     wavesurfer.empty();
     resetAudioPlayer();
+    console.log(file);
     wavesurfer.load(fileUrl);
     initAudioPlayer();
 
@@ -342,7 +352,21 @@ function loadAudioFile(input) {
       audioFileName.textContent = audioFileNamePreface.textContent;
 
       activateAudioPlayerControls();
+
+      setPlaybackVolume();
     });
+
+    // Neoklis: Alex or Dimitris: check if this part is required for collab
+    !Collab
+      ? (document.querySelector('.users-online-container').style.display =
+          'none')
+      : null;
+
+    if (courseParam?.length > 0) {
+      document.getElementById('repository-files-course').textContent =
+        courseParam;
+      window.initRepositoryTrackList(courseParam);
+    }
   }
 
   if (file && !toolbarStates.SAVED) {
@@ -436,8 +460,8 @@ function activateAudioPlayerControls() {
   unmuteBtn.classList.remove('d-none');
 
   // Right controls
-  volumeSlider.value = 0.5;
-  wavesurfer.setVolume(0.5);
+  volumeSlider.value = 1;
+  wavesurfer.setVolume(1 * backingTrackVolumeFactor);
 
   console.log('activateAudioPlayerControls is complete 😁');
 }
