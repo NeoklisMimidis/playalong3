@@ -90,6 +90,7 @@ export const volumeSlider = playerControls.querySelector('#volume-slider');
 
 // State variables
 let audioPlayerInitialized = false; //
+let fileName;
 
 export const playerStates = {
   FOLLOW_PLAYBACK: true,
@@ -155,9 +156,9 @@ const urlFileName = urlParams.get('fileName');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  resetAudioPlayer();
+  // resetAudioPlayer();
   // loadFilesInOrder(audioFileURL1);
-  // loadFilesInOrder(audioFileURL1, annotationFile1);
+  loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
@@ -327,7 +328,6 @@ function loadAudioFile(input) {
     wavesurfer.load(fileUrl);
     initAudioPlayer();
 
-    let fileName;
     wavesurfer.once('ready', function () {
       console.log('READY EVENT INSIDE loadAudioFile ✌️✅💪');
 
@@ -372,11 +372,11 @@ function loadAudioFile(input) {
   if (file && !toolbarStates.SAVED) {
     const message = `You are about to import: <br> <span class="text-primary">${file.name}</span>.<br> Any unsaved changes on<br><span class="text-primary">${fileName}</span> will be <span class="text-warning">discarded.</span> <br><br><span class="text-info">Are you sure?</span> 🤷‍♂️`;
 
-    // Change the state to true because the user selected to proceed (and visualizations depend on SAVED state)
-    toolbarStates.SAVED = true;
-
     renderModalMessage(message)
       .then(() => {
+        // Change the state to true because the user selected to proceed (and visualizations depend on SAVED state)
+        toolbarStates.SAVED = true;
+
         loadAudio();
         console.log(`New Audio imported while previous audio was NOT saved `);
       })

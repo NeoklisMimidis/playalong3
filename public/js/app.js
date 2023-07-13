@@ -1741,7 +1741,6 @@ document.getElementById('musicolab-logo').addEventListener('click', e => {
     'backing tracking volume =',
     backingTrack.backend.gainNode.gain.value
   );
-  // wavesurfer0.backend.gainNode.gain.value
 
   for (let w = 0; w < wavesurfers.length; w++) {
     console.log(
