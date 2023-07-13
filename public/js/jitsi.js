@@ -1,7 +1,8 @@
 // Get the button element
+var startJitsiMeetBtn = document.getElementById('start-close-call-btn');
 var joinCallButton = document.querySelector(".btn-success");
 var defaultRoomName = "test-room";
-const icon = document.querySelector("#start-jitsi-meet-btn .bi-telephone-fill");
+const icon = document.querySelector("#start-close-call-btn .bi-telephone-fill");
 let api = null;
 /*
 // Get the values of the URL parameters // already done in app.js
@@ -14,21 +15,43 @@ document.querySelector('#meet-room') = Jitsi_Room_Name;
 
 //console.log("Jitsi Room Name = ",Jitsi_Room_Name);
 
+startJitsiMeetBtn.addEventListener('click', function (e) {
+  if (this.classList.contains('call-started')) {
+    this.classList.remove('call-started');
+    icon.style.fill = 'green';
+
+    destroyJitsi();
+    hideJitsiFrame();
+
+    document
+      .getElementById('musicolab-logo')
+      .removeAttribute('hidden');
+  } else {
+    this.classList.add('call-started');
+    document
+      .getElementById('musicolab-logo')
+      .setAttribute('hidden', true);
+
+    $('#enter-jitsi-meet-room').modal('show');
+  }
+})
+
 // Add event listener to the button
 joinCallButton.addEventListener("click", function (e) {
   e.preventDefault();
-  // Check if an instance is already running
+  /*// Check if an instance is already running
   if (api !== null) {
     console.log("An instance of the Jitsi Meet iframe is already running.");
     console.log("Will now destroy it and create a new one.");
     api.dispose();
   }
+  */
   // Load the default name of the Jitsi Meet Room
   defaultRoomName = Jitsi_Room_Name;
   const roomNameInput = document.querySelector("#meet-room");
   const roomName = roomNameInput.value;
   // Create a new Jitsi Meet iframe
-  const domain = "jitsi-musicolab.hmu.gr:8443";
+  const domain = "musicolab.hmu.gr:8443";
   const options = {
     roomName: roomName,
     width: "100%",
@@ -70,15 +93,6 @@ joinCallButton.addEventListener("click", function (e) {
   //  document.querySelector('#jitsi-meeting-container').classList.add('d-none');
   //  document.querySelector('#jitsi-meeting-container').classList.remove('open');
   //});
-});
-// Add event listener to the close button
-const closeCallButton = document.querySelector("#btnCloseCallJoin");
-closeCallButton.addEventListener("click", function () {
-  // Destroy the Jitsi Meet iframe
-  destroyJitsi();
-  icon.style.fill = "green";
-  // Hide the iframe container
-  hideJitsiFrame();
 });
 
 function destroyJitsi() {

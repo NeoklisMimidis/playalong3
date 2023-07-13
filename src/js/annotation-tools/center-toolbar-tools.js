@@ -66,12 +66,17 @@ export function setupAnnotationListEvents() {
 export function setupToggleEditEvent() {
   toggleEditBtn.addEventListener('click', function () {
     //collably initiating edit
-    !!Collab
-      ? window.awareness.setLocalStateField('bTrackEdit', {
-        status: `${bTeditor ? 'editCompleted' : 'editInitiated'}`,
-        editTime: wavesurfer.getCurrentTime(),
-      })
-      : null;
+    if (!!Collab) {
+      const status = `${toolbarStates.EDIT_MODE ? 'editCompleted' : 'editInitiated'}`;
+      const bTrackState = {
+        status,
+        editTime: wavesurfer.getCurrentTime()
+      };
+      (status == 'editCompleted')
+        ? bTrackState.completingAction = 'editOff'
+        : null;
+      window.awareness.setLocalStateField('bTrackEdit', bTrackState);
+    }
 
     toggleEdit();
   } );

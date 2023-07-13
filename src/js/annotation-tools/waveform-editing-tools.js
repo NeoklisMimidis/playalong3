@@ -23,7 +23,20 @@ import { renderModalMessage } from '../components/utilities.js';
  */
 export function setupAddBeatAndChordEvent() {
   //
-  wavesurfer.on('region-dblclick', addBeatAndChord);
+  wavesurfer.on('region-dblclick', (region) => {
+
+    ////collably transmitting marker addition event
+    if (toolbarStates.EDIT_MODE && !wavesurfer.isPlaying() && !!Collab) {
+      window.sharedBTMarkers.set(`${window.sharedBTMarkers.size}`,{
+        time: wavesurfer.getCurrentTime(),
+        status: 'added',
+        metadata: {mirLabel: region.data['mirex_chord']}
+      });
+    }
+
+    addBeatAndChord(region);
+
+  });
 }
 
 /**
@@ -31,9 +44,46 @@ export function setupAddBeatAndChordEvent() {
  */
 export function setupEditBeatTimingEvents() {
   wavesurfer.on('marker-drag', function (marker, e) {
+
+    //collably transmitting marker drag event
+    if (!wavesurfer.isPlaying() && !!Collab) {
+      window.sharedBTMarkers.forEach( (m, k, thisMap) => {
+         if (m.time === marker.time) { //find shared marker that corresponds to event marker 
+          //update shared marker as marked for moving
+          const newStatus = (m.status.includes('moved') || m.status == 'unedited')
+            ? m.status.replace(/unedited|moved/,'to be moved')
+            : m.status.concat(', to be moved');
+          const newMetadata = m.metadata;
+          !newMetadata.originalTime
+            ? newMetadata.originalTime = marker.time
+            : null;
+          newMetadata.timeOfMarkerToBeRemoved = marker.time;
+          thisMap.set(`${k}`, {time: marker.time, status: newStatus, metadata: newMetadata})
+        }
+      });
+    }
+
     editBeat(marker, e);
+
   }); // used for styling
-  wavesurfer.on('marker-drop', editBeatTiming); // changes the beat
+
+  wavesurfer.on('marker-drop', marker => {
+
+    //collably transmitting marker addition event
+    if (!wavesurfer.isPlaying() && !!Collab) {
+      window.sharedBTMarkers.forEach( (m, k, thisMap) => { 
+        if (m.status.includes('to be moved')) { //find shared marker that has been marked during drag event
+          //update shared marker with correct status and metadata
+          const newStatus = m.status.replace('to be moved', 'moved')
+          const newMetadata = m.metadata;
+          thisMap.set(`${k}`, {time: marker.time, status: newStatus, metadata: newMetadata });
+        }
+      });
+    }
+    editBeatTiming(marker);
+
+  }
+  ); // changes the beat
 }
 
 /**
@@ -110,6 +160,14 @@ function removeBeatAndChord(marker) {
       disableAnnotationListAndDeleteAnnotation();
 
       updateMarkerDisplayWithColorizedRegions();
+
+      //collably transmitting marker deletion event
+      if (!wavesurfer.isPlaying() && !!Collab) {
+        window.sharedBTMarkers.forEach( (m, k, thisMap) => {
+          if (m.time === marker.time) //find shared marker and update it as deleted
+            thisMap.set(`${k}`, {time: marker.time, status: 'deleted', metadata:''});
+        });
+      }
     })
     .catch(() => {
       // User canceled deletion

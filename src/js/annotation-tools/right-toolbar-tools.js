@@ -75,6 +75,7 @@ let chord = {
 export function setupEditChordEvents() {
   // Edit selected chord onPressingEditChordButton (enables button)
   wavesurfer.on('marker-click', (selMarker) => {
+    console.log('click')
     if (!!Collab) {
       window.sharedBTEditParams.set('selectedMarker',selMarker.time);
     }
@@ -85,17 +86,13 @@ export function setupEditChordEvents() {
   editChordBtn.addEventListener('click', function () {
     showChordEditor();
 
-    //collably chord editing initiating
-    if (!!Collab) {
-      window.awareness.setLocalStateField('bTrackEdit', {
-        status: 'editInProgress'
-      });
-
-      window.awareness.setLocalStateField('chordEdit', {
+  //collably chord editing initiating
+  !!Collab
+    ? window.awareness.setLocalStateField('chordEdit', {
         status: 'started',
         selection: chord.current
       })
-    }
+    : null;
 });
 
   // /* Chord Editor Modal related events: */
@@ -103,7 +100,7 @@ export function setupEditChordEvents() {
 
     if (
       (event.target.tagName !== 'TD' && event.target.tagName !== 'TEXT') // Proceed if click is on el with class Root, Accidental or Variation
-      || (!!Collab && bTeditor !== userParam) //if in collab mode and i am not the editor, return
+      || (!!Collab && !toolbarStates.EDIT_MODE) // No click event for non editors
     ) {
       return;
     }
@@ -148,6 +145,22 @@ export function setupEditChordEvents() {
         completingAction: 'applied',
         chordSelection: chord.new
       });
+
+
+      //updating shared markers map
+      window.sharedBTMarkers.forEach((m, k, thisMap) => {
+        if (m.time === lastSelectedMarker.time) { //find shared marker that corresponds to marker whose chord label has changed
+          //defining new shared marker parameters
+          const newStatus = (m.status == 'unedited' || m.status.includes('edited'))
+            ? m.status.replace(/unedited|edited/, 'edited')
+            : m.status.concat(', edited');
+
+          const newMetadata = m.metadata;
+          newMetadata.mirLabel = lastSelectedMarker.mirLabel
+          //updating shared marker
+          thisMap.set(`${k}`, {time: m.time, status: newStatus, metadata: newMetadata });
+        }
+      })
     }
 
     disableAnnotationListAndDeleteAnnotation();
@@ -223,7 +236,7 @@ export function editChord(cancel = false, selection) {
 
   // selectedChord returns the label in marker.mirLabel format
   const selectedChord = toolbarStates.COLLAB_EDIT_MODE
-    ? _mapChordSymbolToText(selection) //its given as argument only when function is called inside collab functions in setup.js
+    ? _mapChordSymbolToText(selection) //its given as argument only when function is called inside collab functions
     : _mapChordSymbolToText(chord.new);
   
   // remove the selected marker because ...
@@ -250,7 +263,6 @@ export function editChord(cancel = false, selection) {
     draggable
   );
 
-  // Colorizing again the span (label element font color NOT BACKGROUND)
   if (toolbarStates.COLLAB_EDIT_MODE) {
     _setMarkerSpanColor(
       newSelectedMarker,
@@ -260,6 +272,7 @@ export function editChord(cancel = false, selection) {
 
     newSelectedMarker.elChordSymbolSpan.classList.add('span-chord-highlight')
   } else {
+    // Colorizing again the span (label element font color NOT BACKGROUND)
     _setMarkerSpanColor(
       newSelectedMarker,
       lastSelectedMarker,
@@ -310,12 +323,27 @@ function saveChords() {
         updateMarkerDisplayWithColorizedRegions(true);
       }
 
-      // In the annotation list include information about modification date! TODO
+      
+      // In the annotation list include information about modification date! TODO. otan to kaneis pes mou na allaxw kai ta collaborative events.alx
       createAnnotationsList(jamsFile);
       annotationList.selectedIndex = index;
 
       // reset delete button if any new annotation was created
       deleteAnnotationBtn.classList.remove('disabled');
+
+      exportJamsToRepository(); //TODO: construct the function
+
+      if (!!Collab) {
+        const newAnnotationData = _extractModalPromptFields();
+        const action = (choice === 'replace')
+          ? 'saved, replacedCurrentAnnotation'
+          : 'saved, savedAsSeparateAnnotation'
+        window.awareness.setLocalStateField('cancelSaveEdit', {
+          action,
+          newAnnotationData
+        });
+      }
+
     })
     .catch(() => {
       // User canceled
@@ -334,15 +362,25 @@ function cancelEditingChords() {
       // This needs to be before (for similar reason as stated in saveChords)
       disableSaveChordsAndCancelEditing();
       renderAnnotations(selectedAnnotationData(jamsFile));
+
+      if (!!Collab) {
+        window.awareness.setLocalStateField('cancelSaveEdit', {
+          action: 'canceled'
+        });
+      }
     })
     .catch(() => {
       // User canceled
     });
 }
 
-function _createNewAnnotation() {
-  const [annotatorName, annotationDataSource, annotationDescription] =
-    _extractModalPromptFields();
+export function _createNewAnnotation(annotationData) {
+  let annotatorName, annotationDataSource, annotationDescription;
+  if (toolbarStates.COLLAB_EDIT_MODE) {
+    ([annotatorName, annotationDataSource, annotationDescription] = annotationData);
+  } else {
+    ([annotatorName, annotationDataSource, annotationDescription] = _extractModalPromptFields());
+  }
 
   const newAnnotation = {
     annotation_metadata: {
@@ -431,7 +469,7 @@ function _setMarkerSpanColor(selMarker, lastSelectedMarker, color) {
   symbolSpan.style.color = color;
 
   if (lastSelectedMarker !== undefined) {
-    if (selMarker !== lastSelectedMarker) { //auto einai panta true giati oi 2 metavlites poy sygkrinontai einai objects.
+    if (selMarker !== lastSelectedMarker) {
       const lastSymbolSpan = lastSelectedMarker.elChordSymbolSpan;
       symbolSpan.style.color = color;
       lastSymbolSpan.style.color = '';
@@ -580,4 +618,9 @@ function _mapChordSymbolToText(encodedChord) {
   const mirLabel = `${foundRootNote}${foundAccidental}${column}${foundShorthand}`;
 
   return mirLabel;
+}
+
+function exportJamsToRepository() {
+  if (!!Collab){
+  }
 }

@@ -15,13 +15,13 @@
   transition: height 500ms linear;
 }
 
-#start-jitsi-meet-btn {
+#start-close-call-btn {
   color: green;
   border: none;
   background-color: transparent;
 }
 
-#start-jitsi-meet-btn:hover {
+#start-close-call-btn:hover {
   filter: brightness(50%);
   transform: scale(1.1) translateY(-3px);
   transition: transform 300ms;
