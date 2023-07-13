@@ -10,12 +10,7 @@ import { _colorizeTableSelections, closeModal, editChord, showChordEditor } from
 import tippy from "tippy.js";
 import { MARKER_LABEL_SPAN_COLOR } from "../../config.js";
 
-let wsBaseUrl;
-if (window.location.hostname === "localhost") {
-  wsBaseUrl = "ws://localhost:8080";
-} else if (window.location.hostname === "musicolab.hmu.gr") {
-  wsBaseUrl = "wss://musicolab.hmu.gr:8080";
-}
+const wsBaseUrl = import.meta.env.DEV ? "ws://localhost:8080" : "wss://musicolab.hmu.gr:9000";
 
 let websocketProvider;
 
