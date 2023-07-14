@@ -152,7 +152,7 @@ const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url)
   .href;
 
 const urlParams = new URLSearchParams(window.location.search);
-const urlFileName = urlParams.get('fileName');
+const urlFileName = urlParams.get('f');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
