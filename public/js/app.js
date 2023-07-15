@@ -82,18 +82,14 @@ var selectedBlobs = []; // Array to hold all blobs to be mixed
 var recordedBuffers = []; // Array to hold all PCM audio recordings
 var selectedBuffers = []; // Array to hold all PCM audio recordings to be mixed
 var noRecordings = 0; // Holds how many are the audio recordings
-var sampleRate = 48000; // this will hold the sample rate used for recordings --> see some lines below
+var sampleRate = 44100; // this will hold the sample rate used for recordings --> see some lines below
 
 // shim for AudioContext when it's not avb.
 //var AudioContext = window.AudioContext || window.webkitAudioContext;
-var audioContext = new AudioContext(); //audio context to help us record
-var sampleRate = audioContext.sampleRate;
+var audioContext = new AudioContext({
+  sampleRate: sampleRate,
+});
 
-// audio context with specified sample rate to help us record
-// do not redeclare
-//var audioContext = new AudioContext({
-//  sampleRate: sampleRate,
-//});
 var recordButton = document.getElementById('recordButton');
 var stopButton = document.getElementById('stopButton');
 var pauseButton = document.getElementById('pauseButton');
@@ -224,7 +220,9 @@ function startRecording() {
             the sampleRate defaults to the one set in your OS for your playback device
 
         */
-    audioContext = new AudioContext(); // do not redeclare //redeclare
+    audioContext = new AudioContext({
+      sampleRate: sampleRate,
+    });
 
     //update the format
     document.getElementById('formats').innerHTML =
