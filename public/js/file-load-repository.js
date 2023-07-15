@@ -57,16 +57,11 @@ let abortController;
 
 async function initRepositoryTrackList(courseParam, collabParam) {
   try {
-    let data;
-    if (/localhost|127.0.0.1|0.0.0.0/.test(window.location.hostname)) {
-      data = REPOSITORY_TRACKS;
-    } else {
-      const res = await fetch(
-        `https://musicolab.hmu.gr/apprepository/moodleGetCourseFilesJson.php?courseIdnumber=${courseParam}&collab=${collabParam}`,
-        { headers: { Accept: "application/json" } }
-      );
-      data = await res.json();
-    }
+    const res = await fetch(
+      `https://musicolab.hmu.gr/apprepository/moodleGetCourseFilesJson.php?courseIdnumber=${courseParam}&collab=${collabParam}`,
+      { headers: { Accept: "application/json" } }
+    );
+    const data = await res.json();
 
     let treeData = tracksToTreeView(data);
     createTreeView(treeData);

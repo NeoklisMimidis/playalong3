@@ -158,27 +158,17 @@ function setBackingTrackRepositoryRemote(fileName) {
 // Load a file from url
 function loadUrlFile(f, c, u) {
   Jitsi_User_Name = u;
-  document.getElementById('file_label').innerHTML =
-    'Following: "' +
-    f +
-    '".&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Change backing track:';
-  var reader = new FileReader();
-  waveform0Container.removeAttribute('hidden');
-  timeline0Container.removeAttribute('hidden');
-  controls0Container.removeAttribute('hidden');
-  stopButton0.removeAttribute('hidden');
-  playPauseButton0.removeAttribute('hidden');
-  muteButton0.removeAttribute('hidden');
+  document.getElementById('audio-file-name').innerHTML = f;
+  // waveform0Container.removeAttribute('hidden');
+  // timeline0Container.removeAttribute('hidden');
+  // controls0Container.removeAttribute('hidden');
+  // stopButton0.removeAttribute('hidden');
+  // playPauseButton0.removeAttribute('hidden');
+  // muteButton0.removeAttribute('hidden');
   //console.log("file = ", f);
   //console.log("course = ", c);
   //console.log("user = ", u);
-  wavesurfer0.load(
+  backingTrack.load(
     `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${f}`
   );
-  reader.onload = function (f) {
-    var contents = f.target.result;
-    //console.log("contents =", contents);
-    wavesurfer0.loadArrayBuffer(contents);
-    //displayContents(contents);
-  };
 }
