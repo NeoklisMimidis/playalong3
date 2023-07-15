@@ -362,11 +362,7 @@ function loadAudioFile(input) {
           'none')
       : null;
 
-    if (courseParam?.length > 0) {
-      document.getElementById('repository-files-course').textContent =
-        courseParam;
-      window.initRepositoryTrackList(courseParam);
-    }
+    window.initRepositoryTrackList(courseParam, collabParam);
   }
 
   if (file && !toolbarStates.SAVED) {

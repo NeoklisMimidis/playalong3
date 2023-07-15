@@ -55,7 +55,7 @@ btnClearSearch.addEventListener('click', () => {
 
 let abortController;
 
-async function initRepositoryTrackList(courseParam) {
+async function initRepositoryTrackList(courseParam, collabParam) {
   try {
     const res = await fetch(
       `https://musicolab.hmu.gr/apprepository/moodleGetCourseFilesJson.php?courseIdnumber=${courseParam}&collab=${collabParam}`,
