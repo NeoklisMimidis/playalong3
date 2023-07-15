@@ -1,19 +1,19 @@
 const REPOSITORY_TRACKS = {
   public: [
-    { filename: "6_Light_jazz.mp3" },
-    { filename: "All the things you are.mp3" },
-    { filename: "Autumn Leaves.mp3" },
-    { filename: "Cherokee.mp3" },
-    { filename: "disco0.mp3" },
+    { filenameShort: "6_Light_jazz.mp3" },
+    { filenameShort: "All the things you are.mp3" },
+    { filenameShort: "Autumn Leaves.mp3" },
+    { filenameShort: "Cherokee.mp3" },
+    { filenameShort: "disco0.mp3" },
   ],
   private: [
-    { filename: "private1.mp3" },
-    { filename: "private2.mp3" },
+    { filenameShort: "private1.mp3" },
+    { filenameShort: "private2.mp3" },
   ],
   course: [
-    { filename: "6_Light_jazz.mp3" },
-    { filename: "Air_Bach.mp3" },
-    { filename: "egoDeath.mp3" },
+    { filenameShort: "6_Light_jazz.mp3" },
+    { filenameShort: "Air_Bach.mp3" },
+    { filenameShort: "egoDeath.mp3" },
   ]
 };
 
@@ -120,7 +120,7 @@ function tracksToTreeView(tracks) {
           disabled: typeDisabled(type),
         },
         nodes: files?.map(file => ({
-          text: file.filename,
+          text: file.filenameShort,
           icon: "fa fa-file",
         }))
       }
