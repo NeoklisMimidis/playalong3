@@ -57,13 +57,17 @@ let abortController;
 
 async function initRepositoryTrackList(courseParam, collabParam) {
   try {
-    const res = await fetch(
-      `https://musicolab.hmu.gr/apprepository/moodleGetCourseFilesJson.php?courseIdnumber=${courseParam}&collab=${collabParam}`,
-      { headers: { Accept: "application/json" } }
-    );
-    const data = await res.json();
+    let data;
+    if (/localhost|127.0.0.1|0.0.0.0/.test(window.location.hostname)) {
+      data = REPOSITORY_TRACKS;
+    } else {
+      const res = await fetch(
+        `https://musicolab.hmu.gr/apprepository/moodleGetCourseFilesJson.php?courseIdnumber=${courseParam}&collab=${collabParam}`,
+        { headers: { Accept: "application/json" } }
+      );
+      data = await res.json();
+    }
 
-    // const data = REPOSITORY_TRACKS;
     let treeData = tracksToTreeView(data);
     createTreeView(treeData);
 
@@ -73,7 +77,7 @@ async function initRepositoryTrackList(courseParam, collabParam) {
 }
 
 function handleSearchComplete(treeData) {
-  return function(event, results) {
+  return function (event, results) {
     // Hide items not matching search 
     document.querySelectorAll(`.list-group-item.node-tree:not([class*="search-result"])`).forEach(entry => {
       if (!Object.keys(treeData).includes(entry.textContent)) {
@@ -133,8 +137,8 @@ function tracksToTreeView(tracks) {
  */
 function typeDisabled(type) {
   // Hide course files if course URL param is not provided
-  if (type === 'course' && !courseParam) { 
-    return true; 
+  if (type === 'course' && !courseParam) {
+    return true;
   }
 
   // Hide private files when in collab mode
@@ -180,11 +184,19 @@ loadFileBtn.addEventListener('click', async () => {
   // If it's a leaf node (file)
   if (selected[0]?.parentId !== undefined) {
     console.log('loadFileBtn handler', selected);
-    await loadAudioTrack(selected[0].text);
+    const parentText = $('#tree').treeview('getNode', selected[0].parentId).text;
+    let type = 'public';
+    if (parentText.includes('private')) {
+      type = 'private';
+    } else if (parentText.includes('course')) {
+      type = 'course';
+    }
+
+    await loadAudioTrack(selected[0].text, type);
   }
 })
 
-async function loadAudioTrack(fileName) {
+async function loadAudioTrack(fileName, type) {
   loadFileBtn.classList.add("hidden");
   loadingBtn.classList.remove("hidden");
   cancelRequestBtn.disabled = false;
@@ -193,17 +205,23 @@ async function loadAudioTrack(fileName) {
   document.querySelectorAll(".alert").forEach((alert) => alert.remove());
 
   try {
+    let reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileName}`;
+    if (type === 'private') {
+      reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}`;
+    } else if (type === 'course') {
+      // TODO: Handle course files
+      throw new Error('Files of type course are not currently supported');
+    }
+
     const res = await fetch(
-      `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileName}`,
-      { signal: abortController.signal }
+      { signal: abortController.signal },
     );
     const blob = await res.blob();
     if (blob.type.includes("text/html")) {
       throw new Error(`Failed to fetch audio file: "${fileName}"`);
     }
 
-    wavesurfer0.loadBlob(blob);
-    updateBackingTrackPlayer(fileName);
+    window.backingTrack.loadBlob(blob);
     $("#repository-files-modal").modal("hide");
     window.ydoc?.transact(() => {
       window.playerConfig?.set("backingTrackRepository", fileName);
@@ -220,21 +238,26 @@ async function loadAudioTrack(fileName) {
       console.error(err);
     }
 
-    let alert = document.createElement("div");
-    alert.classList.add("alert", "alert-danger", "mt-3");
-    alert.role = "alert";
-    alert.innerHTML = `${errorMsg} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
-    document.getElementById('repository-tracks-container').prepend(alert);
+    createAlert(errorMsg);
 
-    setTimeout(() => {
-      alert.remove();
-    }, 5000);
   } finally {
     loadingBtn.classList.add("hidden");
     loadFileBtn.classList.remove("hidden");
     cancelRequestBtn.disabled = true;
     loadFileBtn.disabled = true;
   }
+}
+
+function createAlert(errorMsg) {
+  let alert = document.createElement("div");
+  alert.classList.add("alert", "alert-danger", "mt-3");
+  alert.role = "alert";
+  alert.innerHTML = `${errorMsg} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+  document.getElementById('repository-tracks-container')?.prepend(alert);
+
+  setTimeout(() => {
+    alert.remove();
+  }, 5000);
 }
 
 cancelRequestBtn.addEventListener("click", () => {
