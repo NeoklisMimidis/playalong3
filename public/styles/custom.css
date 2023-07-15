@@ -202,3 +202,7 @@ label {
 .recUser-offline {
   filter: grayscale(100%);
 }
+
+.list-group-item.node-tree.node-disabled {
+  display: none;
+}
