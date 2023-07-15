@@ -213,9 +213,7 @@ async function loadAudioTrack(fileName, type) {
       throw new Error('Files of type course are not currently supported');
     }
 
-    const res = await fetch(
-      { signal: abortController.signal },
-    );
+    const res = await fetch(reqUrl, { signal: abortController.signal });
     const blob = await res.blob();
     if (blob.type.includes("text/html")) {
       throw new Error(`Failed to fetch audio file: "${fileName}"`);
