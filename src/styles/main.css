@@ -1119,3 +1119,11 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 /* #number-box {
   border: 2px solid rgba(222, 222, 222, 1);
 } */
+
+#dial > svg {
+  cursor: ns-resize !important;
+}
+
+#number-box > input {
+  cursor: ns-resize !important;
+}
