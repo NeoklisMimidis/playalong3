@@ -126,6 +126,9 @@ function setupCollaboration() {
     for (let key of event.keysChanged) {
       const value = playerConfig.get(key);
       console.log({ key, value });
+
+      if (value === undefined) continue;
+
       if (!event.transaction.local) {
         switch (key) {
           case "playbackSpeed":
