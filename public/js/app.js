@@ -13,6 +13,8 @@ const idParam = urlParams.get('id');
 var privParam = urlParams.get('priv');
 const uidParam = urlParams.get('uid');
 
+initRepositoryTrackList(courseParam, collabParam);
+
 var metronomeEvents = new EventTarget();
 var preCountCanceled = false;
 

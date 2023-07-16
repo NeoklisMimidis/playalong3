@@ -369,7 +369,6 @@ function loadAudioFile(input) {
           console.error(`failed to share file ${file.name} with peers`, err)
         );
     }
-    window.initRepositoryTrackList(courseParam, collabParam);
   }
 
   if (file && !toolbarStates.SAVED) {
