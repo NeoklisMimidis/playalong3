@@ -33,8 +33,14 @@
       charset="utf-8"
     ></script> -->
 
-    <link rel="stylesheet" href="/vendor/bootstrap-treeview/bootstrap-treeview.min.css">
-    <script defer src="/vendor/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="/vendor/bootstrap-treeview/bootstrap-treeview.min.css"
+    />
+    <script
+      defer
+      src="/vendor/bootstrap-treeview/bootstrap-treeview.min.js"
+    ></script>
 
     <script type="module" src="/src/js/nexus-export.js"></script>
     <script type="module" src="/src/js/audio-player.js" defer></script>
@@ -62,7 +68,7 @@
       rel="stylesheet"
       href="./styles/fontawesome/font-awesome.min.css"
     /> -->
-    <link rel="stylesheet" href="./styles/jitsi.css" /> 
+    <link rel="stylesheet" href="./styles/jitsi.css" />
 
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <script type="module" src="src/js/playalong/collab/setup.js"></script>
@@ -198,7 +204,12 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Repository tracks</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -208,12 +219,33 @@
                 <div class="col-sm-4">
                   <form id="repository-file-search" class="flex-column">
                     <div class="form-group">
-                      <label for="input-search" class="sr-only">Search Tree:</label>
-                      <input type="input" class="form-control" id="input-search" placeholder="Type to search..." value="">
+                      <label for="input-search" class="sr-only"
+                        >Search Tree:</label
+                      >
+                      <input
+                        type="input"
+                        class="form-control"
+                        id="input-search"
+                        placeholder="Type to search..."
+                        value=""
+                      />
                     </div>
                     <div class="d-flex form-group justify-content-start w-100">
-                      <button disabled type="submit" class="btn btn-success" id="btn-search">Search</button>
-                      <button type="button" class="btn btn-default" id="btn-clear-search">Clear</button>
+                      <button
+                        disabled
+                        type="submit"
+                        class="btn btn-success"
+                        id="btn-search"
+                      >
+                        Search
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        id="btn-clear-search"
+                      >
+                        Clear
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -223,17 +255,39 @@
               </div>
             </div>
           </div>
-    
+
           <div class="modal-footer justify-content-between border-0">
             <div class="ml-auto">
-              <button id="cancel-request-btn" type="button" class="btn btn-outline-danger" disabled>Cancel</button>
-    
-              <button class="btn btn-primary hidden" disabled id="loading-file-btn">
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...
+              <button
+                id="cancel-request-btn"
+                type="button"
+                class="btn btn-outline-danger"
+                disabled
+              >
+                Cancel
               </button>
-    
-              <button class="btn btn-primary" form="repository-tracks-select" disabled id="load-file-btn">
-                Load File</button>
+
+              <button
+                class="btn btn-primary hidden"
+                disabled
+                id="loading-file-btn"
+              >
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span
+                >Loading...
+              </button>
+
+              <button
+                class="btn btn-primary"
+                form="repository-tracks-select"
+                disabled
+                id="load-file-btn"
+              >
+                Load File
+              </button>
             </div>
           </div>
         </div>
@@ -249,10 +303,7 @@
         <!--Here will appear microphone input animation when recording-->
       </div>
       <div id="controls">
-        <button
-          id="start-close-call-btn"
-          class="btn btn-lg"
-        >
+        <button id="start-close-call-btn" class="btn btn-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="27"
@@ -526,7 +577,7 @@
           </div>
         </button>
 
-        <div class="d-non">
+        <div>
           <span
             id="playback_speed"
             style="padding-left: 30px; padding-right: 15px"
@@ -545,6 +596,8 @@
           />
           <span id="speedValue" style="padding-left: 10px"> 100% </span>
         </div>
+
+        <div id="preCountModal" class="d-none"></div>
       </div>
 
       <!-- AUDIO PLAYER - A.K.A. BACKING TRACK CONTAINER -->

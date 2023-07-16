@@ -289,6 +289,7 @@ class Metronome {
           that.current16thNote,
           that.nextNoteTime - that.audioManager.getCurrentTime()
         );
+        updatePreCountDot(that.current16thNote); // the function lies in metronome-settings.js
         nextNote();
       }
     }

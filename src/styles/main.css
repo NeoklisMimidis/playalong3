@@ -1072,7 +1072,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 It's important to remember that styling scrollbar using the ::-webkit-scrollbar pseudo-elements only affects Webkit-based browsers and will not work in all browsers, like Firefox or Internet Explorer. For universal cross-browser scrollbar customization, you might have to use a JavaScript-based custom scrollbar library like perfect-scrollbar, SimpleBar, etc.
 */
 
-/* VIGLIS */
+/* VIGLIS - PLAYALONG */
 #metronome-btn {
   position: relative;
 }
@@ -1126,4 +1126,62 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 
 #number-box > input {
   cursor: ns-resize !important;
+}
+
+#preCountModal {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  text-align: center;
+  user-select: none;
+  border-radius: 15px;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4);
+  border: solid 1px var(--theme-color3);
+  background: var(--theme-color2);
+  padding: 0 0 5px 0;
+  z-index: 3;
+  min-width: 230px;
+}
+
+#preCountModal .title {
+  margin-top: 10px;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  margin-bottom: 10px;
+}
+
+#preCountModal .beats-info {
+  font-size: 16px;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+
+#preCountModal .dots {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  padding: 10px 15px 0px 15px;
+}
+
+#preCountModal .dots .dot {
+  display: inline-block;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  background-color: #a8a8a8;
+  opacity: 0.2;
+  margin: 5px;
+}
+
+#preCountModal .dots-measure-separator {
+  border-left: 2px solid #000000;
+  transform: translateY(0%);
+  height: 25px;
+  opacity: 0.35;
+}
+
+.dot-played {
+  opacity: 1 !important;
 }

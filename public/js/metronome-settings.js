@@ -17,8 +17,9 @@ const bpmOptions = {
   max: 300,
   current: null,
 };
-const defaultTempoVolume = 0.5;
+setTempo(bpmOptions.default);
 
+const defaultTempoVolume = 0.5;
 setVolume(defaultTempoVolume * 100); //takes values from 0-100
 
 // Rhythm
@@ -80,6 +81,7 @@ function setupMetronomeMenu() {
   const metronomeModal = metronomeSettingsMenu.querySelector('.dropdown-menu');
 
   metronomeSettingsTempo();
+  createModalPreCount(); // create initial pre count modal
 
   let metronomeModalEnabled = false;
   metronomeSettingsMenu.addEventListener('click', function (e) {
@@ -102,6 +104,7 @@ function setupMetronomeMenu() {
     } else if (e.target.closest('#precount')) {
       const preCountEl = e.target.closest('#precount');
       parent.metronome.setStopBar(preCountEl.selectedIndex);
+      createModalPreCount(); // update pre count modal
     } else if (e.target.closest('#countOn')) {
       parent.metronome.setMetroCont(true);
     } else if (e.target.closest('#countOff')) {
@@ -121,14 +124,17 @@ function setupMetronomeMenu() {
   // Rhythm  Time signature & Resolution
   timeSignatureNumerator.addEventListener('change', function (event) {
     setNumerator(event.target.value);
+    createModalPreCount(); // update pre count modal
   });
 
   timeSignatureDenominator.addEventListener('change', function (event) {
     setDenominator(event.target.value);
+    createModalPreCount(); // update pre count modal
   });
 
   resolution.addEventListener('change', function (event) {
     setResolution(event.target.value);
+    createModalPreCount(); // update pre count modal
   });
 }
 
@@ -136,6 +142,96 @@ function metronomeSettingsTempo() {
   const bpmInput = document.querySelector('#bpmInput');
   assignInputFieldEvents(bpmInput, bpmOptions);
   createVolumeDialAndNumberBox();
+}
+
+function createModalPreCount() {
+  // console.log('-modal pre count updated 😍');
+
+  const preCountMeasures = document.getElementById('precount').selectedIndex;
+  // console.log('pre count measures:', preCountMeasures);
+
+  const beatsPerMeasure = parent.metronome.numerator;
+  // console.log('beats per measure', beatsPerMeasure);
+
+  const clicksPerBeat =
+    parent.metronome.noteResolution / parent.metronome.denominator;
+  // console.log('clicks per beat:', clicksPerBeat);
+
+  // HTML creations
+  let clicksPerBeatHTML = '';
+  if (clicksPerBeat === 0.5) {
+    const clicksPerMeasure = parent.metronome.numerator / (clicksPerBeat * 4);
+    clicksPerBeatHTML = `${clicksPerMeasure} clicks per measure`;
+  } else if (clicksPerBeat === 1) {
+    clicksPerBeatHTML = `${clicksPerBeat} click per beat`;
+  } else {
+    clicksPerBeatHTML = `${clicksPerBeat} clicks per beat`;
+  }
+
+  const dotsMeasureHTML = `
+<div class="dots-measure">
+ ${'<div class="dot"></div>'.repeat(beatsPerMeasure)}
+</div>
+  `;
+
+  // final HTML pre count
+  const preCountHTML = `
+<div class="title"><span>Get Ready!</span></div>
+  <div class="beats-info"><span>${clicksPerBeatHTML}</span></div>
+  <div class="dots">
+    ${dotsMeasureHTML}
+
+    ${
+      preCountMeasures === 2
+        ? `<div class="dots-measure-separator"></div>${dotsMeasureHTML}`
+        : ''
+    } 
+
+</div>
+`;
+
+  // replace old html with the new one
+  const preCountModalEl = document.getElementById('preCountModal');
+  preCountModalEl.innerHTML = preCountHTML;
+}
+
+// this function is being invoked in the metronome.js!! with the scheduler()
+function updatePreCountDot(beatNumber) {
+  // console.log('check me!!', beatNumber);
+  const denominator = parent.metronome.denominator;
+  const currentMeasure = parent.metronome.bar + 1;
+
+  const preCountModalEl = document.getElementById('preCountModal');
+
+  // User's selected in Metronome settings pre count measures
+  const preCountMeasures = document.getElementById('precount').selectedIndex;
+
+  // hide pre count modal after pre count measures ended
+  if (currentMeasure === preCountMeasures + 1) {
+    if (preCountModalEl.classList.contains('d-none')) return;
+
+    preCountModalEl.classList.add('d-none');
+
+    // Dispatch a custom event
+    metronomeEvents.dispatchEvent(new Event('preCountMeasuresComplete'));
+  } else if (currentMeasure > preCountMeasures + 1) return;
+
+  if (beatNumber % (16 / denominator) === 0) {
+    // console.log('beat');
+
+    // (e.g. if 4 beats per measure and 3rd is played then currentBeatPosition = 3)
+    const currentBeatPosition = beatNumber / (16 / denominator) + 1;
+
+    // first div:nth-child selects measure (because of the measure-separator 2nd measure is 3rd child)
+    // second div:nth-child selects specific dot for current beat
+    const currentDot = preCountModalEl.querySelector(
+      `div.dots > div:nth-child(${currentMeasure === 2 ? 3 : 1})
+       > div:nth-child(${currentBeatPosition})`
+    );
+    currentDot?.classList.add('dot-played');
+  } else {
+    // console.log('tick');
+  }
 }
 
 // - - - - - -
@@ -194,7 +290,7 @@ function assignInputFieldEvents(selector, options) {
     let inputChar = String.fromCharCode(e.which);
 
     let selection = window.getSelection();
-    console.log(selection);
+    // console.log(selection);
     let startPosition = Math.min(selection.anchorOffset, selection.focusOffset);
     let endPosition = Math.max(selection.anchorOffset, selection.focusOffset);
 
@@ -221,7 +317,7 @@ function assignInputFieldEvents(selector, options) {
   });
 
   box.addEventListener('blur', () => {
-    console.log('blur');
+    // console.log('blur');
     let currentValue = parseInt(box.innerText);
 
     if (isNaN(currentValue)) {

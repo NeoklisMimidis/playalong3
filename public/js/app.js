@@ -13,6 +13,9 @@ const idParam = urlParams.get('id');
 var privParam = urlParams.get('priv');
 const uidParam = urlParams.get('uid');
 
+var metronomeEvents = new EventTarget();
+var preCountCanceled = false;
+
 const baseUrl =
   window.location.hostname === 'localhost'
     ? 'http://localhost:5500'
@@ -185,6 +188,60 @@ speedSliderElem?.addEventListener('change', () => {
   speedValueElem.animate(speedValueKeyFrames, speedValueTiming);
 });
 
+function preRecordingModal() {
+  return new Promise((resolve, reject) => {
+    // EXTRA: display warning modal about headphones before pre count? (optional) TODO
+
+    const currentMeasure = parent.metronome.bar + 1;
+    const preCountModalEl = document.getElementById('preCountModal');
+    // User's selected in Metronome settings pre count measures
+    const preCountMeasures = document.getElementById('precount').selectedIndex;
+
+    if (preCountMeasures === 0) resolve(); // no pre count
+
+    if (currentMeasure === 0) {
+      if (preCountMeasures != 0) {
+        console.log('Pre count measures exist');
+        // show pre count modal
+        preCountModalEl.classList.remove('d-none');
+
+        parent.metronome.setPlayStop(true);
+      } else if (window.continuous_play && preCountMeasures === 0) {
+        console.log('NO Pre count measures, but continuous play enabled');
+        parent.metronome.setPlayStop(true);
+      }
+    } else {
+      // check if pre count was canceled with measures information
+      preCountCanceled = currentMeasure <= preCountMeasures ? true : false;
+
+      const preCountModalEl = document.getElementById('preCountModal');
+      preCountModalEl.classList.add('d-none');
+      createModalPreCount();
+
+      //stop metronome
+      parent.metronome.setPlayStop(false);
+      parent.metronome.bar = -1;
+    }
+
+    function onPreCountMeasuresComplete() {
+      console.log('Pre count measures complete, resolving preRecordingModal');
+      // Remove listener to prevent re-trigger within the same cycle.
+
+      metronomeEvents.removeEventListener(
+        'preCountMeasuresComplete',
+        onPreCountMeasuresComplete
+      );
+      resolve();
+    }
+
+    // Listen for the custom event
+    metronomeEvents.addEventListener(
+      'preCountMeasuresComplete',
+      onPreCountMeasuresComplete
+    );
+  });
+}
+
 // recording section ///////////////////////////////////////////////////////
 function startRecording() {
   //console.log("recordButton clicked");
@@ -196,21 +253,18 @@ function startRecording() {
   //console.log("click all play buttons")
   //console.log("playButtons.length = ",playButtons.length);
 
-  playAll();
-
   recordButton.disabled = true;
   recordButton.setAttribute('title', '');
-  //recordButton.classList.add("flash");
+  recordButton.classList.add('flash');
+
   stopButton.disabled = false;
   stopButton.setAttribute('title', 'Stop recording');
-  pauseButton.disabled = false;
-  pauseButton.setAttribute('title', 'Pause recording');
 
   /*
         We're using the standard promise based getUserMedia()
         https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
     */
-
+  let start = performance.now();
   navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
     //console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
 
@@ -223,13 +277,6 @@ function startRecording() {
     audioContext = new AudioContext({
       sampleRate: sampleRate,
     });
-
-    //update the format
-    document.getElementById('formats').innerHTML =
-      'Format: 1 channel pcm @ ' + audioContext.sampleRate / 1000 + 'kHz';
-
-    /* assign to gumStream for later use */
-    gumStream = stream;
 
     /* use the stream */
     input = audioContext.createMediaStreamSource(stream);
@@ -245,15 +292,37 @@ function startRecording() {
 
     rec.record();
     //console.log("Recording started");
+    let end = performance.now();
+    rec.stop();
 
-    //show microphone animation
-    wavesurfer_mic.microphone.start();
+    //update the format
+    document.getElementById('formats').innerHTML =
+      'Format: 1 channel pcm @ ' + audioContext.sampleRate / 1000 + 'kHz';
+
+    /* assign to gumStream for later use */
+    gumStream = stream;
+
+    // display microphone (pink) container
     waveform_micContainer.removeAttribute('hidden');
 
-    // Enable metronome: 1) Pre-count case & 2) Count is enabled case
-    if (start_bar < stop_bar || (window.continuous_play && stop_bar === 0)) {
-      parent.metronome.setPlayStop(true);
-    }
+    let latency = end - start;
+    console.log(`Latency (getUserMedia init): ${latency} ms`);
+
+    preRecordingModal().then(() => {
+      // execute the rest of the code IF pre count finished successfully
+      start = performance.now();
+      rec.record();
+      end = performance.now();
+      //show microphone animation
+      wavesurfer_mic.microphone.start();
+      playAll();
+
+      pauseButton.disabled = false;
+      pauseButton.setAttribute('title', 'Pause recording');
+
+      latency = end - start;
+      console.log(`Latency (rec.stop to rec.record): ${latency} ms`);
+    });
   });
   //}).catch(function(err) {
   //enable the record button if getUserMedia() fails
@@ -324,6 +393,9 @@ function pauseRecording() {
 }
 
 function stopRecording() {
+  // stop metronome & hide pre count modal (& and check if preCountCanceled)
+  preRecordingModal();
+
   console.log('stopButton clicked');
   document.getElementById('speedSlider').disabled = false;
   var stopButtons = document.querySelectorAll('.stop-button');
@@ -352,7 +424,7 @@ function stopRecording() {
   recordButton.setAttribute('title', 'Start recording');
   pauseButton.disabled = true;
   pauseButton.setAttribute('title', '');
-  //recordButton.classList.remove("flash");
+  recordButton.classList.remove('flash');
   pauseButton.classList.remove('flash');
 
   playPauseAllButton.innerHTML =
@@ -368,18 +440,25 @@ function stopRecording() {
 
   //tell the recorder to stop the recording
   rec.stop();
-  noRecordings++;
-  //console.log("Number of recordings = ",noRecordings);
 
   //stop microphone animation
   wavesurfer_mic.microphone.stop();
-  waveform_micContainer.setAttribute('hidden', 'true');
+  wavesurfer_mic.microphone.pause(); // this is necessary to prevent the visualization of the next recording while the pre-count modal is still active
 
-  //stop metronome
-  parent.metronome.setPlayStop(false);
+  waveform_micContainer.setAttribute('hidden', 'true');
 
   //stop microphone access
   gumStream.getAudioTracks()[0].stop();
+
+  stopAllButton.disabled = true;
+  console.log('disabled StopALl button');
+  stopAllButton.setAttribute('title', '');
+
+  // DON'T execute the rest of the code if recording was canceled while pre count was up
+  if (preCountCanceled) return;
+
+  noRecordings++;
+  // console.log('Number of recordings = ', noRecordings);
 
   //get the raw PCM audio data as an array of float32 numbers
   rec.getBuffer(function (buffer) {
@@ -414,9 +493,6 @@ function stopRecording() {
   //recordedBuffers.forEach(buffer => {
   //	console.log("length",buffer.byteLength);
   //});
-  stopAllButton.disabled = true;
-  console.log('disabled StopALl button');
-  stopAllButton.setAttribute('title', '');
 }
 // end recording section ///////////////////////////////////////////////////////
 
