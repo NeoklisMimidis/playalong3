@@ -73,6 +73,7 @@ async function shareBackingTrack(file) {
       chunksArray.push(rawData.slice(i, i + 20000));
     }
   } catch (err) {
+    console.error(err);
     return Promise.reject(err);
   }
 }
@@ -93,32 +94,7 @@ function setBackingTrackRemote(fileName) {
     console.warn('failed to set backing track from peers');
     return;
   }
-
-  document.getElementById('file_label').innerHTML =
-    'Following: "' +
-    fileName +
-    '".&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Change backing track:';
-  waveform0Container.removeAttribute('hidden');
-  timeline0Container.removeAttribute('hidden');
-  controls0Container.removeAttribute('hidden');
-  stopButton0.removeAttribute('hidden');
-  playPauseButton0.removeAttribute('hidden');
-  muteButton0.removeAttribute('hidden');
-
-  // let file = new File(
-  //   [Int8Array.from(fileInfo.get("data"))],
-  //   fileInfo.get("name"),
-  //   {
-  //     type: fileInfo.get("type"),
-  //   }
-  // );
-  // let reader = new FileReader();
-  // reader.onload = (e) => {
-  //   console.log("loading remote file", e.target.result);
-  //   wavesurfer0.loadArrayBuffer(e.target.result);
-  //   removeFileURLParam();
-  // };
-  // reader.readAsArrayBuffer(file);
+  updateFileNameLabels(fileName);
 }
 
 function setBackingTrackFileRemote(fileInfo) {
@@ -137,7 +113,7 @@ function setBackingTrackFileRemote(fileInfo) {
   let reader = new FileReader();
   reader.onload = e => {
     console.log('loading remote file', e.target.result);
-    wavesurfer0.loadArrayBuffer(e.target.result);
+    backingTrack.loadArrayBuffer(e.target.result);
     removeFileURLParam();
   };
   reader.readAsArrayBuffer(file);
@@ -158,16 +134,7 @@ function setBackingTrackRepositoryRemote(fileName) {
 // Load a file from url
 function loadUrlFile(f, c, u) {
   Jitsi_User_Name = u;
-  document.getElementById('audio-file-name').innerHTML = f;
-  // waveform0Container.removeAttribute('hidden');
-  // timeline0Container.removeAttribute('hidden');
-  // controls0Container.removeAttribute('hidden');
-  // stopButton0.removeAttribute('hidden');
-  // playPauseButton0.removeAttribute('hidden');
-  // muteButton0.removeAttribute('hidden');
-  //console.log("file = ", f);
-  //console.log("course = ", c);
-  //console.log("user = ", u);
+  updateFileNameLabels(f);
   backingTrack.load(
     `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${f}`
   );

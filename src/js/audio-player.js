@@ -50,7 +50,7 @@ export const mainWaveform = document.getElementById('waveform');
 export const skipForwardCue = mainWaveform.querySelector('#skip-forward');
 export const skipBackwardCue = mainWaveform.querySelector('#skip-backward');
 export const mainWaveformBPM = mainWaveform.querySelector('#waveform-bpm');
-const waveformLoadingBar = document.getElementById('waveform-loading-bar');
+export const waveformLoadingBar = document.getElementById('waveform-loading-bar');
 const analysisLoadingBar = document.getElementById('analysis-loading-bar');
 // Audio I/O (Sidebar)
 export const audioSidebarText = document.getElementById('audio-sidebar-text');
@@ -357,11 +357,18 @@ function loadAudioFile(input) {
     });
 
     // Neoklis: Alex or Dimitris: check if this part is required for collab
-    !Collab
-      ? (document.querySelector('.users-online-container').style.display =
-          'none')
-      : null;
-
+    if (!Collab) {
+      document.querySelector('.users-online-container').style.display = 'none';
+    } else if (Collab && file instanceof File) {
+      shareBackingTrack(file)
+        .then(() => {
+          console.log(`file ${file.name} was shared with peers`);
+          removeFileURLParam();
+        })
+        .catch(err =>
+          console.error(`failed to share file ${file.name} with peers`, err)
+        );
+    }
     window.initRepositoryTrackList(courseParam, collabParam);
   }
 
@@ -462,7 +469,7 @@ function activateAudioPlayerControls() {
   console.log('activateAudioPlayerControls is complete 😁');
 }
 
-function animateProgressBar(selector, progress, callbackOnComplete = false) {
+export function animateProgressBar(selector, progress, callbackOnComplete = false) {
   const loadingBarContainer = selector;
   const loadingBarProgress = selector.querySelector('.loading-bar-progress');
   const loadingBarProgressValue = selector.querySelector(

@@ -162,16 +162,20 @@ document.getElementById('tree')?.addEventListener('click', event => {
 });
 
 function updateBackingTrackPlayer(fileName) {
-  waveform0Container.removeAttribute("hidden");
-  timeline0Container.removeAttribute("hidden");
-  controls0Container.removeAttribute("hidden");
-  stopButton0.removeAttribute("hidden");
-  playPauseButton0.removeAttribute("hidden");
-  muteButton0.removeAttribute("hidden");
-  document.getElementById("file_label").innerHTML =
-    'Following: "' +
-    fileName +
-    '".&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Change backing track:';
+  $("#repository-files-modal").modal("hide");
+  updateFileNameLabels(fileName);
+  setFileURLParam(fileName);
+}
+
+function updateFileNameLabels(fileName) {
+  const audioFileName = document.getElementById('audio-file-name');
+  if (audioFileName) {
+    audioFileName.textContent = fileName;
+  }
+  const audioFileNamePreface = document.getElementById('audio-file-name-preface');
+  if (audioFileNamePreface) {
+    audioFileNamePreface.textContent = fileName;
+  }
 }
 
 loadFileBtn.addEventListener('click', async () => {
@@ -215,7 +219,7 @@ async function loadAudioTrack(fileName, type) {
     }
 
     window.backingTrack.loadBlob(blob);
-    $("#repository-files-modal").modal("hide");
+    updateBackingTrackPlayer(fileName);
     window.ydoc?.transact(() => {
       window.playerConfig?.set("backingTrackRepository", fileName);
       window.playerConfig.delete("backingTrack");

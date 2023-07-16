@@ -3,6 +3,7 @@ import { WebsocketProvider } from "y-websocket";
 import { setUserImageUrl, userData } from "./users";
 import { awaranessUpdateHandler, stateChangeHandler } from "./awarenessHandlers";
 import { handleSharedBTEditParamsEvent, handleSharedBTMarkersEvent, handleSharedRecordingDataEvent, handleSharedRecordingResetEvent } from "./sharedTypesHandlers";
+import { animateProgressBar, waveformLoadingBar } from "../../audio-player";
 
 const wsBaseUrl = import.meta.env.DEV ? "ws://localhost:8080" : "wss://musicolab.hmu.gr:9000";
 
@@ -175,16 +176,10 @@ function setupCollaboration() {
           (backingTrack.get("data").length / backingTrack.get("size")) * 100;
         console.log({ backingTrackProgress: downloadProgress });
 
-        const progressBar = updateProgressBar(
-          downloadProgress,
-          "#progressBar0"
-        );
-        progressBar.parentElement.style.opacity = 1;
+        animateProgressBar(waveformLoadingBar, downloadProgress);
 
         if (downloadProgress === 100.0) {
           window.setBackingTrackFileRemote(backingTrack);
-          progressBar.parentElement.style.opacity = 0;
-          updateProgressBar(0, "#progressBar0");
         }
       }
     }
