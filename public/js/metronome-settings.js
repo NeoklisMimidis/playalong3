@@ -61,7 +61,7 @@ function setResolution(r) {
 // Set metronome values on collaboration mode
 function setTempoValueRemote(tempo) {
   parent.metronome.setTempo(tempo);
-  tempoInput = tempo;
+  tempoInput.textContent = tempo;
 }
 
 function setNumeratorRemote(v) {
