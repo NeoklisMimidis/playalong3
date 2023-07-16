@@ -315,7 +315,7 @@ function loadFilesInOrder(audioFileURL, annotationFileUrl) {
     loadJAMS(annotationFileUrl);
   });
 }
-
+window.loadAudioFile = loadAudioFile;
 function loadAudioFile(input) {
   if (input === undefined) return;
 
