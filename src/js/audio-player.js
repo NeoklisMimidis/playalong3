@@ -50,7 +50,9 @@ export const mainWaveform = document.getElementById('waveform');
 export const skipForwardCue = mainWaveform.querySelector('#skip-forward');
 export const skipBackwardCue = mainWaveform.querySelector('#skip-backward');
 export const mainWaveformBPM = mainWaveform.querySelector('#waveform-bpm');
-export const waveformLoadingBar = document.getElementById('waveform-loading-bar');
+export const waveformLoadingBar = document.getElementById(
+  'waveform-loading-bar'
+);
 const analysisLoadingBar = document.getElementById('analysis-loading-bar');
 // Audio I/O (Sidebar)
 export const audioSidebarText = document.getElementById('audio-sidebar-text');
@@ -114,6 +116,8 @@ window.AUDIO_PLAYER_CONTROLS = AUDIO_PLAYER_CONTROLS;
 
 window.backingTrackVolumeFactor = 1;
 
+window.loadAudioFile = loadAudioFile;
+
 // - Start of the application ||
 
 toggleAudioInOutSidebarControls();
@@ -156,9 +160,9 @@ const urlFileName = urlParams.get('f');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  // resetAudioPlayer();
+  resetAudioPlayer();
   // loadFilesInOrder(audioFileURL1);
-  loadFilesInOrder(audioFileURL1, annotationFile1);
+  // loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
@@ -315,36 +319,44 @@ function loadFilesInOrder(audioFileURL, annotationFileUrl) {
     loadJAMS(annotationFileUrl);
   });
 }
-window.loadAudioFile = loadAudioFile;
+
 function loadAudioFile(input) {
   if (input === undefined) return;
 
   const [fileUrl, file] = loadFile(input);
 
+  // console.log('load audio file input', input);
+  // console.log('load audio file fileUrl', fileUrl);
+  // console.log('load audio file file', file);
+
   function loadAudio() {
     wavesurfer.empty();
     resetAudioPlayer();
-    console.log(file);
     wavesurfer.load(fileUrl);
     initAudioPlayer();
 
     wavesurfer.once('ready', function () {
       console.log('READY EVENT INSIDE loadAudioFile ✌️✅💪');
 
-      // 3 cases:
+      // 4 cases:
+      // a) use recording as backing track
       // a) import from handlers -drag or import buttons (use file.name)
       // b) repository link (retrieve name from URL)
       // c) localhost loading file (Use default: test.mp3)
 
       // prettier-ignore
-      if (file !== undefined) {
+      if (btrack){
         // a)
-        fileName = file.name;
-      } else if (file === undefined && window.location.hostname === 'musicolab.hmu.gr') {
+        const unique_filename = new Date().toISOString();
+        fileName = unique_filename + '.wav';  
+      } else if (file !== undefined) {
         // b)
-        fileName = urlFileName;
-      } else if (file === undefined && window.location.hostname === 'localhost') {
+        fileName = file.name;
+      } else if (file === undefined && window.location.hostname === 'musicolab.hmu.gr'){
         // c)
+        fileName = urlFileName 
+      } else if (file === undefined && window.location.hostname === 'localhost') {
+        // d)
         fileName = 'test.mp3';
       }
 
@@ -354,6 +366,8 @@ function loadAudioFile(input) {
       activateAudioPlayerControls();
 
       setPlaybackVolume();
+
+      btrack = false;
     });
 
     // Neoklis: Alex or Dimitris: check if this part is required for collab
@@ -394,6 +408,9 @@ function loadAudioFile(input) {
 }
 
 // -
+/**
+ * Reset player controls, markers, regions and previous waveform
+ */
 function resetAudioPlayer() {
   // Reveal player and controls (useful for first load in slow connections)
   audioPlayerAndControlsContainer.classList.remove('d-none');
@@ -419,6 +436,9 @@ function resetAudioPlayer() {
   console.log('resetAudioPlayer is complete 😁');
 }
 
+/**
+ * Setup events for audio player and create tooltips
+ */
 function initAudioPlayer() {
   // Setup events and tooltips ONCE (first webpage audio load)
   if (audioPlayerInitialized) return;
@@ -443,6 +463,9 @@ function initAudioPlayer() {
   audioPlayerInitialized = true;
 }
 
+/**
+ *  Enables audio player controls
+ */
 function activateAudioPlayerControls() {
   // hide audio importing description
   prefaceAudioHelp.classList.add('d-none');
@@ -468,7 +491,11 @@ function activateAudioPlayerControls() {
   console.log('activateAudioPlayerControls is complete 😁');
 }
 
-export function animateProgressBar(selector, progress, callbackOnComplete = false) {
+export function animateProgressBar(
+  selector,
+  progress,
+  callbackOnComplete = false
+) {
   const loadingBarContainer = selector;
   const loadingBarProgress = selector.querySelector('.loading-bar-progress');
   const loadingBarProgressValue = selector.querySelector(

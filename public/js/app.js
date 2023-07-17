@@ -17,6 +17,7 @@ initRepositoryTrackList(courseParam, collabParam);
 
 var metronomeEvents = new EventTarget();
 var preCountCanceled = false;
+var btrack = false;
 
 const baseUrl =
   window.location.hostname === 'localhost'
@@ -190,60 +191,6 @@ speedSliderElem?.addEventListener('change', () => {
   speedValueElem.animate(speedValueKeyFrames, speedValueTiming);
 });
 
-function preRecordingModal() {
-  return new Promise((resolve, reject) => {
-    // EXTRA: display warning modal about headphones before pre count? (optional) TODO
-
-    const currentMeasure = parent.metronome.bar + 1;
-    const preCountModalEl = document.getElementById('preCountModal');
-    // User's selected in Metronome settings pre count measures
-    const preCountMeasures = document.getElementById('precount').selectedIndex;
-
-    if (preCountMeasures === 0) resolve(); // no pre count
-
-    if (currentMeasure === 0) {
-      if (preCountMeasures != 0) {
-        console.log('Pre count measures exist');
-        // show pre count modal
-        preCountModalEl.classList.remove('d-none');
-
-        parent.metronome.setPlayStop(true);
-      } else if (window.continuous_play && preCountMeasures === 0) {
-        console.log('NO Pre count measures, but continuous play enabled');
-        parent.metronome.setPlayStop(true);
-      }
-    } else {
-      // check if pre count was canceled with measures information
-      preCountCanceled = currentMeasure <= preCountMeasures ? true : false;
-
-      const preCountModalEl = document.getElementById('preCountModal');
-      preCountModalEl.classList.add('d-none');
-      createModalPreCount();
-
-      //stop metronome
-      parent.metronome.setPlayStop(false);
-      parent.metronome.bar = -1;
-    }
-
-    function onPreCountMeasuresComplete() {
-      console.log('Pre count measures complete, resolving preRecordingModal');
-      // Remove listener to prevent re-trigger within the same cycle.
-
-      metronomeEvents.removeEventListener(
-        'preCountMeasuresComplete',
-        onPreCountMeasuresComplete
-      );
-      resolve();
-    }
-
-    // Listen for the custom event
-    metronomeEvents.addEventListener(
-      'preCountMeasuresComplete',
-      onPreCountMeasuresComplete
-    );
-  });
-}
-
 // recording section ///////////////////////////////////////////////////////
 function startRecording() {
   //console.log("recordButton clicked");
@@ -257,7 +204,6 @@ function startRecording() {
 
   recordButton.disabled = true;
   recordButton.setAttribute('title', '');
-  recordButton.classList.add('flash');
 
   stopButton.disabled = false;
   stopButton.setAttribute('title', 'Stop recording');
@@ -315,6 +261,9 @@ function startRecording() {
       start = performance.now();
       rec.record();
       end = performance.now();
+
+      // recording started so animation starts
+      recordButton.classList.add('flash');
       //show microphone animation
       wavesurfer_mic.microphone.start();
       playAll();
@@ -962,7 +911,6 @@ function createDownloadLink(
   set_pitch = 1 / speed01
 ) {
   var url = URL.createObjectURL(blob);
-  var btrack = false;
   const outmostContainer = document.createElement('div');
   outmostContainer.classList.add('outmost-container');
   document.body.appendChild(outmostContainer);
@@ -1239,7 +1187,6 @@ function createDownloadLink(
   });
   buttonContainer.appendChild(downloadButton);
 
-
   //create use_as_backing_track buttons
   var backingButton = document.createElement('button');
   backingButton.innerHTML =
@@ -1247,16 +1194,8 @@ function createDownloadLink(
   backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button';
   backingButton.setAttribute('title', 'Use as backing track');
   backingButton.addEventListener('click', function () {
-    // create a temporary name element to use as backing track title/filename
-    var unique_filename = new Date().toISOString();
-    var temp_name = unique_filename + '.wav';
-    
-    //tempLink.href = url;
-    //tempLink.click();
     btrack = true;
     deleteButton.click();
-    btrack = false;
-    document.querySelector("#audio-file-name").innerHTML = temp_name;
   });
   buttonContainer.appendChild(backingButton);
 
@@ -1288,7 +1227,7 @@ function createDownloadLink(
   }
 
   function deleteHandler(event) {
-    if (btrack){
+    if (btrack) {
       loadAudioFile(url);
     }
     deleteWaveForm();
@@ -1331,7 +1270,9 @@ function createDownloadLink(
   }
   deleteButton.dataset.collabId = id;
   deleteButton.addEventListener('click', function (event) {
-    var info_message = btrack? 'This track will be moved and replace backing track for everyone. Are you sure?' : 'This track will be removed for everyone. Are you sure you want to delete it?'
+    var info_message = btrack
+      ? 'This track will be moved and replace backing track for everyone. Are you sure?'
+      : 'This track will be removed for everyone. Are you sure you want to delete it?';
     // prettier-ignore
     if (window.confirm(info_message)) {
             deleteHandler(event);
@@ -1758,6 +1699,7 @@ function notify(text, context) {
   setTimeout(() => notification.remove(), 3000);
 }
 
+// - Neoklis
 /**
  * The setPlaybackVolume function is responsible for dynamically adjusting the volume of audio tracks in an application. It counts the number of unmuted tracks, and based on this count, it sets the volume levels of the backing track and other recordings, ensuring balanced audio playback
  */
@@ -1850,3 +1792,57 @@ document.getElementById('musicolab-logo').addEventListener('click', e => {
     );
   }
 });
+
+function preRecordingModal() {
+  return new Promise((resolve, reject) => {
+    // EXTRA: display warning modal about headphones before pre count? (optional) TODO
+
+    const currentMeasure = parent.metronome.bar + 1;
+    const preCountModalEl = document.getElementById('preCountModal');
+    // User's selected in Metronome settings pre count measures
+    const preCountMeasures = document.getElementById('precount').selectedIndex;
+
+    if (preCountMeasures === 0) resolve(); // no pre count
+
+    if (currentMeasure === 0) {
+      if (preCountMeasures != 0) {
+        console.log('Pre count measures exist');
+        // show pre count modal
+        preCountModalEl.classList.remove('d-none');
+
+        parent.metronome.setPlayStop(true);
+      } else if (window.continuous_play && preCountMeasures === 0) {
+        console.log('NO Pre count measures, but continuous play enabled');
+        parent.metronome.setPlayStop(true);
+      }
+    } else {
+      // check if pre count was canceled with measures information
+      preCountCanceled = currentMeasure <= preCountMeasures ? true : false;
+
+      const preCountModalEl = document.getElementById('preCountModal');
+      preCountModalEl.classList.add('d-none');
+      createModalPreCount();
+
+      //stop metronome
+      parent.metronome.setPlayStop(false);
+      parent.metronome.bar = -1;
+    }
+
+    function onPreCountMeasuresComplete() {
+      console.log('Pre count measures complete, resolving preRecordingModal');
+      // Remove listener to prevent re-trigger within the same cycle.
+
+      metronomeEvents.removeEventListener(
+        'preCountMeasuresComplete',
+        onPreCountMeasuresComplete
+      );
+      resolve();
+    }
+
+    // Listen for the custom event
+    metronomeEvents.addEventListener(
+      'preCountMeasuresComplete',
+      onPreCountMeasuresComplete
+    );
+  });
+}

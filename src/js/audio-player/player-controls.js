@@ -80,12 +80,7 @@ export function setupPlayerControlsEvents() {
     disableFollowPlaybackWhenMovingScrollbar(e); // also removes previous loop-region accordingly!
   });
 
-  wavesurfer.on('ready', () => {
-    console.log('123123--------------------');
-  });
-
   // - function setupPlaybackSpeedEvents()
-  // - TAKE!!
   wavesurfer.on('ready', function () {
     console.log(`🚀: - SoundTouch:`);
     let st = new window.soundtouch.SoundTouch(wavesurfer.backend.ac.sampleRate);
@@ -146,9 +141,6 @@ export function setupPlayerControlsEvents() {
       speedSliderEnableCheck();
     });
   });
-
-  // - TAKE!!
-
   // -
 }
 
