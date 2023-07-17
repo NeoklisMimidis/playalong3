@@ -256,7 +256,7 @@ function startRecording() {
     let latency = end - start;
     console.log(`Latency (getUserMedia init): ${latency} ms`);
 
-    preRecordingModal().then(() => {
+    preCountRecordingModal().then(() => {
       // execute the rest of the code IF pre count finished successfully
       start = performance.now();
       rec.record();
@@ -292,20 +292,20 @@ function pauseRecording() {
   //console.log("and all play buttons if recording is resumed");
   //console.log("pauseButtons.length = ",pauseButtons.length);
 
+  AUDIO_PLAYER_CONTROLS.playPauseBtn.click();
+
   if (rec.recording) {
+    resetPlaybackVolume();
     //pause recording
     rec.stop();
     wavesurfer_mic.microphone.pause();
     wavesurfer_mic.pause();
     //waveform_micContainer.setAttribute('hidden','true');
-    parent.metronome.setPlayStop(false);
     pauseButton.disabled = false;
     pauseButton.setAttribute('title', 'Resume recording');
     pauseButton.classList.add('flash');
     recordButton.disabled = true;
     recordButton.classList.remove('flash');
-
-    AUDIO_PLAYER_CONTROLS.playPauseBtn.click();
 
     for (var i = 0; i < pauseButtons.length; i++) {
       //console.log(i);
@@ -317,18 +317,16 @@ function pauseRecording() {
       //playPauseButtons[i].setAttribute("title","Pause");
     }
   } else {
+    setPlaybackVolume();
     //resume recording
     //console.log("Resuming recording...");
     //waveform_micContainer.removeAttribute('hidden');
     rec.record();
     wavesurfer_mic.microphone.start();
-    parent.metronome.setPlayStop(true);
     pauseButton.disabled = false;
     pauseButton.setAttribute('title', 'Pause recording');
     pauseButton.classList.remove('flash');
     recordButton.classList.add('flash');
-
-    AUDIO_PLAYER_CONTROLS.playPauseBtn.click();
 
     for (var i = 0; i < pauseButtons.length; i++) {
       //console.log(i);
@@ -345,7 +343,9 @@ function pauseRecording() {
 
 function stopRecording() {
   // stop metronome & hide pre count modal (& and check if preCountCanceled)
-  preRecordingModal();
+  preCountRecordingModal();
+
+  resetPlaybackVolume();
 
   console.log('stopButton clicked');
   document.getElementById('speedSlider').disabled = false;
@@ -671,9 +671,6 @@ function fillRecordingTemplate(
     wavesurfer.on('seek', function () {
       seekingPos = ~~(wavesurfer.backend.getPlayedPercents() * length);
     });
-
-    // update playback volumes because new track added
-    setPlaybackVolume();
   });
 
   //console.log("wavesufer speed was",speed,"%");
@@ -700,17 +697,12 @@ function fillRecordingTemplate(
       muteButton.setAttribute('title', 'Mute');
       muteButton.innerHTML =
         '<svg fill="#000000" width="25" height="25" viewBox="-2.5 0 19 19" xmlns="http://www.w3.org/2000/svg" class="cf-icon-svg"><path d="M7.365 4.785v9.63c0 .61-.353.756-.784.325l-2.896-2.896H1.708A1.112 1.112 0 0 1 .6 10.736V8.464a1.112 1.112 0 0 1 1.108-1.108h1.977L6.581 4.46c.43-.43.784-.285.784.325zm2.468 7.311a3.53 3.53 0 0 0 0-4.992.554.554 0 0 0-.784.784 2.425 2.425 0 0 1 0 3.425.554.554 0 1 0 .784.783zm1.791 1.792a6.059 6.059 0 0 0 0-8.575.554.554 0 1 0-.784.783 4.955 4.955 0 0 1 0 7.008.554.554 0 1 0 .784.784z"/></svg>';
-      if (stopAllButton.disabled == false) {
-        // setPlaybackVolume(volume, true, false);
-      }
     } else {
       wavesurfer.setMute(true);
       muteButton.setAttribute('title', 'Unmute');
       muteButton.innerHTML =
         '<svg fill="#000000" width="25" height="25" viewBox="0 0 19 19" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="m2 7.5v3c0 .8.6 1.5 1.4 1.5h2.3l3.2 2.8c.1.1.3.2.4.2s.2 0 .3-.1c.2-.1.4-.4.4-.7v-.9l-7.2-7.2c-.5.2-.8.8-.8 1.4zm8 2v-5.8c0-.3-.1-.5-.4-.7-.1 0-.2 0-.3 0s-.3 0-.4.2l-2.8 2.5-4.1-4.1-1 1 3.4 3.4 5.6 5.6 3.6 3.6 1-1z" fill-rule="evenodd"/></svg>';
     }
-
-    setPlaybackVolume();
   });
   buttonContainer.appendChild(muteButton);
 
@@ -1047,9 +1039,6 @@ function createDownloadLink(
     wavesurfer.on('seek', function () {
       seekingPos = ~~(wavesurfer.backend.getPlayedPercents() * length);
     });
-
-    // update playback volumes because new track added
-    setPlaybackVolume();
   });
 
   //console.log("wavesufer speed was",speed,"%");
@@ -1076,17 +1065,12 @@ function createDownloadLink(
       muteButton.setAttribute('title', 'Mute');
       muteButton.innerHTML =
         '<svg fill="#000000" width="25" height="25" viewBox="-2.5 0 19 19" xmlns="http://www.w3.org/2000/svg" class="cf-icon-svg"><path d="M7.365 4.785v9.63c0 .61-.353.756-.784.325l-2.896-2.896H1.708A1.112 1.112 0 0 1 .6 10.736V8.464a1.112 1.112 0 0 1 1.108-1.108h1.977L6.581 4.46c.43-.43.784-.285.784.325zm2.468 7.311a3.53 3.53 0 0 0 0-4.992.554.554 0 0 0-.784.784 2.425 2.425 0 0 1 0 3.425.554.554 0 1 0 .784.783zm1.791 1.792a6.059 6.059 0 0 0 0-8.575.554.554 0 1 0-.784.783 4.955 4.955 0 0 1 0 7.008.554.554 0 1 0 .784.784z"/></svg>';
-      if (stopAllButton.disabled == false) {
-        // setPlaybackVolume(volume, true, false);
-      }
     } else {
       wavesurfer.setMute(true);
       muteButton.setAttribute('title', 'Unmute');
       muteButton.innerHTML =
         '<svg fill="#000000" width="25" height="25" viewBox="0 0 19 19" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="m2 7.5v3c0 .8.6 1.5 1.4 1.5h2.3l3.2 2.8c.1.1.3.2.4.2s.2 0 .3-.1c.2-.1.4-.4.4-.7v-.9l-7.2-7.2c-.5.2-.8.8-.8 1.4zm8 2v-5.8c0-.3-.1-.5-.4-.7-.1 0-.2 0-.3 0s-.3 0-.4.2l-2.8 2.5-4.1-4.1-1 1 3.4 3.4 5.6 5.6 3.6 3.6 1-1z" fill-rule="evenodd"/></svg>';
     }
-
-    setPlaybackVolume();
   });
   buttonContainer.appendChild(muteButton);
 
@@ -1221,9 +1205,6 @@ function createDownloadLink(
     timelineContainer.parentNode.removeChild(timelineContainer);
     buttonContainer.parentNode.removeChild(buttonContainer);
     outmostContainer.remove();
-
-    // update playback volumes because a track was deleted
-    setPlaybackVolume();
   }
 
   function deleteHandler(event) {
@@ -1578,6 +1559,7 @@ function playpauseAll() {
 }
 
 function playAll() {
+  setPlaybackVolume(); // automatic adjustment of audio tracks
   //console.log("playPauseAllButton (PLAY) clicked");
   document.getElementById('speedSlider').disabled = true;
   stopAllButton.disabled = false;
@@ -1589,7 +1571,6 @@ function playAll() {
   var playPauseButtons = document.querySelectorAll('.play-pause-button');
   //console.log("now, I will click all play buttons");
   //console.log("playButtons.length = ",playButtons.length);
-  // setPlaybackVolume(volume, false, false);
   for (var i = 0; i < playButtons.length; i++) {
     //console.log(i);
     playButtons[i].click();
@@ -1602,6 +1583,7 @@ function playAll() {
 }
 
 function pauseAll() {
+  resetPlaybackVolume();
   document.getElementById('speedSlider').disabled = false;
   //console.log("playPauseAllButton (PAUSE) clicked");
   playPauseAllButton.innerHTML =
@@ -1624,6 +1606,7 @@ function pauseAll() {
 }
 
 function stopAll() {
+  resetPlaybackVolume();
   //console.log("stopAllButton clicked");
   stopAllButton.disabled = true;
   stopAllButton.setAttribute('title', '');
@@ -1700,6 +1683,21 @@ function notify(text, context) {
 }
 
 // - Neoklis
+function resetPlaybackVolume() {
+  const volumeSlider = document.querySelector('#volume-slider');
+
+  for (let w = 0; w < wavesurfers.length; w++) {
+    if (!wavesurfers[w].isMuted) {
+      wavesurfers[w].setVolume(1);
+    }
+  }
+
+  if (backingTrack.isReady && !backingTrack.isMuted) {
+    backingTrackVolumeFactor = 1;
+    backingTrack.setVolume(+volumeSlider.value * backingTrackVolumeFactor);
+  }
+}
+
 /**
  * The setPlaybackVolume function is responsible for dynamically adjusting the volume of audio tracks in an application. It counts the number of unmuted tracks, and based on this count, it sets the volume levels of the backing track and other recordings, ensuring balanced audio playback
  */
@@ -1778,6 +1776,7 @@ function setPlaybackVolume() {
   // */
 }
 
+// debug event fo playback volume
 document.getElementById('musicolab-logo').addEventListener('click', e => {
   console.log('------------');
   console.log(
@@ -1793,7 +1792,7 @@ document.getElementById('musicolab-logo').addEventListener('click', e => {
   }
 });
 
-function preRecordingModal() {
+function preCountRecordingModal() {
   return new Promise((resolve, reject) => {
     // EXTRA: display warning modal about headphones before pre count? (optional) TODO
 
@@ -1829,7 +1828,9 @@ function preRecordingModal() {
     }
 
     function onPreCountMeasuresComplete() {
-      console.log('Pre count measures complete, resolving preRecordingModal');
+      console.log(
+        'Pre count measures complete, resolving preCountRecordingModal'
+      );
       // Remove listener to prevent re-trigger within the same cycle.
 
       metronomeEvents.removeEventListener(

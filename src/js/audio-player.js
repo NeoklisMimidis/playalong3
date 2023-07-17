@@ -160,9 +160,9 @@ const urlFileName = urlParams.get('f');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  resetAudioPlayer();
+  // resetAudioPlayer();
   // loadFilesInOrder(audioFileURL1);
-  // loadFilesInOrder(audioFileURL1, annotationFile1);
+  loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
@@ -364,8 +364,6 @@ function loadAudioFile(input) {
       audioFileName.textContent = audioFileNamePreface.textContent;
 
       activateAudioPlayerControls();
-
-      setPlaybackVolume();
 
       btrack = false;
     });

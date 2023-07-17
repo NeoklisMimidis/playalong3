@@ -417,8 +417,6 @@ function muteUnmute(e) {
       muteUnmuteBtn._tippy.setContent('Mute (m)');
     }
   }
-
-  setPlaybackVolume();
 }
 
 function setVolumeWithSlider(value) {
@@ -438,8 +436,6 @@ function setVolumeWithSlider(value) {
 
   wavesurfer.setVolume(volumeValue * backingTrackVolumeFactor);
   wavesurfer.savedVolume = wavesurfer.backend.getVolume();
-
-  setPlaybackVolume(); // balanced audio playback between recordings and backing track
 }
 
 function setVolumeWithSliderShortcut(stepValue) {
