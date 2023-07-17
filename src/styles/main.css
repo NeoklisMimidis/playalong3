@@ -297,6 +297,7 @@ h1 {
 #player-settings-btn .dropdown-menu {
   border-radius: 1rem;
   position: absolute;
+  width: max-content;
   /* display: block; */
   font-family: Arial, Helvetica, sans-serif;
 }
