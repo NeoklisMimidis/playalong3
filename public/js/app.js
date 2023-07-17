@@ -687,6 +687,8 @@ function fillRecordingTemplate(
       '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
     playPauseButton.title = 'Play';
     speedSliderEnableCheck();
+
+    resetStopAllButton();
   });
 
   // create the buttons /////////////////////////////////////////////
@@ -1055,6 +1057,8 @@ function createDownloadLink(
       '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
     playPauseButton.title = 'Play';
     speedSliderEnableCheck();
+
+    resetStopAllButton();
   });
 
   // create the buttons /////////////////////////////////////////////
@@ -1689,6 +1693,7 @@ function notify(text, context) {
 }
 
 // - Neoklis
+
 function resetPlaybackVolume() {
   const volumeSlider = document.querySelector('#volume-slider');
 
@@ -1852,4 +1857,21 @@ function preCountRecordingModal() {
       onPreCountMeasuresComplete
     );
   });
+}
+
+function resetStopAllButton() {
+  let audioIsPLaying = false;
+  for (let w = 0; w < wavesurfers.length; w++) {
+    if (wavesurfers[w].isPlaying()) {
+      audioIsPLaying = true;
+    }
+  }
+
+  if (backingTrack.isReady && backingTrack.isPlaying()) audioIsPLaying = true;
+
+  if (audioIsPLaying === false) {
+    stopAll();
+  }
+
+  // console.log('At least one source of audio is still playing:', audioIsPLaying);
 }

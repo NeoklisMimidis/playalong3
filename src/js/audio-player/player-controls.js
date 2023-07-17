@@ -401,6 +401,8 @@ function audioFinishedResetControls() {
     playBtn.classList.remove('d-none');
     pauseBtn.classList.add('d-none');
   }
+
+  resetStopAllButton();
 }
 
 function setupPlaybackSpeedEvents() {
