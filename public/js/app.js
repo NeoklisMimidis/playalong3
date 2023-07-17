@@ -301,6 +301,8 @@ function pauseRecording() {
     wavesurfer_mic.microphone.pause();
     wavesurfer_mic.pause();
     //waveform_micContainer.setAttribute('hidden','true');
+    if (document.querySelector('#countOn').checked)
+      parent.metronome.setPlayStop(false);
     pauseButton.disabled = false;
     pauseButton.setAttribute('title', 'Resume recording');
     pauseButton.classList.add('flash');
@@ -323,6 +325,9 @@ function pauseRecording() {
     //waveform_micContainer.removeAttribute('hidden');
     rec.record();
     wavesurfer_mic.microphone.start();
+    if (document.querySelector('#countOn').checked)
+      parent.metronome.setPlayStop(true);
+
     pauseButton.disabled = false;
     pauseButton.setAttribute('title', 'Pause recording');
     pauseButton.classList.remove('flash');
