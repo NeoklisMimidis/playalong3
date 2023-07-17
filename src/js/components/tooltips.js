@@ -46,7 +46,7 @@ tippy('#left-toolbar-controls', {
   interactive: true,
 });
 
-const centerToolbarControls = `The <strong>annotation list</strong> allows you to select which annotations are displayed, including the ability to create new annotations during <span style="font-style: italic; text-decoration: underline;">editing</span>. Deletion of annotations is possible through the <strong>delete</strong> , except for the original (automatic analysis).<br><strong>Edit</strong>  grants access to <span class="text-warning">Edit mode</span> and a set of tools designed for modifying selected annotations.`;
+const centerToolbarControls = `The <strong>annotation list</strong> allows you to select which annotations are displayed, including the ability to create new annotations during <span style="font-style: italic; text-decoration: underline;">editing</span>. Deletion of annotations is possible through the <strong>Delete</strong> <i class="fa-solid fa-sm fa-trash-can"></i>, except for the original (automatic analysis).<br><strong>Edit</strong>  grants access to <span class="text-warning">Edit mode</span> and a set of tools designed for modifying selected annotations.`;
 
 tippy('#center-toolbar-controls', {
   content: centerToolbarControls,
@@ -56,11 +56,11 @@ tippy('#center-toolbar-controls', {
   // placement: 'right-start',
   placement: 'top',
   arrow: true,
-  maxWidth: '450px',
+  maxWidth: '660px',
   interactive: true,
 });
 
-const rightToolbarControls = `<strong>Edit chord</strong> allows modifying the selected chord.<br><strong>Save chords</strong> stores changes made  either as separate or replaced annotation (except original annotation)<br><strong>Cancel</strong> reverts back without altering.<br><span style="font-style: italic;">Customize and manage your chord edits with ease.</span>`;
+const rightToolbarControls = `<strong>Edit chord</strong> <i class="fa-solid fa-pen fa-sm"></i>, allows modifying the selected chord.<br><strong>Save chords</strong> <i class="fa-solid fa-floppy-disk fa-sm"></i>, stores changes made  either as separate or replaced annotation (except original annotation)<br><strong>Cancel</strong>   <i class="fa-solid fa-xmark fa-sm"></i>, reverts back without altering.<br><span style="font-style: italic;">Customize and manage your chord edits with ease.</span>`;
 tippy('#right-toolbar-controls', {
   content: rightToolbarControls,
   delay: [800, 100],
@@ -68,7 +68,7 @@ tippy('#right-toolbar-controls', {
   // theme: 'light-border',
   // placement: 'right-start',
   placement: 'top-end',
-  maxWidth: '400px',
+  maxWidth: '420px',
   interactive: true,
 });
 
@@ -77,25 +77,58 @@ const questionContent =
 tippy('.fa-circle-question', {
   content: questionContent,
   delay: [500, 100],
-  maxWidth: '350px',
-  offset: [50, 10],
   theme: 'translucent',
   placement: 'right-end',
   interactive: true,
+  offset: [50, 10],
+  maxWidth: '370px',
 });
 
 const infoContent =
-  'In <span class="text-warning">Edit mode</span>, you gain extra functionality. Easily <span style="font-weight: bold; text-decoration: underline;">drag</span> markers (representing beats and chords) to fine-tune beat timing. <br><span style="font-weight: bold; text-decoration: underline;">Right-click</span> to remove the selected marker, or simply <span style="font-weight: bold; text-decoration: underline;">double-click</span> on the waveform to add a new marker at the desired position.<br>You can hover on a label to reveal additional metrics.<br><span style="font-style: italic;">Take control and enhance the accuracy of the automatic analysis effortlessly.</span>';
+  'In <span class="text-warning">Edit mode</span>, you gain extra functionality to modify markers that represent beats and chords.<br> Easily <span style="font-weight: bold; text-decoration: underline;">drag</span> a marker to fine-tune beat timing or <span style="font-weight: bold; text-decoration: underline;">click</span> one, to enable <strong>Edit chord</strong> <i class="fa-solid fa-sm fa-pen"></i> and select a new chord. <br><span style="font-weight: bold; text-decoration: underline;">Right-click</span> to remove the selected marker, or simply <span style="font-weight: bold; text-decoration: underline;">double-click</span> on the waveform to add a new marker at the desired position.<br>You can hover on a label to reveal additional metrics.<br><span style="font-style: italic;">Take control and enhance the accuracy of the automatic analysis effortlessly.</span>';
 tippy('.fa-circle-info', {
   content: infoContent,
   delay: [500, 100],
   theme: 'translucent',
   placement: 'right-end',
   interactive: true,
+  offset: [50, 10],
+  maxWidth: '390px',
 });
 
 // - Sidebar (Audio I/O Controls)
-const audioSidebarText = `<span style="font-style: italic;">Open the side panel to access various actions.</span><br><strong>Import Audio:</strong> Select a file from your computer or effortlessly <strong>drag and drop</strong> it into the designated space on the left.<br><strong>Analyze</strong>: Initiate a new analysis from the server or select an annotation file (JAMS) from your computer.<br><strong>Download:</strong> Retrieve all modified annotations, including the original annotation, for the corresponding file.`;
+const ImportFromDiskIcon = `
+<svg
+  width="15px"
+  height="15px"
+  viewBox="2 1 25 25"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  >
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V7C19 7.55228 19.4477 8 20 8C20.5523 8 21 7.55228 21 7V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM12.5 24C13.8807 24 15 22.8807 15 21.5V12.8673L20 12.153V18.05C19.8384 18.0172 19.6712 18 19.5 18C18.1193 18 17 19.1193 17 20.5C17 21.8807 18.1193 23 19.5 23C20.8807 23 22 21.8807 22 20.5V11C22 10.7101 21.8742 10.4345 21.6552 10.2445C21.4362 10.0546 21.1456 9.96905 20.8586 10.0101L13.8586 11.0101C13.3659 11.0804 13 11.5023 13 12V19.05C12.8384 19.0172 12.6712 19 12.5 19C11.1193 19 10 20.1193 10 21.5C10 22.8807 11.1193 24 12.5 24Z"
+    fill="currentColor"
+  />
+</svg>
+`;
+
+const ImportFromRepositoryIcon = `
+<svg
+xmlns="http://www.w3.org/2000/svg"
+width="15"
+height="15"
+fill="white"
+viewBox="0 0 16 16"
+>
+<path
+  d="M4.318 2.687C5.234 2.271 6.536 2 8 2s2.766.27 3.682.687C12.644 3.125 13 3.627 13 4c0 .374-.356.875-1.318 1.313C10.766 5.729 9.464 6 8 6s-2.766-.27-3.682-.687C3.356 4.875 3 4.373 3 4c0-.374.356-.875 1.318-1.313ZM13 5.698V7c0 .374-.356.875-1.318 1.313C10.766 8.729 9.464 9 8 9s-2.766-.27-3.682-.687C3.356 7.875 3 7.373 3 7V5.698c.271.202.58.378.904.525C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777A4.92 4.92 0 0 0 13 5.698ZM14 4c0-1.007-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1s-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4v9c0 1.007.875 1.755 1.904 2.223C4.978 15.71 6.427 16 8 16s3.022-.289 4.096-.777C13.125 14.755 14 14.007 14 13V4Zm-1 4.698V10c0 .374-.356.875-1.318 1.313C10.766 11.729 9.464 12 8 12s-2.766-.27-3.682-.687C3.356 10.875 3 10.373 3 10V8.698c.271.202.58.378.904.525C4.978 9.71 6.427 10 8 10s3.022-.289 4.096-.777A4.92 4.92 0 0 0 13 8.698Zm0 3V13c0 .374-.356.875-1.318 1.313C10.766 14.729 9.464 15 8 15s-2.766-.27-3.682-.687C3.356 13.875 3 13.373 3 13v-1.302c.271.202.58.378.904.525C4.978 12.71 6.427 13 8 13s3.022-.289 4.096-.777c.324-.147.633-.323.904-.525Z"
+/>
+</svg>
+`;
+
+const audioSidebarText = `<span style="font-style: italic;">Open the side panel to access various actions.</span><br><strong>Import from disk</strong> ${ImportFromDiskIcon}Select a file from your computer or effortlessly <span style="font-style: italic; text-decoration: underline;">drag and drop</span> it into the designated space on the left.<br><strong>Import from repository </strong>${ImportFromRepositoryIcon}bla,bla (dimitri add description).<br><strong>Export to disk or repository</strong> <i class="fa-solid fa-download fa-sm"></i> Decide if you want to include the backing track audio and/or respective annotation files in your export to your local disk or MusiCoLab repository.`;
 tippy('#audio-sidebar-text', {
   content: audioSidebarText,
   delay: [400, 100],
@@ -103,6 +136,7 @@ tippy('#audio-sidebar-text', {
   followCursor: 'horizontal',
   plugins: [followCursor],
   interactive: true,
+  maxWidth: '450px',
   // for some reason some default params don't work on this one so re-apply
   onShow: function (instance) {
     // Get the tooltip element
@@ -237,9 +271,8 @@ export const MARKERS_SINGLETON_PROPS = {
 export const COLLAB_CHORD_SELECTION_TIPPY_PROPS = {
   placement: 'bottom',
   trigger: 'manual',
-  theme: 'translucent'
-}
-
+  theme: 'translucent',
+};
 
 // NOTE markers singleton is initialized (or updated) in render-annotations every time a new marker is created
 

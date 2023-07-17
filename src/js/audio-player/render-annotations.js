@@ -180,7 +180,7 @@ export function addMarkerAtTime(
 
   const marker = wavesurfer.addMarker({
     time: time,
-    tooltip: '', // better tooltips with tippy.js!
+    tooltip: '"Click or drag left/right"',
     label: _simplifiedLabel(chordParts),
     draggable: draggable,
     markerElement: null,
