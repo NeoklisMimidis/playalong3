@@ -241,24 +241,27 @@ function setupDownloadJamsEvent() {
   });
 }
 
+// BMP box
 function setupCalculateTempoEvent() {
   //  Calculate tempo once in the start
   calculateTempo(wavesurfer.markers.markers[0].duration);
-  // ..and now calculate beat for every region
+  // ..and now calculate beat for every region (except loop region!)
   wavesurfer.on('region-in', region => {
-    // console.log('Tempo:', 60 / (region.end - region.start));
     const beatDuration = region.end - region.start;
+
+    if (region.id === 'loop-region') return;
+    console.log('Tempo:', (60 / beatDuration) * speed01);
     calculateTempo(beatDuration);
   });
 }
 
 //  Just for now an easy to calculate tempo solution
 function calculateTempo(beatDuration) {
-  let tempo = 60 / beatDuration;
+  let tempo = (60 / beatDuration) * speed01;
   tempo = Math.floor(tempo);
 
   // impose a lower and upper limit to the tempo
-  const minTempo = 30;
+  const minTempo = 15;
   const maxTempo = 248;
 
   if (tempo < minTempo) {
