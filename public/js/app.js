@@ -197,6 +197,7 @@ function startRecording() {
   document.getElementById('speedSlider').disabled = true;
   stopAllButton.setAttribute('hidden', 'true');
   playPauseAllButton.setAttribute('hidden', 'true');
+  combineSelectedButton.hidden = true;
   var playButtons = document.querySelectorAll('.play-button');
   var playPauseButtons = document.querySelectorAll('.play-pause-button');
   //console.log("click all play buttons")
