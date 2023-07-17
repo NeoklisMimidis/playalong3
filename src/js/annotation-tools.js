@@ -250,7 +250,7 @@ function setupCalculateTempoEvent() {
     const beatDuration = region.end - region.start;
 
     if (region.id === 'loop-region') return;
-    console.log('Tempo:', (60 / beatDuration) * speed01);
+    // console.log('Tempo:', (60 / beatDuration) * speed01);
     calculateTempo(beatDuration);
   });
 }
