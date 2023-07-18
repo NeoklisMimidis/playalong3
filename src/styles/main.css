@@ -921,7 +921,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 
 .modal {
   line-height: 1.2;
-  padding-top: 10vmin;
+  padding-top: 50px;
   text-align: center;
   font-size: 1.2rem;
 }
@@ -945,6 +945,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   background-color: var(--color-chord-editor);
   font-size: 1vw;
   line-height: 1.2;
+  /* display: block; */
 }
 
 #chord-editor {

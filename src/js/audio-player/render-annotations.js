@@ -428,10 +428,15 @@ function _mapChordTextToSymbol(chordParts) {
 
   // .. and the parts separate for other use cases
   const symbolParts = {
-    root: displayedRootNote,
-    accidental: displayedAccidental,
+    root: rootNote,
+    accidental: accidental,
     variation: matchingShorthand.encoded,
-    inversion: displayedBassNote,
+    inversion: bassNoteWithSlash,
+
+    displayedRootNote: displayedRootNote,
+    displayedAccidental: displayedAccidental,
+    displayedVariation: matchingShorthand.encoded,
+    displayedInversion: displayedBassNote,
   };
 
   return [encodedFontSymbol, symbolParts];

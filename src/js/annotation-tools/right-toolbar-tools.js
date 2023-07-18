@@ -53,6 +53,7 @@ import {
 /* UI variables/states */
 
 let lastSelectedMarker;
+let sameVariationAsLast;
 
 let chord = {
   current: {
@@ -74,10 +75,10 @@ let chord = {
  */
 export function setupEditChordEvents() {
   // Edit selected chord onPressingEditChordButton (enables button)
-  wavesurfer.on('marker-click', (selMarker) => {
-    console.log('click')
+  wavesurfer.on('marker-click', selMarker => {
+    console.log('click');
     if (!!Collab) {
-      window.sharedBTEditParams.set('selectedMarker',selMarker.time);
+      window.sharedBTEditParams.set('selectedMarker', selMarker.time);
     }
 
     enableEditChordButtonFunction(selMarker);
@@ -86,21 +87,20 @@ export function setupEditChordEvents() {
   editChordBtn.addEventListener('click', function () {
     showChordEditor();
 
-  //collably chord editing initiating
-  !!Collab
-    ? window.awareness.setLocalStateField('chordEdit', {
-        status: 'started',
-        selection: chord.current
-      })
-    : null;
-});
+    //collably chord editing initiating
+    !!Collab
+      ? window.awareness.setLocalStateField('chordEdit', {
+          status: 'started',
+          selection: chord.current,
+        })
+      : null;
+  });
 
   // /* Chord Editor Modal related events: */
   chordEditor.addEventListener('click', event => {
-
     if (
-      (event.target.tagName !== 'TD' && event.target.tagName !== 'TEXT') // Proceed if click is on el with class Root, Accidental or Variation
-      || (!!Collab && !toolbarStates.EDIT_MODE) // No click event for non editors
+      (event.target.tagName !== 'TD' && event.target.tagName !== 'TEXT') || // Proceed if click is on el with class Root, Accidental or Variation
+      (!!Collab && !toolbarStates.EDIT_MODE) // No click event for non editors
     ) {
       return;
     }
@@ -143,24 +143,29 @@ export function setupEditChordEvents() {
       window.awareness.setLocalStateField('chordEdit', {
         status: 'completed',
         completingAction: 'applied',
-        chordSelection: chord.new
+        chordSelection: chord.new,
       });
-
 
       //updating shared markers map
       window.sharedBTMarkers.forEach((m, k, thisMap) => {
-        if (m.time === lastSelectedMarker.time) { //find shared marker that corresponds to marker whose chord label has changed
+        if (m.time === lastSelectedMarker.time) {
+          //find shared marker that corresponds to marker whose chord label has changed
           //defining new shared marker parameters
-          const newStatus = (m.status == 'unedited' || m.status.includes('edited'))
-            ? m.status.replace(/unedited|edited/, 'edited')
-            : m.status.concat(', edited');
+          const newStatus =
+            m.status == 'unedited' || m.status.includes('edited')
+              ? m.status.replace(/unedited|edited/, 'edited')
+              : m.status.concat(', edited');
 
           const newMetadata = m.metadata;
-          newMetadata.mirLabel = lastSelectedMarker.mirLabel
+          newMetadata.mirLabel = lastSelectedMarker.mirLabel;
           //updating shared marker
-          thisMap.set(`${k}`, {time: m.time, status: newStatus, metadata: newMetadata });
+          thisMap.set(`${k}`, {
+            time: m.time,
+            status: newStatus,
+            metadata: newMetadata,
+          });
         }
-      })
+      });
     }
 
     disableAnnotationListAndDeleteAnnotation();
@@ -238,14 +243,14 @@ export function editChord(cancel = false, selection) {
   const selectedChord = toolbarStates.COLLAB_EDIT_MODE
     ? _mapChordSymbolToText(selection) //its given as argument only when function is called inside collab functions
     : _mapChordSymbolToText(chord.new);
-  
+
   // remove the selected marker because ...
   const lastSelectedMarkerTime = toolbarStates.COLLAB_EDIT_MODE //lastSelectedMarker does not hold the last selection in collab non editors
     ? window.sharedBTEditParams.get('selectedMarker')
     : lastSelectedMarker.time;
   toolbarStates.COLLAB_EDIT_MODE
     ? wavesurfer.markers.remove(
-        wavesurfer.markers.markers.find(m => m.time==lastSelectedMarkerTime)
+        wavesurfer.markers.markers.find(m => m.time == lastSelectedMarkerTime)
       )
     : wavesurfer.markers.remove(lastSelectedMarker);
 
@@ -266,11 +271,11 @@ export function editChord(cancel = false, selection) {
   if (toolbarStates.COLLAB_EDIT_MODE) {
     _setMarkerSpanColor(
       newSelectedMarker,
-      wavesurfer.markers.markers.find(m => m.time==lastSelectedMarkerTime),
+      wavesurfer.markers.markers.find(m => m.time == lastSelectedMarkerTime),
       MARKER_LABEL_SPAN_COLOR
     );
 
-    newSelectedMarker.elChordSymbolSpan.classList.add('span-chord-highlight')
+    newSelectedMarker.elChordSymbolSpan.classList.add('span-chord-highlight');
   } else {
     // Colorizing again the span (label element font color NOT BACKGROUND)
     _setMarkerSpanColor(
@@ -281,7 +286,6 @@ export function editChord(cancel = false, selection) {
     // Update lastSelectedMarker with the new one
     lastSelectedMarker = newSelectedMarker;
   }
-
 
   updateMarkerDisplayWithColorizedRegions();
 }
@@ -323,7 +327,6 @@ function saveChords() {
         updateMarkerDisplayWithColorizedRegions(true);
       }
 
-      
       // In the annotation list include information about modification date! TODO. otan to kaneis pes mou na allaxw kai ta collaborative events.alx
       createAnnotationsList(jamsFile);
       annotationList.selectedIndex = index;
@@ -335,15 +338,15 @@ function saveChords() {
 
       if (!!Collab) {
         const newAnnotationData = _extractModalPromptFields();
-        const action = (choice === 'replace')
-          ? 'saved, replacedCurrentAnnotation'
-          : 'saved, savedAsSeparateAnnotation'
+        const action =
+          choice === 'replace'
+            ? 'saved, replacedCurrentAnnotation'
+            : 'saved, savedAsSeparateAnnotation';
         window.awareness.setLocalStateField('cancelSaveEdit', {
           action,
-          newAnnotationData
+          newAnnotationData,
         });
       }
-
     })
     .catch(() => {
       // User canceled
@@ -365,7 +368,7 @@ function cancelEditingChords() {
 
       if (!!Collab) {
         window.awareness.setLocalStateField('cancelSaveEdit', {
-          action: 'canceled'
+          action: 'canceled',
         });
       }
     })
@@ -377,9 +380,11 @@ function cancelEditingChords() {
 export function _createNewAnnotation(annotationData) {
   let annotatorName, annotationDataSource, annotationDescription;
   if (toolbarStates.COLLAB_EDIT_MODE) {
-    ([annotatorName, annotationDataSource, annotationDescription] = annotationData);
+    [annotatorName, annotationDataSource, annotationDescription] =
+      annotationData;
   } else {
-    ([annotatorName, annotationDataSource, annotationDescription] = _extractModalPromptFields());
+    [annotatorName, annotationDataSource, annotationDescription] =
+      _extractModalPromptFields();
   }
 
   const newAnnotation = {
@@ -502,12 +507,13 @@ export function showChordEditor(collabEditSelection) {
   modalChordEditor.style.display = 'block';
   applyBtn.style.visibility = 'hidden';
   toolbarStates.COLLAB_EDIT_MODE
-    ? cancelBtn.style.visibility = 'hidden'
+    ? (cancelBtn.style.visibility = 'hidden')
     : null;
 }
 
 function select(selection, component) {
-  // console.log('selected table element:', selection);
+  console.log('selected table element:', selection);
+  console.log('component:', component);
   // console.log('last selected marker:', lastSelectedMarker);
 
   _updateChordVariable(selection, component);
@@ -522,8 +528,11 @@ function select(selection, component) {
 
   //transmitting the selection if in collab mode
   !!Collab
-    ? window.sharedBTEditParams.set('chordSel', {value: chord.new, selector: userParam})
-    : null; 
+    ? window.sharedBTEditParams.set('chordSel', {
+        value: chord.new,
+        selector: userParam,
+      })
+    : null;
 }
 
 export function closeModal() {
@@ -559,27 +568,47 @@ function _updateChordVariable(selection, component) {
 
   // Checking conditions on trimmed like text with innerText & replace
   const selectedText = selection.innerText;
-  // const trimmedVariation = chord.new.variation.replace(/<[^>]+>/g, '');
-  const trimmedVariation = stripHtmlTags(chord.new.variation);
+  // this is still the previous selected variation
+  const trimmedPrevVariation = stripHtmlTags(chord.new.variation);
 
   // Condition to uncheck all other cases except 'N.C.' & '??'
   if (selectedText === '??' || selectedText === 'N.C.') {
     chord.new.root = '';
     chord.new.accidental = '';
     chord.new.variation = selectedHTMLtext;
+
+    sameVariationAsLast = false; // DON'T assign major in those cases
   } else {
     // Condition to uncheck N.C. or ?? when not selected
-    if (trimmedVariation === '??' || trimmedVariation === 'N.C.') {
+    if (trimmedPrevVariation === '??' || trimmedPrevVariation === 'N.C.') {
       chord.new.variation = '';
     } else {
       chord.new.variation = chord.new.variation;
     }
+
+    // Decide if click was on the same variation
+    if (component === 'variation') {
+      sameVariationAsLast = selectedText === trimmedPrevVariation;
+    } else {
+      sameVariationAsLast = false;
+    }
+
     // Otherwise assigning selections component
     chord.new[component] = selectedHTMLtext;
-    // those 2 cases handles errors after '??' 'N.C.' for required fields
+
+    // handles root after '??' 'N.C.' for required fields
     chord.new.root = chord.new.root === '' ? 'C' : chord.new.root;
-    chord.new.variation =
-      chord.new.variation === '' ? '(M)' : chord.new.variation;
+
+    if (sameVariationAsLast) {
+      // assign major chord if same click as before
+      chord.new.variation = '(M)';
+    } else if (chord.new.variation === '') {
+      // handles variation after '??' 'N.C.' for required fields
+      chord.new.variation = '(M)';
+    } else {
+      // update variation with the new selected (all other cases)
+      chord.new.variation;
+    }
   }
 }
 
@@ -587,15 +616,23 @@ function _mapChordSymbolToText(encodedChord) {
   let foundRootNote;
   let foundAccidental;
 
+  function combineEncodedChord(chord) {
+    return `${chord.root}${chord.accidental}${chord.variation}`;
+  }
+
+  // conditional variable to check if same chord as before
+  const sameAsLastChord =
+    combineEncodedChord(encodedChord) ===
+    combineEncodedChord(lastSelectedMarker.symbolParts);
+
   // 1) Find shorthand according to the font mapping
   let foundShorthand;
   const matchingShorthand = variations.find(mappingEl => {
     return mappingEl.encoded === encodedChord.variation;
   });
-  if (matchingShorthand) {
-    // in the case of maj assign '' otherwise the encoded font
-    foundShorthand = matchingShorthand.shorthand || '';
-  }
+  // console.log(matchingShorthand);
+
+  if (matchingShorthand) foundShorthand = matchingShorthand.shorthand || '';
 
   let column = ':';
   if (foundShorthand === 'N' || foundShorthand === 'X') {
@@ -615,12 +652,16 @@ function _mapChordSymbolToText(encodedChord) {
       foundAccidental = matchingAccidental.simplified || '';
     }
   }
+
+  // Same chord as last && click is on variation EXCEPT N.C. or ?? --> 'maj'
+  if (sameAsLastChord && sameVariationAsLast) foundShorthand = 'maj';
+
   const mirLabel = `${foundRootNote}${foundAccidental}${column}${foundShorthand}`;
 
   return mirLabel;
 }
 
 function exportJamsToRepository() {
-  if (!!Collab){
+  if (!!Collab) {
   }
 }

@@ -5,21 +5,15 @@ id="show-chord-editor"
 tabindex="-1"
 aria-labelledby="showCordEditorLabel"
 aria-hidden="true"
-
-<div class="modal-content bg-transparent border-0">
+>
 <div class="modal-body">
   <div class="container">
     <div id="chord-editor">
       <div class="row justify-content-around my-5">
-        <table
-          id="roots"
-          class="table table-bordered table-dark col-4"
-        >
+        <table id="roots" class="table table-bordered table-dark col-4">
           <thead>
             <tr>
-              <th scope="col" class="text-center" colspan="7">
-                Roots
-              </th>
+              <th scope="col" class="text-center" colspan="7">Roots</th>
             </tr>
           </thead>
           <tbody class="Chords">
@@ -49,8 +43,8 @@ aria-hidden="true"
             <tr>
               <!-- prettier-ignore -->
               <td class="variation" id="special-characters">
-              <text id="disable-font-label">N.C.</text>
-            </td>
+          <text id="disable-font-label">N.C.</text>
+        </td>
               <td class="variation" id="special-characters">
                 <text id="disable-font-label">??</text>
               </td>
@@ -71,10 +65,7 @@ aria-hidden="true"
           <tbody class="Chords">
             <tr>
               <td data-modal-tooltip="Sharp" class="accidental">+</td>
-              <td
-                data-modal-tooltip="Natural"
-                class="accidental"
-              ></td>
+              <td data-modal-tooltip="Natural" class="accidental"></td>
               <!-- prettier-ignore -->
               <td data-modal-tooltip="Flat" class="accidental">&</td>
             </tr>
@@ -96,31 +87,18 @@ aria-hidden="true"
           </thead>
           <tbody class="Chords">
             <tr>
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="4"
-              >
+              <th scope="col" class="text-center small p-1" colspan="4">
                 Major
               </th>
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="7"
-              >
+              <th scope="col" class="text-center small p-1" colspan="7">
                 Minor
               </th>
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="6"
-              >
-                Augmented, Diminished & Half Diminished
+              <th scope="col" class="text-center small p-1" colspan="6">
+                Augmented, Diminished & Half Dim.
               </th>
             </tr>
             <tr>
               <!-- prettier-ignore -->
-              <td class="variation" id="disable-font-table">(M)</td>
               <td class="variation">c</td>
               <td class="variation">d</td>
               <td class="variation">e</td>
@@ -143,31 +121,25 @@ aria-hidden="true"
             </tr>
 
             <tr>
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="4"
-              >
+              <th scope="col" class="text-center small p-1" colspan="1">
+                Fifth
+              </th>
+
+              <th scope="col" class="text-center small p-1" colspan="4">
                 Dominant
               </th>
 
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="7"
-              >
+              <th scope="col" class="text-center small p-1" colspan="7">
                 Add chords
               </th>
 
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="6"
-              >
+              <th scope="col" class="text-center small p-1" colspan="5">
                 Suspended
               </th>
             </tr>
             <tr>
+              <td class="variation">5</td>
+
               <td class="variation">7</td>
               <td class="variation">9</td>
               <td class="variation">Q</td>
@@ -190,15 +162,46 @@ aria-hidden="true"
               </td>
               <td class="variation">H</td>
               <td class="variation">[</td>
-              <td class="variation">]</td>
-              <td class="variation">&lt;</td>
             </tr>
             <tr></tr>
 
             <tr></tr>
-            <tr>
-              <th scope="col" colspan="1" rowspan="5"></th>
 
+            <tr>
+              <th scope="col" class="text-center small p-1" colspan="2">
+                .. Sus.
+              </th>
+
+              <th scope="col" class="text-center small p-1" colspan="7">
+                Altered Chords
+              </th>
+
+              <th scope="col" class="text-center small p-1" colspan="7">
+                Dominant Altered Chords
+              </th>
+            </tr>
+            <tr>
+              <td class="variation">]</td>
+              <td class="variation">&lt;</td>
+
+              <td class="variation">V</td>
+              <td class="variation">v</td>
+              <td class="variation">w</td>
+
+              <td class="variation">1</td>
+              <td class="variation">z</td>
+              <td class="variation">x</td>
+              <td class="variation">y</td>
+
+              <td class="variation">T</td>
+              <td class="variation">n</td>
+              <td class="variation">r</td>
+              <td class="variation">2</td>
+              <td class="variation">u</td>
+              <td class="variation">o</td>
+              <td class="variation">l</td>
+            </tr>
+            <tr>
               <th
                 scope="col"
                 class="text-center small p-1"
@@ -228,52 +231,6 @@ aria-hidden="true"
               <td class="variation">m</td>
             </tr>
             <tr></tr>
-
-            <tr>
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="2"
-              >
-                Fifth
-              </th>
-
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="7"
-              >
-                Altered Chords
-              </th>
-
-              <th
-                scope="col"
-                class="text-center small p-1"
-                colspan="7"
-              >
-                Dominant Altered Chords
-              </th>
-            </tr>
-            <tr>
-              <td class="variation" colspan="2">5</td>
-
-              <td class="variation">V</td>
-              <td class="variation">v</td>
-              <td class="variation">w</td>
-
-              <td class="variation">1</td>
-              <td class="variation">z</td>
-              <td class="variation">x</td>
-              <td class="variation">y</td>
-
-              <td class="variation">T</td>
-              <td class="variation">n</td>
-              <td class="variation">r</td>
-              <td class="variation">2</td>
-              <td class="variation">u</td>
-              <td class="variation">o</td>
-              <td class="variation">l</td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -297,7 +254,7 @@ aria-hidden="true"
     </div>
   </div>
 </div>
-</div>
+<div class="modal-content bg-transparent border-0"></div>
 </div>`;
 
 // -
@@ -309,21 +266,15 @@ id="show-chord-editor"
 tabindex="-1"
 aria-labelledby="showCordEditorLabel"
 aria-hidden="true"
-
-<div class="modal-content bg-transparent border-0">
+>
 <div class="modal-body">
   <div class="container">
     <div id="chord-editor">
       <div class="row justify-content-around my-5">
-        <table
-          id="roots"
-          class="table table-bordered table-dark col-4"
-        >
+        <table id="roots" class="table table-bordered table-dark col-4">
           <thead>
             <tr>
-              <th scope="col" class="text-center" colspan="7">
-                Roots
-              </th>
+              <th scope="col" class="text-center" colspan="7">Roots</th>
             </tr>
           </thead>
           <tbody class="Chords">
@@ -353,8 +304,8 @@ aria-hidden="true"
             <tr>
               <!-- prettier-ignore -->
               <td class="variation" id="special-characters">
-              <text id="disable-font-label">N.C.</text>
-            </td>
+          <text id="disable-font-label">N.C.</text>
+        </td>
               <td class="variation" id="special-characters">
                 <text id="disable-font-label">??</text>
               </td>
@@ -375,10 +326,7 @@ aria-hidden="true"
           <tbody class="Chords">
             <tr>
               <td data-modal-tooltip="Sharp" class="accidental">+</td>
-              <td
-                data-modal-tooltip="Natural"
-                class="accidental"
-              ></td>
+              <td data-modal-tooltip="Natural" class="accidental"></td>
               <!-- prettier-ignore -->
               <td data-modal-tooltip="Flat" class="accidental">&</td>
             </tr>
@@ -401,7 +349,6 @@ aria-hidden="true"
           <tbody class="Chords">
             <tr>
               <!-- prettier-ignore -->
-              <td class="variation" id="disable-font-table">(M)</td>
               <td class="variation">c</td>
               <td class="variation">d</td>
               <td class="variation">e</td>
@@ -424,6 +371,8 @@ aria-hidden="true"
             </tr>
 
             <tr>
+              <td class="variation">5</td>
+
               <td class="variation">7</td>
               <td class="variation">9</td>
               <td class="variation">Q</td>
@@ -446,12 +395,31 @@ aria-hidden="true"
               </td>
               <td class="variation">H</td>
               <td class="variation">[</td>
-              <td class="variation">]</td>
-              <td class="variation">&lt;</td>
             </tr>
 
             <tr>
-              <td></td>
+              <td class="variation">]</td>
+              <td class="variation">&lt;</td>
+
+              <td class="variation">V</td>
+              <td class="variation">v</td>
+              <td class="variation">w</td>
+
+              <td class="variation">1</td>
+              <td class="variation">z</td>
+              <td class="variation">x</td>
+              <td class="variation">y</td>
+
+              <td class="variation">T</td>
+              <td class="variation">n</td>
+              <td class="variation">r</td>
+              <td class="variation">2</td>
+              <td class="variation">u</td>
+              <td class="variation">o</td>
+              <td class="variation">l</td>
+            </tr>
+
+            <tr>
               <td class="variation">?</td>
               <td class="variation">p</td>
               <td class="variation">q</td>
@@ -471,28 +439,7 @@ aria-hidden="true"
               <td class="variation">0</td>
               <td class="variation">m</td>
             </tr>
-
-            <tr>
-              <td></td>
-              <td class="variation" colspan="2">5</td>
-
-              <td class="variation">V</td>
-              <td class="variation">v</td>
-              <td class="variation">w</td>
-
-              <td class="variation">1</td>
-              <td class="variation">z</td>
-              <td class="variation">x</td>
-              <td class="variation">y</td>
-
-              <td class="variation">T</td>
-              <td class="variation">n</td>
-              <td class="variation">r</td>
-              <td class="variation">2</td>
-              <td class="variation">u</td>
-              <td class="variation">o</td>
-              <td class="variation">l</td>
-            </tr>
+            <tr></tr>
           </tbody>
         </table>
       </div>
@@ -516,6 +463,5 @@ aria-hidden="true"
     </div>
   </div>
 </div>
-</div>
-
+<div class="modal-content bg-transparent border-0"></div>
 </div>`;
