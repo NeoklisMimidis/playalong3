@@ -1,6 +1,8 @@
 import { toolbarStates } from '../annotation-tools.js';
 import { waveformInfo } from '../annotation-tools/left-toolbar-tools.js';
-import { wavesurfer, playerStates } from '../audio-player.js';
+
+import { wavesurfer, playerStates, fileName } from '../audio-player.js';
+import { jsonDataToJSONBlob } from '../audio-player/render-annotations.js';
 
 import { formatTime } from '../components/utilities.js';
 
@@ -81,6 +83,8 @@ export function setupPlayerControlsEvents() {
   });
 
   setupPlaybackSpeedEvents();
+
+  setupExportToDiskOrRepository();
 }
 
 function audioPlayerControls(e) {
@@ -465,4 +469,98 @@ function setupPlaybackSpeedEvents() {
       speedSliderEnableCheck();
     });
   });
+}
+
+// - Audio I/O export to disk
+
+function setupExportToDiskOrRepository() {
+  // (the modal opens (shown) with html bootstrap)
+
+  // modal window of export to disk or repository functionality
+  const exportToDiskRepository = document.getElementById(
+    'exportToDiskRepository'
+  );
+  // console.log(exportToDiskRepository);
+
+  exportToDiskRepository.addEventListener('click', e => {
+    const includeBtrack = document.querySelector('#yes-btrack').checked;
+    const includeAnnotation = document.querySelector('#yes-annotation').checked;
+
+    // console.log(includeBtrack);
+    // console.log(includeAnnotation);
+
+    if (e.target.classList.contains('export-musicolab')) {
+      console.log('Export to musicolab button clicked!');
+
+      // TODO post request in server to save user's selected choices
+
+      // HIDE MODAL
+      $(exportToDiskRepository).modal('hide');
+    } else if (e.target.classList.contains('export-disk')) {
+      console.log('Export to disk button clicked!');
+
+      const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+
+      if (includeBtrack) {
+        const audioBlob = audioDataToWavBlob(wavesurfer.backend.buffer);
+        downloadFile(audioBlob, '.wav', fNameWithoutExt);
+      }
+
+      if (includeAnnotation) {
+        const jamsBlob = jsonDataToJSONBlob(wavesurfer.backend.buffer);
+        downloadFile(jamsBlob, '.jams', fNameWithoutExt);
+      }
+
+      // HIDE MODAL
+      $(exportToDiskRepository).modal('hide');
+    }
+  });
+}
+
+function downloadFile(blob, fileType, fileName) {
+  fileName += fileType;
+
+  // Create a URL for the blob
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary anchor element to trigger the download
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = fileName;
+
+  // Trigger the download
+  downloadLink.click();
+
+  // Clean up the URL and anchor element
+  URL.revokeObjectURL(url);
+  downloadLink.remove();
+}
+
+function audioDataToWavBlob(buffer) {
+  const numChannels = buffer.numberOfChannels;
+
+  let Float32Array;
+  if (numChannels === 2) {
+    Float32Array = convertToMono(
+      buffer.getChannelData(0),
+      buffer.getChannelData(1)
+    );
+  } else {
+    Float32Array = buffer.getChannelData(0);
+  }
+  // console.log(Float32Array);
+
+  const blob = recordingToBlob(Float32Array);
+
+  return blob;
+}
+
+function convertToMono(inputL, inputR) {
+  const length = inputL.length;
+  const result = new Float32Array(length);
+
+  for (let i = 0; i < length; i++) {
+    result[i] = (inputL[i] + inputR[i]) / 2.0;
+  }
+  return result;
 }

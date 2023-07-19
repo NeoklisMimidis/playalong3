@@ -301,6 +301,17 @@ export function updateMarkerDisplayWithColorizedRegions(editModeStyle = false) {
   console.log('Chord regions have been successfully colorized! ✌️');
 }
 
+//  export to disk or repository functionality for jams file
+export function jsonDataToJSONBlob() {
+  const jsonData = JSON.stringify(jamsFile, null, 2);
+
+  const jsonBlob = new Blob([jsonData], {
+    type: 'application/json',
+  });
+
+  return jsonBlob;
+}
+
 function _getChordParts(chordLabel) {
   let chordParts = {
     rootNote: '',

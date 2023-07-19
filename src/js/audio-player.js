@@ -60,7 +60,9 @@ export const audioSidebarControls = document.getElementById(
   'audio-sidebar-controls'
 );
 const analyzeChordsBtn = document.getElementById('analyze-chords-btn');
-export const downloadJAMSBtn = document.getElementById('download-jams-btn');
+const exportToDiskOrRepositoryBtn = document.getElementById(
+  'export-to-disk-or-repository-btn'
+);
 
 // Audio player bar controls
 export const playerControls = document.querySelector('.player-controls');
@@ -92,7 +94,7 @@ export const volumeSlider = playerControls.querySelector('#volume-slider');
 
 // State variables
 let audioPlayerInitialized = false; //
-let fileName;
+export let fileName;
 
 export const playerStates = {
   FOLLOW_PLAYBACK: true,
@@ -429,7 +431,11 @@ function resetAudioPlayer() {
   wavesurfer.empty();
 
   // Audio I/O
-  downloadJAMSBtn.classList.add('disabled');
+  exportToDiskOrRepositoryBtn.classList.add('disabled');
+  // disable annotation export selection and uncheck  Yes/No annotation
+  document.getElementById('annotation-yes-no').classList.add('disabled');
+  document.querySelector('#yes-annotation').checked = false;
+  document.querySelector('#no-annotation').checked = false;
 
   console.log('resetAudioPlayer is complete 😁');
 }
@@ -485,6 +491,9 @@ function activateAudioPlayerControls() {
   // Right controls
   volumeSlider.value = 1;
   wavesurfer.setVolume(1 * backingTrackVolumeFactor);
+
+  // Audio I/O
+  exportToDiskOrRepositoryBtn.classList.remove('disabled');
 
   console.log('activateAudioPlayerControls is complete 😁');
 }

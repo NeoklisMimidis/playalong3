@@ -825,6 +825,39 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   transform: translate(0) !important;
 }
 
+/* Export to risk or repository (triggered by sidebar related btn) */
+#exportToDiskRepository {
+  font-size: 1.1rem;
+  display: block;
+  padding-top: 120px;
+  display: none;
+}
+
+#exportToDiskRepository .modal-content {
+  width: 300px;
+}
+
+#exportToDiskRepository .modal-body {
+  text-align: left;
+  padding-top: 0px;
+}
+
+#exportToDiskRepository .inputs {
+  gap: 15px;
+}
+#exportToDiskRepository .inputs > * {
+  flex-basis: 50%;
+}
+
+#exportToDiskRepository #export-btns {
+  text-align: right;
+}
+#exportToDiskRepository #export-option {
+  padding-top: 10px;
+}
+
+/*  // - */
+
 /* --------------------- */
 /* GENERAL USAGE CLASSES */
 /* --------------------- */
@@ -919,7 +952,9 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   font-family: SVG_fonts;
 }
 
-.modal {
+#confirmationModal,
+#modalPrompt,
+#show-chord-editor {
   line-height: 1.2;
   padding-top: 50px;
   text-align: center;

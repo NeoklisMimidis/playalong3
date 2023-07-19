@@ -7,7 +7,6 @@ import {
   prefaceAnnotationBar,
   toolbar,
   mainWaveformBPM,
-  downloadJAMSBtn,
 } from './audio-player.js';
 import { jamsFile } from './audio-player/render-annotations.js';
 
@@ -36,7 +35,7 @@ import {
 
 import { createTooltipsChordEditor } from './components/tooltips.js';
 
-import { downloadJAMS, resetToggle } from './components/utilities.js';
+import { resetToggle } from './components/utilities.js';
 
 import {
   showChordEditorHTMLWithCategories,
@@ -136,7 +135,7 @@ export function initAnnotationTools() {
   /* ------- */
   /* OTHERS */
   /* ------ */
-  setupDownloadJamsEvent();
+  // setupExportToDiskOrRepository();
   setupCalculateTempoEvent();
 
   console.log(
@@ -168,8 +167,9 @@ export function resetToolbar() {
     button.classList.add('disabled');
   });
 
-  // enable download again
-  downloadJAMSBtn.classList.remove('disabled');
+  // enable annotation export selection and check Yes include annotation
+  document.getElementById('annotation-yes-no').classList.remove('disabled');
+  document.querySelector('#yes-annotation').checked = true;
 
   // removing editing color
   toolbar.classList.remove('editing-on');
@@ -235,12 +235,7 @@ export function createChordEditor(chordEditorHTML) {
 
 // - OTHERS ||TODO: probably move to waveform-editing-tools.js and rename that script as audio-player-editing-tools.js
 
-function setupDownloadJamsEvent() {
-  downloadJAMSBtn.addEventListener('click', () => {
-    downloadJAMS(jamsFile);
-  });
-}
-
+// -
 // BMP box
 function setupCalculateTempoEvent() {
   //  Calculate tempo once in the start
