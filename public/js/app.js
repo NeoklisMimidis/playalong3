@@ -558,6 +558,51 @@ function createRecordingTemplate(recUserData) {
   outmostContainer.appendChild(scrollContainer); // append the container to the body
 }
 
+function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
+  if (!window.confirm('This track will be moved and replace backing track for everyone. Are you sure?')) {
+    return;
+  }
+
+  const collabId = scrollContainer.dataset.collabId;
+  if (!collabId) {
+    console.error("could not find collabId for scrollContainer of id: " + scrollContainer.id);
+    return;
+  }
+
+  let index = -1;
+  for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
+    if (window.sharedRecordedBlobs.get(i)?.get('id') === collabId) {
+      index = i;
+      break;
+    }
+  }
+
+  if (index !== -1) {
+    // Load this track on backingTrack wavesurfer (window.backingTrack)
+    const data = window.sharedRecordedBlobs.get(index).get("data");
+    if (data?.length > 1) {
+      const src = Float32Array.from(data);
+      const blob = recordingToBlob(src);
+
+      try {
+        window.backingTrack.loadBlob(blob);
+        // Set new key to this collabId and undo others
+        window.ydoc.transact(() => {
+          window.playerConfig.set('backingTrackRecordingId', collabId);
+          window.playerConfig.delete('backingTrack');
+          window.playerConfig.delete('backingTrackRepository');
+          window.deletedSharedRecordedBlobIds.push([ collabId ]);
+        });
+
+        deleteWaveForm(); 
+        removeFileURLParam();
+      } catch (err) {
+        console.error("Failed to load blob as backing track", { blob, err });
+      }
+    }
+  }
+}
+
 function fillRecordingTemplate(
   id,
   recUserData,
@@ -565,6 +610,11 @@ function fillRecordingTemplate(
   set_pitch = 1 / speed01
 ) {
   const scrollContainer = document.getElementById(`scrollContainer${count}`);
+  if (!scrollContainer) {
+    console.error("Could not find scrollContainer of id: scrollContainer" + count);
+    return;
+  }
+  scrollContainer.dataset.collabId = id;
   const outmostContainer = scrollContainer.parentElement;
   // var progress = document.createElement("div");
   // progress.classList.add("progress");
@@ -805,6 +855,20 @@ function fillRecordingTemplate(
   downloadButton.disabled = true;
   buttonContainer.appendChild(downloadButton);
 
+  //create use_as_backing_track buttons
+  var backingButton = document.createElement('button');
+  backingButton.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M151.6 42.4C145.5 35.8 137 32 128 32s-17.5 3.8-23.6 10.4l-88 96c-11.9 13-11.1 33.3 2 45.2s33.3 11.1 45.2-2L96 146.3V448c0 17.7 14.3 32 32 32s32-14.3 32-32V146.3l32.4 35.4c11.9 13 32.2 13.9 45.2 2s13.9-32.2 2-45.2l-88-96zM320 480h32c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32z"/></svg>';
+  backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button';
+  backingButton.setAttribute('title', 'Use as backing track');
+
+  function backingButtonHandler() {
+    useAsBackingTrackCollab(scrollContainer, deleteWaveForm);
+  }
+
+  backingButton.addEventListener('click', backingButtonHandler);
+  buttonContainer.appendChild(backingButton);
+
   function deleteWaveForm() {
     wavesurfer.stop();
     if (firstWaveform) {
@@ -830,7 +894,7 @@ function fillRecordingTemplate(
   }
 
   function deleteHandler(event) {
-    deleteWaveForm();
+    deleteWaveForm(); 
     if (!!Collab && event.currentTarget.dataset.collabId) {
       let indexToUpdate = -1;
       for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
@@ -845,8 +909,6 @@ function fillRecordingTemplate(
       if (indexToUpdate > -1) {
         window.ydoc.transact(() => {
           window.sharedRecordedBlobs.get(indexToUpdate).set('data', [0]);
-          window.sharedRecordedBlobs.get(indexToUpdate).set('chunks', [0]);
-          window.sharedRecordedBlobs.get(indexToUpdate).set('test', [0]);
           window.deletedSharedRecordedBlobIds.push([
             event.currentTarget.dataset.collabId,
           ]);
@@ -945,6 +1007,7 @@ function createDownloadLink(
   scrollContainer.classList.add('waveform-class');
   scrollContainer.style.height = '70px';
   scrollContainer.style.overflow = 'auto';
+  scrollContainer.dataset.collabId = id;
   outmostContainer.appendChild(scrollContainer); // append the container to the body
 
   // create a new container element for wavesurfer
@@ -1181,16 +1244,22 @@ function createDownloadLink(
   });
   buttonContainer.appendChild(downloadButton);
 
+  function backingButtonHandler() {
+    btrack = true;
+    deleteButton.click();
+  };
+
+  function backingButtonHandlerCollab() {
+    useAsBackingTrackCollab(scrollContainer, deleteWaveForm);
+  };
+
   //create use_as_backing_track buttons
   var backingButton = document.createElement('button');
   backingButton.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M151.6 42.4C145.5 35.8 137 32 128 32s-17.5 3.8-23.6 10.4l-88 96c-11.9 13-11.1 33.3 2 45.2s33.3 11.1 45.2-2L96 146.3V448c0 17.7 14.3 32 32 32s32-14.3 32-32V146.3l32.4 35.4c11.9 13 32.2 13.9 45.2 2s13.9-32.2 2-45.2l-88-96zM320 480h32c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32z"/></svg>';
   backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button';
   backingButton.setAttribute('title', 'Use as backing track');
-  backingButton.addEventListener('click', function () {
-    btrack = true;
-    deleteButton.click();
-  });
+  backingButton.addEventListener('click', Collab ? backingButtonHandlerCollab : backingButtonHandler);
   buttonContainer.appendChild(backingButton);
 
   function deleteWaveForm() {

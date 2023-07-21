@@ -223,6 +223,7 @@ async function loadAudioTrack(fileName, type) {
     window.ydoc?.transact(() => {
       window.playerConfig?.set("backingTrackRepository", fileName);
       window.playerConfig.delete("backingTrack");
+      window.playerConfig.delete("backingTrackRecordingId");
     });
   } catch (err) {
     let errorMsg = err.message;

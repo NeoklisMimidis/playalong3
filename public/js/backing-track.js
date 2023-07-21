@@ -62,10 +62,11 @@ async function shareBackingTrack(file) {
     window.ydoc?.transact(() => {
       fileInfo.set('name', file.name);
       fileInfo.set('size', file.size);
-      fileInfo.set('type', file.name);
+      fileInfo.set('type', file.type);
       fileInfo.set('data', chunksArray);
       window.playerConfig.set('backingTrack', fileInfo);
       window.playerConfig.delete('backingTrackRepository');
+      window.playerConfig.delete('backingTrackRecordingId');
     });
 
     // fileInfo.set("data", chunksArray);
@@ -138,4 +139,32 @@ function loadUrlFile(f, c, u) {
   backingTrack.load(
     `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${f}`
   );
+}
+
+function setBackingTrackRecordingId(id) {
+  if (id === undefined || id === null) {
+    console.error("tried to set backing track to recording with id %s but it does not exist", id);
+    return;
+  }
+
+  let index = -1;
+  for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
+    if (window.sharedRecordedBlobs.get(i)?.get('id') === id) {
+      index = i;
+      break;
+    }
+  }
+
+  if (index === -1) {
+    console.error("could not find track for id: " + id);
+    return;
+  }
+ 
+  const data = window.sharedRecordedBlobs.get(index).get("data");
+  if (data?.length > 1) {
+    const float32Array = Float32Array.from(data);
+    const blob = recordingToBlob(float32Array);
+    window.backingTrack.loadBlob(blob);
+    removeFileURLParam();
+  }
 }
