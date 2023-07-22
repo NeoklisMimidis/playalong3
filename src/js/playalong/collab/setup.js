@@ -1,5 +1,6 @@
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
+import { IndexeddbPersistence } from "y-indexeddb";
 import { setUserImageUrl, userData } from "./users";
 import { awaranessUpdateHandler, stateChangeHandler } from "./awarenessHandlers";
 import { handleSharedBTEditParamsEvent, handleSharedBTMarkersEvent, handleSharedRecordingDataEvent, handleSharedRecordingResetEvent } from "./sharedTypesHandlers";
@@ -47,6 +48,11 @@ function setupCollaboration() {
   window.websocketProvider = websocketProvider;
   window.awareness = websocketProvider.awareness;
   window.permanentUserData = permanentUserData;
+
+  const idbProvider = new IndexeddbPersistence("playalong3", ydoc);
+  idbProvider.on('synced', () => {
+    console.log('content from the database is loaded')
+  });
 
   const sharedRecordedBlobs = ydoc.getArray("blobs");
   sharedRecordedBlobs.observe((event) => {

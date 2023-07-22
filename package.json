@@ -29,6 +29,7 @@
     "recorderjs": "github:mattdiamond/Recorderjs",
     "tippy.js": "^6.3.7",
     "wavesurfer.js": "^6.6.3",
+    "y-indexeddb": "^9.0.11",
     "y-protocols": "^1.0.5",
     "y-websocket": "^1.5.0",
     "yjs": "^13.6.6"
