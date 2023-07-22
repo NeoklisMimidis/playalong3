@@ -123,6 +123,24 @@ function setupCollaboration() {
     }
   });
 
+  const tempoElem = document.querySelector('#bpmInput .box');
+  const numerator = document.getElementById('TSNumerator');
+  const denominator = document.getElementById('TSDenominator');
+  // Set metronome values on collaboration mode
+  function setTempoValueRemote(tempo) {
+    parent.metronome.setTempo(tempo);
+    tempoElem.textContent = tempo;
+  }
+
+  function setNumeratorRemote(v) {
+    parent.metronome.setNumerator(v);
+    numerator.value = v;
+  }
+  function setDenominatorRemote(v) {
+    parent.metronome.setDenominator(v);
+    denominator.value = v;
+  }
+
   // Configuration variables for the playback player
   // e.g. shared playback speed amongst collaborators
   const playerConfig = ydoc.getMap("playerConfig");
@@ -136,42 +154,38 @@ function setupCollaboration() {
       if (value === undefined) continue;
 
       if (!event.transaction.local) {
-        try {
-          switch (key) {
-            case "playbackSpeed":
-              window.setSpeedRemote(value);
-              break;
-            case "tempoValue":
-              window.setTempoValueRemote(value);
-              break;
-            case "numerator":
-              window.setNumeratorRemote(value);
-              break;
-            case "denominator":
-              window.setDenominatorRemote(value);
-              break;
-            case "backingTrack":
-              {
-                window.setBackingTrackRemote(value.get("name"));
-                const downloadProgress =
-                  (value.get("data").length / value.get("size")) * 100;
-                if (downloadProgress === 100.0) {
-                  window.setBackingTrackFileRemote(value);
-                  updateProgressBar(0, "#progressBar0");
-                }
+        switch (key) {
+          case "playbackSpeed":
+            window.setSpeedRemote(value);
+            break;
+          case "tempoValue":
+            setTempoValueRemote(value);
+            break;
+          case "numerator":
+            setNumeratorRemote(value);
+            break;
+          case "denominator":
+            setDenominatorRemote(value);
+            break;
+          case "backingTrack":
+            {
+              window.setBackingTrackRemote(value.get("name"));
+              const downloadProgress =
+                (value.get("data").length / value.get("size")) * 100;
+              if (downloadProgress === 100.0) {
+                window.setBackingTrackFileRemote(value);
+                updateProgressBar(0, "#progressBar0");
               }
-              break;
-            case "backingTrackRepository":
-              window.setBackingTrackRepositoryRemote(value);
-              break;
-            case "backingTrackRecordingId":
-              window.setBackingTrackRecordingId(value);
-              break;
-            default:
-              console.warn("unsupported configuration variable: ", key);
-          }
-        } catch (err) {
-          console.error(err);
+            }
+            break;
+          case "backingTrackRepository":
+            window.setBackingTrackRepositoryRemote(value);
+            break;
+          case "backingTrackRecordingId":
+            window.setBackingTrackRecordingId(value);
+            break;
+          default:
+            console.warn("unsupported configuration variable: ", key);
         }
       }
     }

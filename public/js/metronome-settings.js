@@ -58,21 +58,6 @@ function setResolution(r) {
   parent.metronome.setResolution(r);
 }
 
-// Set metronome values on collaboration mode
-function setTempoValueRemote(tempo) {
-  parent.metronome.setTempo(tempo);
-  tempoInput.textContent = tempo;
-}
-
-function setNumeratorRemote(v) {
-  parent.metronome.setNumerator(v);
-  timeSignatureNumerator.value = v;
-}
-function setDenominatorRemote(v) {
-  parent.metronome.setDenominator(v);
-  timeSignatureDenominator.value = v;
-}
-
 // - - - - - -
 //  Metronome settings menu
 function setupMetronomeMenu() {
