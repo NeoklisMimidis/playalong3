@@ -1,6 +1,9 @@
 // Get the button element
 var startJitsiMeetBtn = document.getElementById('start-close-call-btn');
-var joinCallButton = document.querySelector(".btn-success");
+var joinCallButton = document.getElementById("join_call");
+var joinCallButton_video_only = document.getElementById("join_call_video_only");
+
+
 var defaultRoomName = "test-room";
 const icon = document.querySelector("#start-close-call-btn .bi-telephone-fill");
 let api = null;
@@ -27,7 +30,6 @@ startJitsiMeetBtn.addEventListener('click', function (e) {
       .getElementById('musicolab-logo')
       .removeAttribute('hidden');
   } else {
-    this.classList.add('call-started');
     document
       .getElementById('musicolab-logo')
       .setAttribute('hidden', true);
@@ -57,12 +59,31 @@ joinCallButton.addEventListener("click", function (e) {
     width: "100%",
     height: "100%",
     parentNode: document.querySelector("#jitsi-meeting-container"),
+    configOverwrite: {
+ 	  startWithAudioMuted: false, 
+           disableAP: true,
+            disableAEC: false,
+            disableNS: true,
+            disableAGC: true,
+            disableHPF: true,
+            stereo: false,
+            opusMaxAverageBitrate: 10000,
+            enableOpusRed: false,
+            enableNoAudioDetection: false,
+            enableNoisyMicDetection: false,
+            disableAudioLevels: true,
+            disableSimulcast: true,
+            enableLayerSuspension: true,
+         },
+
     userInfo: {
-      displayName: Jitsi_User_Name,
+      displayName: userParam,
     },
   };
 
   api = new JitsiMeetExternalAPI(domain, options);
+
+  startJitsiMeetBtn.classList.add('call-started');
   icon.style.fill = "red";
 
   $("#jitsi-meeting-container").slideDown("slow", () => {});
@@ -94,6 +115,73 @@ joinCallButton.addEventListener("click", function (e) {
   //  document.querySelector('#jitsi-meeting-container').classList.remove('open');
   //});
 });
+
+joinCallButton_video_only.addEventListener("click", function (e) {
+    e.preventDefault();
+    /*// Check if an instance is already running
+    if (api !== null) {
+      console.log("An instance of the Jitsi Meet iframe is already running.");
+      console.log("Will now destroy it and create a new one.");
+      api.dispose();
+    }
+    */
+    // Load the default name of the Jitsi Meet Room
+    defaultRoomName = Jitsi_Room_Name;
+    const roomNameInput = document.querySelector("#meet-room");
+    const roomName = roomNameInput.value;
+    // Create a new Jitsi Meet iframe
+    const domain = "musicolab.hmu.gr:8443";
+    const options = {
+        roomName: roomName,
+        width: "100%",
+        height: "100%",
+        parentNode: document.querySelector("#jitsi-meeting-container"),
+        configOverwrite: { 
+		    startSilent: true, 
+        startWithVideoMuted: false,
+	},
+        userInfo: {
+            displayName: userParam,
+        },
+    };
+
+    api = new JitsiMeetExternalAPI(domain, options);
+
+    startJitsiMeetBtn.classList.add('call-started');
+    icon.style.fill = "red";
+
+    $("#jitsi-meeting-container").slideDown("slow", () => { });
+
+    // Close the modal
+    $("#enter-jitsi-meet-room").modal("hide");
+
+    api.on("videoConferenceLeft", () => {
+        console.log("You left. Close the Iframe now.");
+        destroyJitsi();
+        hideJitsiFrame();
+        icon.style.fill = "green";
+    });
+
+    api.addEventListener("readyToClose", () => {
+        console.log(
+            "Jitsi call has ended. Jitsi iframe will be hidden and the API will be destroyed."
+        );
+
+        destroyJitsi();
+        hideJitsiFrame();
+    });
+
+    // This DOES NOT WORK. "END MEETING FOR ALL" is not .
+    //api.on('videoConferenceDestroyed', () => {
+    //  console.log("Meeting ended for all. Close the Iframe now.");
+    //  api.dispose();
+    //  document.querySelector('#jitsi-meeting-container').classList.add('d-none');
+    //  document.querySelector('#jitsi-meeting-container').classList.remove('open');
+    //});
+});
+
+
+
 
 function destroyJitsi() {
   if (!$("#jitsi-meeting-container")) {

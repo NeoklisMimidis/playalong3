@@ -333,8 +333,9 @@ function saveChords() {
 
       // reset delete button if any new annotation was created
       deleteAnnotationBtn.classList.remove('disabled');
-
-      exportJamsToRepository(); //TODO: construct the function
+      
+      const jamsToBeExported = new File ([JSON.stringify(jamsFile)], 'test.jams');
+      exportFileToRepository(jamsToBeExported, 'private');
 
       if (!!Collab) {
         const newAnnotationData = _extractModalPromptFields();
@@ -661,7 +662,27 @@ function _mapChordSymbolToText(encodedChord) {
   return mirLabel;
 }
 
-function exportJamsToRepository() {
-  if (!!Collab) {
-  }
+function exportFileToRepository(file, exportLocation, providedOnLoadCallback) {
+  let fd = new FormData();
+  fd.append('f', file);
+  fd.append('action', 'upload');
+  fd.append('ufolder', exportLocation);
+
+  const ajax = new XMLHttpRequest();
+
+  ajax.addEventListener('load', () => {
+    alert(`File has been exported to your ${exportLocation} files!`);
+    if (providedOnLoadCallback)
+      providedOnLoadCallback();
+  });
+  ajax.addEventListener('error', () => {
+    alert(`Failed to export file to your ${exportLocation} files`);
+  });
+
+  ajax.open(
+    'POST',
+    'https://musicolab.hmu.gr/apprepository/uploadFileResAjax.php',
+    true
+  );
+  ajax.send(fd);
 }

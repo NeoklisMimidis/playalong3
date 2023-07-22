@@ -280,7 +280,7 @@ function handleAnnotationSelection (selection) {
     new Event('change')
   );
 
-  //notifying user that annotaion has changed
+  //notifying user that annotation has changed
   const notifText = `${selection.selector} has changed the annotation.`;
   const notifContext = 'info';
   notify(notifText, notifContext);
