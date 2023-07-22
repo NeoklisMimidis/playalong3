@@ -55,7 +55,7 @@ export const mainWaveformBPM = mainWaveform.querySelector('#waveform-bpm');
 export const waveformLoadingBar = document.getElementById(
   'waveform-loading-bar'
 );
-const analysisLoadingBar = document.getElementById('analysis-loading-bar');
+export const analysisLoadingBar = document.getElementById('analysis-loading-bar');
 // Audio I/O (Sidebar)
 export const audioSidebarText = document.getElementById('audio-sidebar-text');
 export const audioSidebarControls = document.getElementById(
@@ -255,6 +255,12 @@ function sendAudioAndFetchAnalysis() {
     annotationFileUrl,
     estimatedAnalysisTime
   );
+
+  if (!!Collab) {
+    window.awareness.setLocalStateField('BTAnalysis', {
+      status: 'initiated'
+    })
+  }
 }
 
 function doChordAnalysis(
@@ -297,11 +303,25 @@ function doChordAnalysis(
         loadJAMS(serverAnnotationUrl);
 
         document.getElementById(`analysis-loading-bar`).classList.add('d-none');
+
+        if (!!Collab) {
+          window.awareness.setLocalStateField('BTAnalysis', {
+            status:'completed',
+            jamsURL: serverAnnotationUrl
+          });
+        }
       }
 
       animateProgressBar(analysisLoadingBar, 100, cb);
-    } else {
+    } else if (ajax.readyState === 4 && ajax.status !== 200) {
       console.log('Error: ' + ajax.status);
+
+      if (!!Collab) {
+        window.awareness.setLocalStateField('BTAnalysis', {
+          status:'completed',
+          jamsURL: 'none'
+        });
+      }
     }
   };
 

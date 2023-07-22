@@ -1,9 +1,9 @@
 import * as Y from "yjs";
 import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toolbarStates } from "../../annotation-tools";
 import { _createNewAnnotation, closeModal, editChord, showChordEditor } from "../../annotation-tools/right-toolbar-tools";
-import { audioSidebarText, toolbar, wavesurfer } from "../../audio-player";
+import { analysisLoadingBar, animateProgressBar, audioSidebarText, toolbar, wavesurfer } from "../../audio-player";
 import { zoomIn, zoomOut } from "../../audio-player/player-controls";
-import { createAnnotationsList, jamsFile, renderAnnotations, selectedAnnotationData, updateMarkerDisplayWithColorizedRegions } from "../../audio-player/render-annotations";
+import { createAnnotationsList, jamsFile, loadJAMS, renderAnnotations, selectedAnnotationData, updateMarkerDisplayWithColorizedRegions } from "../../audio-player/render-annotations";
 import { tooltips } from "../../components/tooltips";
 import { setUserImageUrl, renderUserList } from "./users";
 import { handleMarkerSelection } from "./sharedTypesHandlers";
@@ -15,6 +15,7 @@ export function stateChangeHandler(changes) {
   const myClientId = window.awareness.clientID;
     console.log({awStates, myClientId});
   
+  actOnBTAnalysisStateUpdate(awStates, myClientId);
   actOnRecordStateUpdate(awStates, myClientId);
   actOnBTrackEditStateUpdate(awStates, myClientId);
   actOnChordEditStateUpdate(awStates, myClientId);
@@ -26,6 +27,70 @@ export function awaranessUpdateHandler() {
 
   updateWaveformAwareness(connectedUsers);
   renderUserList([...connectedUsers, ...disconnectedUsers]);
+}
+
+function actOnBTAnalysisStateUpdate (awStates, myClientId) {
+  const BTAnalysisStateUpdates = awStates
+    .filter( ( [, state] )=> state.BTAnalysis)
+    .map( ( [id, state] ) => {return [id, state.BTAnalysis, state.user.name]} );
+  if (!BTAnalysisStateUpdates.length)   return;
+
+  BTAnalysisStateUpdates.forEach( ( [changeClientId, BTAnalysisState, analyzerName] ) => {
+    const myStateUpdating = (changeClientId === myClientId);
+
+    switch (BTAnalysisState.status) {
+      case 'initiated': actOnBTAnalysisInitiated(myStateUpdating, analyzerName) 
+        break;
+      case 'completed': actOnBTAnalysisCompleted(myStateUpdating, BTAnalysisState.jamsURL)
+        break;
+    }
+  });
+}
+
+function actOnBTAnalysisInitiated (me, analyzerName) {
+  if (me) return;
+
+  $('#freeze-interface').modal({
+    backdrop: 'static',
+    keyboard: false
+  });
+  
+  const notificationContainer = document
+    .getElementById('freeze-interface')
+    .querySelector('.notification-container')
+
+  notificationContainer.innerHTML = `${analyzerName} has clicked 'analyze' button. Backing track analysis pending.`
+  
+  $('#freeze-interface').modal('show');
+}
+
+function actOnBTAnalysisCompleted (me, jamsURL) {
+  if (me) {
+    setTimeout(
+      () => window.awareness.setLocalStateField('BTAnalysis', null)
+    , 1000);
+
+    return;
+  }
+
+  $('#freeze-interface').modal('hide');
+
+  const notificationContainer = document
+    .getElementById('freeze-interface')
+    .querySelector('.notification-container')
+  notificationContainer.innerHTML = ``;
+
+  if (jamsURL == 'none') {
+    const notifText = `Backing track analysis has failed.`;
+    const notifContext = 'danger';
+    notify(notifText, notifContext);
+  } else {
+    const notifText = `Backing track analysis completed!`;
+    const notifContext = 'info';
+    notify(notifText, notifContext);
+
+    loadJAMS(jamsURL);
+  }
 }
 
 function actOnCancelSaveEditStateUpdate(awStates, myClientId) {
