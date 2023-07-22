@@ -55,7 +55,9 @@ export const mainWaveformBPM = mainWaveform.querySelector('#waveform-bpm');
 export const waveformLoadingBar = document.getElementById(
   'waveform-loading-bar'
 );
-export const analysisLoadingBar = document.getElementById('analysis-loading-bar');
+export const analysisLoadingBar = document.getElementById(
+  'analysis-loading-bar'
+);
 // Audio I/O (Sidebar)
 export const audioSidebarText = document.getElementById('audio-sidebar-text');
 export const audioSidebarControls = document.getElementById(
@@ -144,7 +146,6 @@ fileSelectHandlers('#musicolab-logo', loadJAMS, '.jams');
 // TODO later on instead of fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams') use :
 analyzeChordsBtn.addEventListener('click', function () {
   console.log('click');
-  // sendAudioAndFetchAnalysis();
 
   const message = `Analysis may require some time.<br><br><span class="text-info">Are you sure you want to proceed?</span>🤷‍♂️`;
 
@@ -184,13 +185,11 @@ if (window.location.hostname === 'localhost') {
   ); //  Starry+Night.mp3 --> Starry+Night
 
   const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileName}`;
-  // const annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileNameWithoutExtension}.jams`;
   const annotationFileUrl = `https://musicolab.hmu.gr/jams/${urlFileNameWithoutExtension}.jams`;
   // https://musicolab.hmu.gr/jams/Cherokee.jams
 
   loadFilesInOrder(audioFileURL, annotationFileUrl);
 } else {
-  // In this case no audio loaded yet, so user is in the preface menu with description about how he can load audio file  (Drag & Drop audio file, 'Import audio' button, TODO: Record & Import from repository, moodle )
   resetAudioPlayer();
 }
 
@@ -258,8 +257,8 @@ function sendAudioAndFetchAnalysis() {
 
   if (!!Collab) {
     window.awareness.setLocalStateField('BTAnalysis', {
-      status: 'initiated'
-    })
+      status: 'initiated',
+    });
   }
 }
 
@@ -287,7 +286,7 @@ function doChordAnalysis(
       currentProgress = targetProgress * uploadPortion;
 
       // audio upload progress bar
-      animateProgressBar(analysisLoadingBar, currentProgress);
+      animateProgressBar(analysisLoadingBar, currentProgress, 'Uploading');
     }
   };
 
@@ -306,20 +305,20 @@ function doChordAnalysis(
 
         if (!!Collab) {
           window.awareness.setLocalStateField('BTAnalysis', {
-            status:'completed',
-            jamsURL: serverAnnotationUrl
+            status: 'completed',
+            jamsURL: serverAnnotationUrl,
           });
         }
       }
 
-      animateProgressBar(analysisLoadingBar, 100, cb);
+      animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
     } else if (ajax.readyState === 4 && ajax.status !== 200) {
       console.log('Error: ' + ajax.status);
 
       if (!!Collab) {
         window.awareness.setLocalStateField('BTAnalysis', {
-          status:'completed',
-          jamsURL: 'none'
+          status: 'completed',
+          jamsURL: 'none',
         });
       }
     }
@@ -354,7 +353,7 @@ function doChordAnalysis(
       }
 
       console.log('animate the progress bar!!', currentProgress, '%');
-      animateProgressBar(analysisLoadingBar, currentProgress);
+      animateProgressBar(analysisLoadingBar, currentProgress, 'Analysing');
     }
   }, 100); // Update every 100ms
 
@@ -650,6 +649,7 @@ function activateAudioPlayerControls() {
 export function animateProgressBar(
   selector,
   progress,
+  loadingBarText = 'Loading',
   callbackOnComplete = false
 ) {
   const loadingBarContainer = selector;
@@ -667,7 +667,7 @@ export function animateProgressBar(
   if (Math.ceil(progress) >= 100) {
     loadingBarProgressValue.innerHTML = `<strong>Done!</strong>`;
   } else {
-    loadingBarProgressValue.innerHTML = `Processing <strong>${Math.ceil(
+    loadingBarProgressValue.innerHTML = `${loadingBarText} <strong>${Math.ceil(
       progress
     )}%</strong>`;
   }
