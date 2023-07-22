@@ -27,6 +27,8 @@ import {
   dragDropHandlers,
   renderModalMessage,
   formatTime,
+  audioDataToWavFile,
+  generateRecordingFilename,
 } from './components/utilities.js';
 
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
@@ -120,6 +122,10 @@ window.backingTrackVolumeFactor = 1;
 
 window.loadAudioFile = loadAudioFile;
 
+window.bTrackURL = '';
+window.bTrackDATA = '';
+window.existsInRepository = false;
+
 // - Start of the application ||
 
 toggleAudioInOutSidebarControls();
@@ -132,15 +138,14 @@ window.backingTrack = wavesurfer;
 dragDropHandlers('#waveform', loadAudioFile, 'drag-over');
 fileSelectHandlers('#import-audio-btn', loadAudioFile);
 // b) Displaying annotation (JAMS) // TODO function that sends audio file to server and fetches analysis on completion
-fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
+// fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
+fileSelectHandlers('#musicolab-logo', loadJAMS, '.jams');
 
 // TODO later on instead of fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams') use :
-// analyzeChordsBtn.addEventListener('click', function () {
-//   console.log('click');
-//   sendAudioAndFetchAnalysis();
-// });
+analyzeChordsBtn.addEventListener('click', function () {
+  console.log('click');
+  // sendAudioAndFetchAnalysis();
 
-document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
   const message = `Analysis may require some time.<br><br><span class="text-info">Are you sure you want to proceed?</span>🤷‍♂️`;
 
   renderModalMessage(message)
@@ -151,6 +156,9 @@ document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
       // User canceled || DON'T EXECUTE ANALYSIS
     });
 });
+
+// document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
+// });
 
 /* Loading files from repository */
 import audioFileURL1 from '../demo_files/test.mp3';
@@ -163,8 +171,8 @@ const urlFileName = urlParams.get('f');
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
   // resetAudioPlayer();
-  // loadFilesInOrder(audioFileURL1);
-  loadFilesInOrder(audioFileURL1, annotationFile1);
+  loadFilesInOrder(audioFileURL1);
+  // loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
@@ -176,7 +184,9 @@ if (window.location.hostname === 'localhost') {
   ); //  Starry+Night.mp3 --> Starry+Night
 
   const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileName}`;
-  const annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileNameWithoutExtension}.jams`;
+  // const annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileNameWithoutExtension}.jams`;
+  const annotationFileUrl = `https://musicolab.hmu.gr/jams/${urlFileNameWithoutExtension}.jams`;
+  // https://musicolab.hmu.gr/jams/Cherokee.jams
 
   loadFilesInOrder(audioFileURL, annotationFileUrl);
 } else {
@@ -213,36 +223,127 @@ function toggleAudioInOutSidebarControls() {
 }
 
 function sendAudioAndFetchAnalysis() {
-  // 0) (now for testing show preface & hide annotation)
-  toolbar.classList.add('d-none');
-  prefaceAnnotationBar.classList.remove('d-none');
+  // // 0) (now for testing show preface & hide annotation)
+  // toolbar.classList.add('d-none');
+  // prefaceAnnotationBar.classList.remove('d-none');
 
-  // 1) send audio to server TODO
-
-  // 2) hide analysis description and button and then display analysis loading bar
+  // 1) hide analysis description and button and then display analysis loading bar
   document.getElementById(`preface-annotation`).classList.add('d-none');
   document.getElementById(`analysis-loading-bar`).classList.remove('d-none');
 
-  // 3) estimate time of upload audio and analysis TODO function?
-  const estimatedTime = 5;
+  const ANALYSIS_SCRIPT_URL =
+    'https://musicolab.hmu.gr/apprepository/analyzeChordsAudioResp.php';
+  let annotationFileUrl;
+  if (window.location.hostname === 'localhost') {
+    annotationFileUrl = annotationFile1;
+  } else {
+    // annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileName}.jams`;
 
-  // 4) update progress bar and on completion visualize annotation
-  updateProgressBar(estimatedTime, 0.1);
+    const fileNameWithoutExtension = fileName.substring(
+      0,
+      fileName.lastIndexOf('.')
+    ); //  Starry+Night.mp3 --> Starry+Night
+
+    annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileNameWithoutExtension}.jams`;
+  }
+
+  const estimatedAnalysisTime = 35; // TODO function? for estimation of analysis from file size?
+
+  // 2) send audio to server & update progress bar and on completion visualize annotation
+  doChordAnalysis(
+    ANALYSIS_SCRIPT_URL,
+    annotationFileUrl,
+    estimatedAnalysisTime
+  );
 }
 
-function updateProgressBar(totalTime, updateIntervalInSeconds = 0.2) {
-  let elapsedTime = 0;
-  let intervalId = setInterval(() => {
-    elapsedTime += updateIntervalInSeconds;
-    let percent = (elapsedTime / totalTime) * 100;
-    animateProgressBar(analysisLoadingBar, percent);
+function doChordAnalysis(
+  serverScriptURL,
+  serverAnnotationUrl,
+  estimatedAnalysisTime
+) {
+  console.log('doChordAnalysis 👌');
 
-    if (elapsedTime >= totalTime) {
-      clearInterval(intervalId);
-      loadJAMS(annotationFile1);
+  // 1)
+  let fd = new FormData();
+  fd.append('action', 'chordAnalysis');
+  fd.append('theUrl', bTrackURL);
+  fd.append('theaudio', bTrackDATA);
+  fd.append('audioExistsInRepo', existsInRepository);
+
+  // 2)
+  let ajax = new XMLHttpRequest();
+
+  // Monitoring upload progress
+  ajax.upload.onprogress = function (event) {
+    if (event.lengthComputable) {
+      targetProgress = event.loaded / event.total;
+      currentProgress = targetProgress * uploadPortion;
+
+      // audio upload progress bar
+      animateProgressBar(analysisLoadingBar, currentProgress);
     }
-  }, updateIntervalInSeconds * 1000);
+  };
+
+  ajax.onreadystatechange = function () {
+    if (ajax.readyState === 4 && ajax.status === 200) {
+      executed = true;
+      console.log('Chord analysis is complete!');
+
+      function cb() {
+        document
+          .getElementById(`preface-annotation`)
+          .classList.remove('d-none');
+        loadJAMS(serverAnnotationUrl);
+
+        document.getElementById(`analysis-loading-bar`).classList.add('d-none');
+      }
+
+      animateProgressBar(analysisLoadingBar, 100, cb);
+    } else {
+      console.log('Error: ' + ajax.status);
+    }
+  };
+
+  // 3)
+  let targetProgress = 0;
+  let currentProgress = 0;
+  const uploadPortion = 30;
+  const analysisPortion = 99 - uploadPortion;
+
+  let analysisTime = estimatedAnalysisTime;
+  let executed = false;
+
+  // Update Progress bar update AFTER audio loaded
+  let intervalId = setInterval(function () {
+    if (executed) return;
+
+    if (targetProgress < 1) {
+      console.log(`uploading audio progress: ${targetProgress * 100} %`);
+      return;
+    } else if (targetProgress == 1) {
+      if (currentProgress == uploadPortion) {
+        console.log('AUDIO FILE UPLOADED!👌👌👌');
+      }
+
+      if (currentProgress < 97) {
+        currentProgress += analysisPortion / (analysisTime * 10); // Increase progress
+      } else {
+        currentProgress = 99;
+        clearInterval(intervalId);
+      }
+
+      console.log('animate the progress bar!!', currentProgress, '%');
+      animateProgressBar(analysisLoadingBar, currentProgress);
+    }
+  }, 100); // Update every 100ms
+
+  // 4)
+  ajax.open('POST', serverScriptURL, true);
+  ajax.send(fd);
 }
+
+// -
 
 function initWavesurfer() {
   const wavesurfer = WaveSurfer.create({
@@ -327,7 +428,7 @@ function loadAudioFile(input) {
 
   const [fileUrl, file] = loadFile(input);
 
-  // console.log('load audio file input', input);
+  console.log('load audio file input', input);
   // console.log('load audio file fileUrl', fileUrl);
   // console.log('load audio file file', file);
 
@@ -335,6 +436,12 @@ function loadAudioFile(input) {
     wavesurfer.empty();
     resetAudioPlayer();
     wavesurfer.load(fileUrl);
+    // const res = await fetch(reqUrl, { signal: abortController.signal });
+    // const blob = await res.blob();
+    // if (blob.type.includes("text/html")) {
+    //   throw new Error(`Failed to fetch audio file: "${fileName}"`);
+    // }
+
     initAudioPlayer();
 
     wavesurfer.once('ready', function () {
@@ -342,25 +449,47 @@ function loadAudioFile(input) {
 
       // 4 cases:
       // a) use recording as backing track
-      // a) import from handlers -drag or import buttons (use file.name)
-      // b) repository link (retrieve name from URL)
-      // c) localhost loading file (Use default: test.mp3)
+      // b) import from handlers -drag or import buttons (use file.name)
+      // c) repository link (retrieve name from URL)
+      // d) localhost loading file (Use default: test.mp3)
 
       // prettier-ignore
       if (btrack){
-        // a)
-        const unique_filename = new Date().toISOString();
-        fileName = unique_filename + '.wav';  
+        // a)     
+        fileName = generateRecordingFilename();      
+
+        bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
+        bTrackURL = URL.createObjectURL(bTrackDATA);
+        existsInRepository = false        
+
       } else if (file !== undefined) {
         // b)
         fileName = file.name;
+
+        bTrackDATA = file;
+        bTrackURL = fileUrl;
+        existsInRepository = false        
+
       } else if (file === undefined && window.location.hostname === 'musicolab.hmu.gr'){
         // c)
         fileName = urlFileName 
+        
+        bTrackDATA = fileUrl
+        bTrackURL = fileUrl;
+        existsInRepository = true 
+
       } else if (file === undefined && window.location.hostname === 'localhost') {
         // d)
         fileName = 'test.mp3';
+
+        bTrackDATA = fileUrl;
+        bTrackURL = fileUrl;
+        existsInRepository = false  
       }
+
+      console.log('CHECK ME HERE IS EVERYTHING!!! 😘');
+      console.log(`backing track URL : ${bTrackURL}`);
+      console.log(`backing track DATA :  ${bTrackDATA}`);
 
       audioFileNamePreface.textContent = fileName.trim();
       audioFileName.textContent = audioFileNamePreface.textContent;

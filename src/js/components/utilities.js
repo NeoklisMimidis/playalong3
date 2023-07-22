@@ -245,6 +245,84 @@ export function fileSelectHandlers(
   });
 }
 
+export function downloadFile(file, url) {
+  // Use the provided URL if available, otherwise convert the file to a blob URL
+  const fileUrl = url || URL.createObjectURL(file);
+
+  // Create a temporary anchor element to trigger the download
+  const downloadLink = document.createElement('a');
+  downloadLink.href = fileUrl;
+  downloadLink.download = file.name || 'my_file.mp3'; // TODO FIXME for now testing
+
+  // Append the link to the document
+  document.body.appendChild(downloadLink);
+
+  // Trigger the download
+  downloadLink.click();
+
+  // Clean up the anchor element
+  document.body.removeChild(downloadLink);
+}
+
+export function audioDataToWavFile(buffer, fileName = 'my_recording.wav') {
+  const numChannels = buffer.numberOfChannels;
+
+  let Float32Array;
+  if (numChannels === 2) {
+    Float32Array = _convertToMono(
+      buffer.getChannelData(0),
+      buffer.getChannelData(1)
+    );
+  } else {
+    Float32Array = buffer.getChannelData(0);
+  }
+
+  const blob = recordingToBlob(Float32Array);
+
+  // Convert the blob to a file
+  let file = new File([blob], fileName, { type: 'audio/wav' });
+
+  return file;
+}
+
+function _convertToMono(inputL, inputR) {
+  const length = inputL.length;
+  const result = new Float32Array(length);
+
+  for (let i = 0; i < length; i++) {
+    result[i] = (inputL[i] + inputR[i]) / 2.0;
+  }
+  return result;
+}
+
+export function jsonDataToJSONFile(
+  json,
+  fileName = 'my_json_file',
+  fileExtension = 'json'
+) {
+  const jsonData = JSON.stringify(json, null, 2);
+
+  const file = new File([jsonData], `${fileName}.${fileExtension}`, {
+    type: 'application/json',
+  });
+
+  return file;
+}
+
+export function generateRecordingFilename() {
+  let date = new Date();
+  let dayStr = ('0' + date.getDate()).slice(-2); // gets the day as a two-digit string
+  let monthStr = ('0' + (date.getMonth() + 1)).slice(-2); // gets the month as a two-digit string
+  let yearStr = date.getFullYear().toString().slice(-2); // gets the last two digits of the year
+  let hourStr = ('0' + date.getHours()).slice(-2); // gets the hour as a two-digit string
+  let minStr = ('0' + date.getMinutes()).slice(-2); // gets the minute as a two-digit string
+  let secStr = ('0' + date.getSeconds()).slice(-2); // gets the second as a two-digit string
+
+  let fileName = `rec_${dayStr}${monthStr}${yearStr}_${hourStr}:${minStr}:${secStr}.wav`;
+
+  return fileName;
+}
+
 /**
  * Formats time in minutes, seconds and deciseconds to display the value on time-ruler-btn while audio is playing
  *
@@ -264,6 +342,7 @@ export function formatTime(seconds) {
   return `${paddedMinutes}:${paddedSeconds}.${deciseconds}`;
 }
 
+/*
 // Function to download the JAMS file
 export function downloadJAMS(jamsFile) {
   const fileData = JSON.stringify(jamsFile, null, 2);
@@ -286,6 +365,7 @@ export function downloadJAMS(jamsFile) {
   URL.revokeObjectURL(url);
   downloadLink.remove();
 }
+*/
 
 export function createToggle(selector) {
   const toggleOnIcon = document.querySelector(`${selector} .fa-toggle-on`);

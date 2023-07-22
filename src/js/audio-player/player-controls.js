@@ -1,10 +1,5 @@
-import { toolbarStates } from '../annotation-tools.js';
-import { waveformInfo } from '../annotation-tools/left-toolbar-tools.js';
-
 import { wavesurfer, playerStates, fileName } from '../audio-player.js';
-import { jsonDataToJSONBlob } from '../audio-player/render-annotations.js';
-
-import { formatTime } from '../components/utilities.js';
+import { jamsFile } from './render-annotations.js';
 
 import {
   selectFollowPlaybackMode,
@@ -12,6 +7,15 @@ import {
   disableFollowPlayback,
   disableFollowPlaybackWhenMovingScrollbar,
 } from './follow-playback.js';
+
+import { toolbarStates } from '../annotation-tools.js';
+import { waveformInfo } from '../annotation-tools/left-toolbar-tools.js';
+
+import {
+  formatTime,
+  downloadFile,
+  jsonDataToJSONFile,
+} from '../components/utilities.js';
 
 // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
@@ -472,7 +476,7 @@ function setupPlaybackSpeedEvents() {
 }
 
 // - Audio I/O export to disk
-
+// TODO MOVE new js file with audio i/o and analysis?
 function setupExportToDiskOrRepository() {
   // (the modal opens (shown) with html bootstrap)
 
@@ -502,65 +506,16 @@ function setupExportToDiskOrRepository() {
       const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
 
       if (includeBtrack) {
-        const audioBlob = audioDataToWavBlob(wavesurfer.backend.buffer);
-        downloadFile(audioBlob, '.wav', fNameWithoutExt);
+        downloadFile(bTrackDATA, bTrackURL);
       }
 
       if (includeAnnotation) {
-        const jamsBlob = jsonDataToJSONBlob(wavesurfer.backend.buffer);
-        downloadFile(jamsBlob, '.jams', fNameWithoutExt);
+        const jams = jsonDataToJSONFile(jamsFile, fNameWithoutExt, 'jams');
+        downloadFile(jams);
       }
 
       // HIDE MODAL
       $(exportToDiskRepository).modal('hide');
     }
   });
-}
-
-function downloadFile(blob, fileType, fileName) {
-  fileName += fileType;
-
-  // Create a URL for the blob
-  const url = URL.createObjectURL(blob);
-
-  // Create a temporary anchor element to trigger the download
-  const downloadLink = document.createElement('a');
-  downloadLink.href = url;
-  downloadLink.download = fileName;
-
-  // Trigger the download
-  downloadLink.click();
-
-  // Clean up the URL and anchor element
-  URL.revokeObjectURL(url);
-  downloadLink.remove();
-}
-
-function audioDataToWavBlob(buffer) {
-  const numChannels = buffer.numberOfChannels;
-
-  let Float32Array;
-  if (numChannels === 2) {
-    Float32Array = convertToMono(
-      buffer.getChannelData(0),
-      buffer.getChannelData(1)
-    );
-  } else {
-    Float32Array = buffer.getChannelData(0);
-  }
-  // console.log(Float32Array);
-
-  const blob = recordingToBlob(Float32Array);
-
-  return blob;
-}
-
-function convertToMono(inputL, inputR) {
-  const length = inputL.length;
-  const result = new Float32Array(length);
-
-  for (let i = 0; i < length; i++) {
-    result[i] = (inputL[i] + inputR[i]) / 2.0;
-  }
-  return result;
 }
