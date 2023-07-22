@@ -128,7 +128,7 @@ viewBox="0 0 16 16"
 </svg>
 `;
 
-const audioSidebarText = `<span style="font-style: italic;">Open the side panel to access various actions.</span><br><strong>Import from disk</strong> ${ImportFromDiskIcon}Select a file from your computer or effortlessly <span style="font-style: italic; text-decoration: underline;">drag and drop</span> it into the designated space on the left.<br><strong>Import from repository </strong>${ImportFromRepositoryIcon}bla,bla (dimitri add description).<br><strong>Export to disk or repository</strong> <i class="fa-solid fa-download fa-sm"></i> Decide if you want to include the backing track audio and/or respective annotation files in your export to your local disk or MusiCoLab repository.`;
+const audioSidebarText = `<span style="font-style: italic;">Open the side panel to access various actions.</span><br><strong>Import from disk</strong> ${ImportFromDiskIcon}Select a file from your computer or effortlessly <span style="font-style: italic; text-decoration: underline;">drag and drop</span> it into the designated space on the left.<br><strong>Import from repository </strong>${ImportFromRepositoryIcon}Load a file from the MusiCoLab remote repository.<br><strong>Export to disk or repository</strong> <i class="fa-solid fa-download fa-sm"></i> Decide if you want to include the backing track audio and/or respective annotation files in your export to your local disk or MusiCoLab repository.`;
 tippy('#audio-sidebar-text', {
   content: audioSidebarText,
   delay: [400, 100],
