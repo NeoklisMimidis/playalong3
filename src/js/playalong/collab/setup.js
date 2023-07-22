@@ -238,22 +238,22 @@ function setupCollaboration() {
       : null;
   });
 
-  ydoc.on('update', (_update, _origin, _doc, tr) => {
-    // Look for buffers that are no longer used and free them
-    for (let [key, _] of tr.changed) {
-      if (key === deletedSharedRecordedBlobIds || key === playerConfig) {
-        const backingTrackId = playerConfig.get('backingTrackRecordingId');
-        for (let recording of sharedRecordedBlobs) {
-          for (let deletedId of deletedSharedRecordedBlobIds) {
-            if (backingTrackId !== deletedId && recording.get('id') === deletedId) {
-              recording.set('data', [0]);
-              console.log(`Freed buffer for recording with id: ${deletedId}`);
-            }
-          }
-        }
-      }
-    }
-  });
+  // ydoc.on('update', (_update, _origin, _doc, tr) => {
+  //   // Look for buffers that are no longer used and free them
+  //   for (let [key, _] of tr.changed) {
+  //     if (key === deletedSharedRecordedBlobIds || key === playerConfig) {
+  //       const backingTrackId = playerConfig.get('backingTrackRecordingId');
+  //       for (let recording of sharedRecordedBlobs) {
+  //         for (let deletedId of deletedSharedRecordedBlobIds) {
+  //           if (backingTrackId !== deletedId && recording.get('id') === deletedId) {
+  //             recording.set('data', [0]);
+  //             console.log(`Freed buffer for recording with id: ${deletedId}`);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // });
 
   window.ydoc = ydoc;
   window.sharedRecordedBlobs = sharedRecordedBlobs;
