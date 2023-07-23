@@ -49,7 +49,7 @@ function setupCollaboration() {
   window.awareness = websocketProvider.awareness;
   window.permanentUserData = permanentUserData;
 
-  const idbProvider = new IndexeddbPersistence("playalong3", ydoc);
+  const idbProvider = new IndexeddbPersistence(`playalong3_${room}`, ydoc);
   idbProvider.on('synced', () => {
     console.log('content from the database is loaded')
   });
