@@ -442,7 +442,7 @@ function loadFilesInOrder(audioFileURL, annotationFileUrl) {
   });
 }
 
-function loadAudioFile(input) {
+function loadAudioFile(input, res = false) {
   if (input === undefined) return;
 
   const [fileUrl, file] = loadFile(input);
@@ -454,12 +454,10 @@ function loadAudioFile(input) {
   function loadAudio() {
     wavesurfer.empty();
     resetAudioPlayer();
-    wavesurfer.load(fileUrl);
-    // const res = await fetch(reqUrl, { signal: abortController.signal });
-    // const blob = await res.blob();
-    // if (blob.type.includes("text/html")) {
-    //   throw new Error(`Failed to fetch audio file: "${fileName}"`);
-    // }
+
+    if (res) {
+      wavesurfer.loadBlob(input);
+    } else wavesurfer.load(fileUrl);
 
     initAudioPlayer();
 
@@ -489,12 +487,26 @@ function loadAudioFile(input) {
         bTrackURL = fileUrl;
         existsInRepository = false        
 
-      } else if (file === undefined && window.location.hostname === 'musicolab.hmu.gr'){
-        // c)
-        fileName = urlFileName 
-        
-        bTrackDATA = fileUrl
-        bTrackURL = fileUrl;
+      } else if (window.location.hostname === 'musicolab.hmu.gr'){
+        // c)       
+
+        // Import from repository case
+        if (res){
+          const url = new URL(res.url);
+          const params = new URLSearchParams(url.search);
+          const f = params.get('f');
+
+          fileName = f
+          bTrackDATA = res.url
+          bTrackURL = res.url
+        } else{
+          // With link from repository
+          fileName = urlFileName 
+          bTrackDATA = fileUrl 
+          bTrackURL = fileUrl
+        }
+        console.log(fileName)
+
         existsInRepository = true 
 
       } else if (file === undefined && window.location.hostname === 'localhost') {
@@ -510,6 +522,8 @@ function loadAudioFile(input) {
       console.log(`backing track URL : ${bTrackURL}`);
       console.log(`backing track DATA :  ${bTrackDATA}`);
 
+      // console.log(fileName);
+
       audioFileNamePreface.textContent = fileName.trim();
       audioFileName.textContent = audioFileNamePreface.textContent;
 
@@ -517,7 +531,7 @@ function loadAudioFile(input) {
 
       btrack = false;
     });
-
+    btrack;
     // Neoklis: Alex or Dimitris: check if this part is required for collab
     if (!Collab) {
       document.querySelector('.users-online-container').style.display = 'none';

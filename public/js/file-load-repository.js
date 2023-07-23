@@ -1,37 +1,40 @@
 const REPOSITORY_TRACKS = {
   public: [
-    { filenameShort: "6_Light_jazz.mp3" },
-    { filenameShort: "All the things you are.mp3" },
-    { filenameShort: "Autumn Leaves.mp3" },
-    { filenameShort: "Cherokee.mp3" },
-    { filenameShort: "disco0.mp3" },
+    { filenameShort: '6_Light_jazz.mp3' },
+    { filenameShort: 'All the things you are.mp3' },
+    { filenameShort: 'Autumn Leaves.mp3' },
+    { filenameShort: 'Cherokee.mp3' },
+    { filenameShort: 'disco0.mp3' },
   ],
   private: [
-    { filenameShort: "private1.mp3" },
-    { filenameShort: "private2.mp3" },
+    { filenameShort: 'private1.mp3' },
+    { filenameShort: 'private2.mp3' },
   ],
   course: [
-    { filenameShort: "6_Light_jazz.mp3" },
-    { filenameShort: "Air_Bach.mp3" },
-    { filenameShort: "egoDeath.mp3" },
-  ]
+    { filenameShort: '6_Light_jazz.mp3' },
+    { filenameShort: 'Air_Bach.mp3' },
+    { filenameShort: 'egoDeath.mp3' },
+  ],
 };
 
 // const tracksElem = document.getElementById("repository-tracks");
-const loadFileBtn = document.getElementById("load-file-btn");
-const loadingBtn = document.getElementById("loading-file-btn");
-const cancelRequestBtn = document.getElementById("cancel-request-btn");
+const loadFileBtn = document.getElementById('load-file-btn');
+const loadingBtn = document.getElementById('loading-file-btn');
+const cancelRequestBtn = document.getElementById('cancel-request-btn');
 
-const repositoryFileSearchForm = document.getElementById('repository-file-search');
+const repositoryFileSearchForm = document.getElementById(
+  'repository-file-search'
+);
 const btnSearch = document.getElementById('btn-search');
 const btnClearSearch = document.getElementById('btn-clear-search');
 const inputSearch = document.getElementById('input-search');
 let searchEmpty = false;
 
 inputSearch?.addEventListener('input', event => {
-  searchEmpty = !event.currentTarget.value || event.currentTarget.value.length === 0;
+  searchEmpty =
+    !event.currentTarget.value || event.currentTarget.value.length === 0;
   btnSearch.disabled = searchEmpty;
-})
+});
 
 repositoryFileSearchForm.addEventListener('submit', event => {
   event.preventDefault();
@@ -39,11 +42,14 @@ repositoryFileSearchForm.addEventListener('submit', event => {
   // Nothing to search for
   if (searchEmpty) return;
 
-  $('#tree').treeview('search', [inputSearch.value, {
-    ignoreCase: true,     // case insensitive
-    exactMatch: false,    // like or equals
-    revealResults: true,  // reveal matching nodes
-  }]);
+  $('#tree').treeview('search', [
+    inputSearch.value,
+    {
+      ignoreCase: true, // case insensitive
+      exactMatch: false, // like or equals
+      revealResults: true, // reveal matching nodes
+    },
+  ]);
 });
 
 btnClearSearch.addEventListener('click', () => {
@@ -51,7 +57,7 @@ btnClearSearch.addEventListener('click', () => {
   $('#tree').treeview('collapseAll');
   inputSearch.value = '';
   btnSearch.disabled = true;
-})
+});
 
 let abortController;
 
@@ -59,31 +65,36 @@ async function initRepositoryTrackList(courseParam, collabParam) {
   try {
     const res = await fetch(
       `https://musicolab.hmu.gr/apprepository/moodleGetCourseFilesJson.php?courseIdnumber=${courseParam}&collab=${collabParam}`,
-      { headers: { Accept: "application/json" } }
+      { headers: { Accept: 'application/json' } }
     );
     const data = await res.json();
 
     let treeData = tracksToTreeView(data);
     createTreeView(treeData);
-
   } catch (err) {
-    console.error("failed to fetch list of files from repository", err);
+    console.error('failed to fetch list of files from repository', err);
   }
 }
 
 function handleSearchComplete(treeData) {
   return function (event, results) {
-    // Hide items not matching search 
-    document.querySelectorAll(`.list-group-item.node-tree:not([class*="search-result"])`).forEach(entry => {
-      if (!Object.keys(treeData).includes(entry.textContent)) {
-        entry.style.display = 'none';
-      }
-    });
-  }
+    // Hide items not matching search
+    document
+      .querySelectorAll(
+        `.list-group-item.node-tree:not([class*="search-result"])`
+      )
+      .forEach(entry => {
+        if (!Object.keys(treeData).includes(entry.textContent)) {
+          entry.style.display = 'none';
+        }
+      });
+  };
 }
 
 function handleSearchCleared(event, results) {
-  document.querySelectorAll(`.list-group-item.node-tree`).forEach(entry => entry.style.display = 'block');
+  document
+    .querySelectorAll(`.list-group-item.node-tree`)
+    .forEach(entry => (entry.style.display = 'block'));
 }
 
 function handleNodeSelected(event, node) {
@@ -104,31 +115,29 @@ function createTreeView(treeData) {
 }
 
 function tracksToTreeView(tracks) {
-  let sizes = Object.keys(tracks)
-    .reduce((prev, key) => {
-      return { ...prev, [key]: tracks[key]?.length ?? 0 };
-    }, {});
+  let sizes = Object.keys(tracks).reduce((prev, key) => {
+    return { ...prev, [key]: tracks[key]?.length ?? 0 };
+  }, {});
 
-  return Object.entries(tracks)
-    .map(([type, files]) => {
-      return {
-        text: `<span>${type}</span><span class="ml-2 badge badge-primary">${sizes[type]}</span>`,
-        selectable: sizes[type] > 0,
-        state: {
-          expanded: false,
-          disabled: typeDisabled(type),
-        },
-        nodes: files?.map(file => ({
-          text: file.filenameShort,
-          icon: "fa fa-file",
-        }))
-      }
-    });
+  return Object.entries(tracks).map(([type, files]) => {
+    return {
+      text: `<span>${type}</span><span class="ml-2 badge badge-primary">${sizes[type]}</span>`,
+      selectable: sizes[type] > 0,
+      state: {
+        expanded: false,
+        disabled: typeDisabled(type),
+      },
+      nodes: files?.map(file => ({
+        text: file.filenameShort,
+        icon: 'fa fa-file',
+      })),
+    };
+  });
 }
 
 /**
- * 
- * @param {'course' | 'public' | 'private'} type 
+ *
+ * @param {'course' | 'public' | 'private'} type
  */
 function typeDisabled(type) {
   // Hide course files if course URL param is not provided
@@ -152,7 +161,6 @@ document.getElementById('tree')?.addEventListener('click', event => {
     return;
   }
 
-
   // Get the type of files clicked (public, private or course)
   const fileTypeElem = event.target.closest('.list-group-item.node-tree');
   if ('nodeid' in fileTypeElem.dataset) {
@@ -162,8 +170,8 @@ document.getElementById('tree')?.addEventListener('click', event => {
 });
 
 function updateBackingTrackPlayer(fileName) {
-  $("#repository-files-modal").modal("hide");
-  updateFileNameLabels(fileName);
+  $('#repository-files-modal').modal('hide');
+  // updateFileNameLabels(fileName); // no need now with loadAudioFile
   setFileURLParam(fileName);
 }
 
@@ -172,7 +180,9 @@ function updateFileNameLabels(fileName) {
   if (audioFileName) {
     audioFileName.textContent = fileName;
   }
-  const audioFileNamePreface = document.getElementById('audio-file-name-preface');
+  const audioFileNamePreface = document.getElementById(
+    'audio-file-name-preface'
+  );
   if (audioFileNamePreface) {
     audioFileNamePreface.textContent = fileName;
   }
@@ -183,7 +193,10 @@ loadFileBtn.addEventListener('click', async () => {
   // If it's a leaf node (file)
   if (selected[0]?.parentId !== undefined) {
     console.log('loadFileBtn handler', selected);
-    const parentText = $('#tree').treeview('getNode', selected[0].parentId).text;
+    const parentText = $('#tree').treeview(
+      'getNode',
+      selected[0].parentId
+    ).text;
     let type = 'public';
     if (parentText.includes('private')) {
       type = 'private';
@@ -193,15 +206,15 @@ loadFileBtn.addEventListener('click', async () => {
 
     await loadAudioTrack(selected[0].text, type);
   }
-})
+});
 
 async function loadAudioTrack(fileName, type) {
-  loadFileBtn.classList.add("hidden");
-  loadingBtn.classList.remove("hidden");
+  loadFileBtn.classList.add('hidden');
+  loadingBtn.classList.remove('hidden');
   cancelRequestBtn.disabled = false;
   abortController = new AbortController();
 
-  document.querySelectorAll(".alert").forEach((alert) => alert.remove());
+  document.querySelectorAll('.alert').forEach(alert => alert.remove());
 
   try {
     let reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileName}`;
@@ -214,42 +227,43 @@ async function loadAudioTrack(fileName, type) {
 
     const res = await fetch(reqUrl, { signal: abortController.signal });
     const blob = await res.blob();
-    if (blob.type.includes("text/html")) {
+    if (blob.type.includes('text/html')) {
       throw new Error(`Failed to fetch audio file: "${fileName}"`);
     }
 
-    window.backingTrack.loadBlob(blob);
+    // window.backingTrack.loadBlob(blob);
+    loadAudioFile(blob, res); // use loadAudioFile instead of simnply loadBlob to avoid various bugs
     updateBackingTrackPlayer(fileName);
+
     window.ydoc?.transact(() => {
-      window.playerConfig?.set("backingTrackRepository", fileName);
-      window.playerConfig.delete("backingTrack");
-      window.playerConfig.delete("backingTrackRecordingId");
+      window.playerConfig?.set('backingTrackRepository', fileName);
+      window.playerConfig.delete('backingTrack');
+      window.playerConfig.delete('backingTrackRecordingId');
     });
   } catch (err) {
     let errorMsg = err.message;
-    if (err.name === "AbortError") {
-      errorMsg = "You cancelled the request";
+    if (err.name === 'AbortError') {
+      errorMsg = 'You cancelled the request';
       console.error(
-        "Fetch aborted by user action (browser stop button, closing tab, etc."
+        'Fetch aborted by user action (browser stop button, closing tab, etc.'
       );
     } else {
       console.error(err);
     }
 
     createAlert(errorMsg);
-
   } finally {
-    loadingBtn.classList.add("hidden");
-    loadFileBtn.classList.remove("hidden");
+    loadingBtn.classList.add('hidden');
+    loadFileBtn.classList.remove('hidden');
     cancelRequestBtn.disabled = true;
     loadFileBtn.disabled = true;
   }
 }
 
 function createAlert(errorMsg) {
-  let alert = document.createElement("div");
-  alert.classList.add("alert", "alert-danger", "mt-3");
-  alert.role = "alert";
+  let alert = document.createElement('div');
+  alert.classList.add('alert', 'alert-danger', 'mt-3');
+  alert.role = 'alert';
   alert.innerHTML = `${errorMsg} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
   document.getElementById('repository-tracks-container')?.prepend(alert);
 
@@ -258,10 +272,10 @@ function createAlert(errorMsg) {
   }, 5000);
 }
 
-cancelRequestBtn.addEventListener("click", () => {
-  console.log("request aborted");
+cancelRequestBtn.addEventListener('click', () => {
+  console.log('request aborted');
   abortController.abort();
-  loadingBtn.classList.add("hidden");
-  loadFileBtn.classList.remove("hidden");
+  loadingBtn.classList.add('hidden');
+  loadFileBtn.classList.remove('hidden');
   cancelRequestBtn.disabled = true;
 });
