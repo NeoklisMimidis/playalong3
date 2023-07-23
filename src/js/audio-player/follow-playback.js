@@ -89,8 +89,6 @@ export function disableFollowPlaybackWhenMovingScrollbar(e) {
   let waveformOriginalWidth =
     wavesurfer.getDuration() * wavesurfer.params.minPxPerSec;
 
-  if (waveformOriginalWidth <= parentWidth) return; // return if no scrollbar active
-
   // Now we need to determine if the click was from the scrollbar. To do that we can use the scrollbar height:
   // a)
   // calculating the click position from the top of the element
@@ -106,6 +104,7 @@ export function disableFollowPlaybackWhenMovingScrollbar(e) {
 
   // T.L.D.R. : If click is on 'WAVE' tag and within 16px from bottom (scrollbar area), then execute the following code.
   if (e.target.tagName === 'WAVE' && clickPositionFromBottom <= 16) {
+    if (waveformOriginalWidth <= parentWidth) return; // return if no scrollbar active
     disableFollowPlayback();
   } else {
     // remove previous loop region  on ONLY waveform mouse down event
