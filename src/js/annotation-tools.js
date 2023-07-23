@@ -8,7 +8,10 @@ import {
   toolbar,
   mainWaveformBPM,
 } from './audio-player.js';
-import { jamsFile } from './audio-player/render-annotations.js';
+import {
+  jamsFile,
+  updateAverageTempo,
+} from './audio-player/render-annotations.js';
 
 import {
   setupSnapOnBeatsEvent,
@@ -135,8 +138,8 @@ export function initAnnotationTools() {
   /* ------- */
   /* OTHERS */
   /* ------ */
-  // setupExportToDiskOrRepository();
   setupCalculateTempoEvent();
+  speedSlider.addEventListener('change', updateAverageTempo);
 
   console.log(
     'initAnnotationTools is complete! Events & tooltips for ANNOTATION TOOLS ready! ⚡'

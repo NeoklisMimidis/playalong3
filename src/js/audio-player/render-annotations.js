@@ -29,6 +29,7 @@ import {
 } from '../config.js';
 
 export let jamsFile;
+let averageTempoWithoutSpeedFactor = 0;
 
 // -
 export function loadJAMS(input) {
@@ -258,6 +259,7 @@ export function updateMarkerDisplayWithColorizedRegions(editModeStyle = false) {
     );
   }
 
+  let tempoMarkers = 0;
   markers.forEach(function (marker, index) {
     // Set style on marker depending on edit state
     if (editModeStyle) {
@@ -277,8 +279,16 @@ export function updateMarkerDisplayWithColorizedRegions(editModeStyle = false) {
     const markersTooltipContent = _createTooltipText(marker, true);
     marker.el.setAttribute('data-tooltip', markersTooltipContent);
 
+    // Hold all beats to find the average beat
+    const tempo = 60 / marker.duration;
+    tempoMarkers += tempo;
+
     prevChord = marker.mirLabel;
   });
+
+  const totalBeats = wavesurfer.markers.markers.length - 1;
+  averageTempoWithoutSpeedFactor = tempoMarkers / totalBeats;
+  updateAverageTempo();
 
   // Create a singleton: array of regular tippy instances(tippy step 2 -markers tooltips)
   tooltips.markersSingleton = createTippySingleton(
@@ -567,4 +577,15 @@ function _getChordColor(chordLabel) {
   );
 
   return chordColor[matchedRootWithAccidental];
+}
+
+export function updateAverageTempo() {
+  const averageTempo = Math.floor(averageTempoWithoutSpeedFactor * speed01);
+  const bpmBox = document.querySelector('#bpmInput > div > span.box');
+  bpmBox.innerText = averageTempo;
+  window.metronome.setTempo(averageTempo);
+
+  console.log('----------------------------');
+  console.log('average tempo changed!:');
+  console.log(averageTempo);
 }
