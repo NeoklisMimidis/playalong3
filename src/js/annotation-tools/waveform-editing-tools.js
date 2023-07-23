@@ -24,6 +24,7 @@ import { renderModalMessage } from '../components/utilities.js';
 export function setupAddBeatAndChordEvent() {
   //
   wavesurfer.on('region-dblclick', (region, event) => {
+    if (region.id === 'loop-region') return;
     ////collably transmitting marker addition event
     if (toolbarStates.EDIT_MODE && !wavesurfer.isPlaying() && !!Collab) {
       window.sharedBTMarkers.set(`${window.sharedBTMarkers.size}`, {
