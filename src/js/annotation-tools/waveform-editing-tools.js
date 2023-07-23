@@ -23,19 +23,17 @@ import { renderModalMessage } from '../components/utilities.js';
  */
 export function setupAddBeatAndChordEvent() {
   //
-  wavesurfer.on('region-dblclick', (region) => {
-
+  wavesurfer.on('region-dblclick', (region, event) => {
     ////collably transmitting marker addition event
     if (toolbarStates.EDIT_MODE && !wavesurfer.isPlaying() && !!Collab) {
-      window.sharedBTMarkers.set(`${window.sharedBTMarkers.size}`,{
+      window.sharedBTMarkers.set(`${window.sharedBTMarkers.size}`, {
         time: wavesurfer.getCurrentTime(),
         status: 'added',
-        metadata: {mirLabel: region.data['mirex_chord']}
+        metadata: { mirLabel: region.data['mirex_chord'] },
       });
     }
 
-    addBeatAndChord(region);
-
+    addBeatAndChord(region, event);
   });
 }
 
@@ -44,46 +42,52 @@ export function setupAddBeatAndChordEvent() {
  */
 export function setupEditBeatTimingEvents() {
   wavesurfer.on('marker-drag', function (marker, e) {
-
     //collably transmitting marker drag event
     if (!wavesurfer.isPlaying() && !!Collab) {
-      window.sharedBTMarkers.forEach( (m, k, thisMap) => {
-         if (m.time === marker.time) { //find shared marker that corresponds to event marker 
+      window.sharedBTMarkers.forEach((m, k, thisMap) => {
+        if (m.time === marker.time) {
+          //find shared marker that corresponds to event marker
           //update shared marker as marked for moving
-          const newStatus = (m.status.includes('moved') || m.status == 'unedited')
-            ? m.status.replace(/unedited|moved/,'to be moved')
-            : m.status.concat(', to be moved');
+          const newStatus =
+            m.status.includes('moved') || m.status == 'unedited'
+              ? m.status.replace(/unedited|moved/, 'to be moved')
+              : m.status.concat(', to be moved');
           const newMetadata = m.metadata;
           !newMetadata.originalTime
-            ? newMetadata.originalTime = marker.time
+            ? (newMetadata.originalTime = marker.time)
             : null;
           newMetadata.timeOfMarkerToBeRemoved = marker.time;
-          thisMap.set(`${k}`, {time: marker.time, status: newStatus, metadata: newMetadata})
+          thisMap.set(`${k}`, {
+            time: marker.time,
+            status: newStatus,
+            metadata: newMetadata,
+          });
         }
       });
     }
 
     editBeat(marker, e);
-
   }); // used for styling
 
   wavesurfer.on('marker-drop', marker => {
-
     //collably transmitting marker addition event
     if (!wavesurfer.isPlaying() && !!Collab) {
-      window.sharedBTMarkers.forEach( (m, k, thisMap) => { 
-        if (m.status.includes('to be moved')) { //find shared marker that has been marked during drag event
+      window.sharedBTMarkers.forEach((m, k, thisMap) => {
+        if (m.status.includes('to be moved')) {
+          //find shared marker that has been marked during drag event
           //update shared marker with correct status and metadata
-          const newStatus = m.status.replace('to be moved', 'moved')
+          const newStatus = m.status.replace('to be moved', 'moved');
           const newMetadata = m.metadata;
-          thisMap.set(`${k}`, {time: marker.time, status: newStatus, metadata: newMetadata });
+          thisMap.set(`${k}`, {
+            time: marker.time,
+            status: newStatus,
+            metadata: newMetadata,
+          });
         }
       });
     }
     editBeatTiming(marker);
-
-  }
-  ); // changes the beat
+  }); // changes the beat
 }
 
 /**
@@ -94,21 +98,34 @@ export function setupRemoveBeatAndChordEvent() {
 }
 
 // - Functions for editing annotation with waveform interaction events
-function addBeatAndChord(region) {
+function addBeatAndChord(region, e) {
   console.log(`Region start: ${region.start} || Region end:${region.end}
     Current time: ${wavesurfer.getCurrentTime()}`);
 
-  // Only add markers in the case where edit mode is activated and audio is not playing
-  if (!toolbarStates.EDIT_MODE || wavesurfer.isPlaying()) return;
+  // On loop region double click go to loop start
+  if (region.id === 'loop-region') {
+    console.log('LOOP REGION DOUBLE CLICK!');
+    // e.preventDefault();
+    // e.stopPropagation();
+    // wavesurfer.seekTo(region.start / wavesurfer.getDuration());
 
-  disableAnnotationListAndDeleteAnnotation();
+    // delayed execution leveraging JavaScript's event loop and setTimeout to prevent default cursor placement
+    setTimeout(function () {
+      wavesurfer.seekTo(region.start / wavesurfer.getDuration());
+    }, 0);
+  } else {
+    // Only add markers in the case where edit mode is activated and audio is not playing
+    if (!toolbarStates.EDIT_MODE || wavesurfer.isPlaying()) return;
 
-  const startingBeatChord = region.data['mirex_chord']; // get the chord assigned
-  const currentTimePosition = wavesurfer.getCurrentTime();
+    disableAnnotationListAndDeleteAnnotation();
 
-  addMarkerAtTime(currentTimePosition, startingBeatChord);
+    const startingBeatChord = region.data['mirex_chord']; // get the chord assigned
+    const currentTimePosition = wavesurfer.getCurrentTime();
 
-  updateMarkerDisplayWithColorizedRegions();
+    addMarkerAtTime(currentTimePosition, startingBeatChord);
+
+    updateMarkerDisplayWithColorizedRegions();
+  }
 }
 
 function editBeat(marker) {
@@ -163,9 +180,14 @@ function removeBeatAndChord(marker) {
 
       //collably transmitting marker deletion event
       if (!wavesurfer.isPlaying() && !!Collab) {
-        window.sharedBTMarkers.forEach( (m, k, thisMap) => {
-          if (m.time === marker.time) //find shared marker and update it as deleted
-            thisMap.set(`${k}`, {time: marker.time, status: 'deleted', metadata:''});
+        window.sharedBTMarkers.forEach((m, k, thisMap) => {
+          if (m.time === marker.time)
+            //find shared marker and update it as deleted
+            thisMap.set(`${k}`, {
+              time: marker.time,
+              status: 'deleted',
+              metadata: '',
+            });
         });
       }
     })
