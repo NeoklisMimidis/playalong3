@@ -342,6 +342,20 @@ function setupLoopRegionEvents() {
       }
     }
   });
+
+  wavesurfer.on('region-dblclick', (region, e) => {
+    if (region.id === 'loop-region') {
+      console.log('LOOP REGION DOUBLE CLICK!');
+      // e.preventDefault();
+      // e.stopPropagation();
+      // wavesurfer.seekTo(region.start / wavesurfer.getDuration());
+
+      // delayed execution leveraging JavaScript's event loop and setTimeout to prevent default cursor placement
+      setTimeout(function () {
+        wavesurfer.seekTo(region.start / wavesurfer.getDuration());
+      }, 0);
+    }
+  });
 }
 
 function muteUnmute(e) {

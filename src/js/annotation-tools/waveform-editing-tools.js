@@ -102,30 +102,17 @@ function addBeatAndChord(region, e) {
   console.log(`Region start: ${region.start} || Region end:${region.end}
     Current time: ${wavesurfer.getCurrentTime()}`);
 
-  // On loop region double click go to loop start
-  if (region.id === 'loop-region') {
-    console.log('LOOP REGION DOUBLE CLICK!');
-    // e.preventDefault();
-    // e.stopPropagation();
-    // wavesurfer.seekTo(region.start / wavesurfer.getDuration());
+  // Only add markers in the case where edit mode is activated and audio is not playing
+  if (!toolbarStates.EDIT_MODE || wavesurfer.isPlaying()) return;
 
-    // delayed execution leveraging JavaScript's event loop and setTimeout to prevent default cursor placement
-    setTimeout(function () {
-      wavesurfer.seekTo(region.start / wavesurfer.getDuration());
-    }, 0);
-  } else {
-    // Only add markers in the case where edit mode is activated and audio is not playing
-    if (!toolbarStates.EDIT_MODE || wavesurfer.isPlaying()) return;
+  disableAnnotationListAndDeleteAnnotation();
 
-    disableAnnotationListAndDeleteAnnotation();
+  const startingBeatChord = region.data['mirex_chord']; // get the chord assigned
+  const currentTimePosition = wavesurfer.getCurrentTime();
 
-    const startingBeatChord = region.data['mirex_chord']; // get the chord assigned
-    const currentTimePosition = wavesurfer.getCurrentTime();
+  addMarkerAtTime(currentTimePosition, startingBeatChord);
 
-    addMarkerAtTime(currentTimePosition, startingBeatChord);
-
-    updateMarkerDisplayWithColorizedRegions();
-  }
+  updateMarkerDisplayWithColorizedRegions();
 }
 
 function editBeat(marker) {
