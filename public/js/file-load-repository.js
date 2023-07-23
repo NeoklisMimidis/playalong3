@@ -219,7 +219,7 @@ async function loadAudioTrack(fileName, type) {
   try {
     let reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileName}`;
     if (type === 'private') {
-      reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}`;
+      reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}&user=${userParam}&u=${idParam}`;
     } else if (type === 'course') {
       // TODO: Handle course files
       throw new Error('Files of type course are not currently supported');
