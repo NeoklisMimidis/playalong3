@@ -172,21 +172,15 @@ const urlFileName = urlParams.get('f');
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
   // resetAudioPlayer();
-  loadFilesInOrder(audioFileURL1);
-  // loadFilesInOrder(audioFileURL1, annotationFile1);
+  // loadFilesInOrder(audioFileURL1);
+  loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
 ) {
   // B) MusiCoLab server:
-  const urlFileNameWithoutExtension = urlFileName.substring(
-    0,
-    urlFileName.lastIndexOf('.')
-  ); //  Starry+Night.mp3 --> Starry+Night
-
   const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileName}`;
-  const annotationFileUrl = `https://musicolab.hmu.gr/jams/${urlFileNameWithoutExtension}.jams`;
-  // https://musicolab.hmu.gr/jams/Cherokee.jams
+  const annotationFileUrl = createURLJamsFromRepository(urlFileName);
 
   loadFilesInOrder(audioFileURL, annotationFileUrl);
 } else {
@@ -236,14 +230,7 @@ function sendAudioAndFetchAnalysis() {
   if (window.location.hostname === 'localhost') {
     annotationFileUrl = annotationFile1;
   } else {
-    // annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileName}.jams`;
-
-    const fileNameWithoutExtension = fileName.substring(
-      0,
-      fileName.lastIndexOf('.')
-    ); //  Starry+Night.mp3 --> Starry+Night
-
-    annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileNameWithoutExtension}.jams`;
+    annotationFileUrl = createURLJamsFromRepository(fileName);
   }
 
   const estimatedAnalysisTime = 35; // TODO function? for estimation of analysis from file size?
@@ -490,7 +477,7 @@ function loadAudioFile(input, res = false) {
       } else if (window.location.hostname === 'musicolab.hmu.gr'){
         // c)       
 
-        // Import from repository case
+        // Import from repository (button) case
         if (res){
           const url = new URL(res.url);
           const params = new URLSearchParams(url.search);
@@ -499,8 +486,13 @@ function loadAudioFile(input, res = false) {
           fileName = f
           bTrackDATA = res.url
           bTrackURL = res.url
+
+          // Also try to load annotation, if it exists it will be loaded
+          //(I don't like it that it executes here but.. whatever)
+          const annotationFile = createURLJamsFromRepository(f)
+          loadJAMS(annotationFile)
         } else{
-          // With link from repository
+          // With link from repository (https://musicolab.hmu.gr/apprepository/publicFiles.php)
           fileName = urlFileName 
           bTrackDATA = fileUrl 
           bTrackURL = fileUrl
@@ -770,4 +762,16 @@ function primaryLabelInterval(pxPerSec) {
  */
 function secondaryLabelInterval(pxPerSec) {
   return Math.floor(1 / timeInterval(pxPerSec));
+}
+
+function createURLJamsFromRepository(fileName) {
+  const fileNameWithoutExtension = fileName.substring(
+    0,
+    fileName.lastIndexOf('.')
+  ); //  Starry+Night.mp3 --> Starry+Night
+
+  const annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileNameWithoutExtension}.jams`;
+  // https://musicolab.hmu.gr/jams/Cherokee.jams
+
+  return annotationFileUrl;
 }
