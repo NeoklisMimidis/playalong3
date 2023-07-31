@@ -507,9 +507,7 @@ export function showChordEditor(collabEditSelection) {
 
   modalChordEditor.style.display = 'block';
   applyBtn.style.visibility = 'hidden';
-  toolbarStates.COLLAB_EDIT_MODE
-    ? (cancelBtn.style.visibility = 'hidden')
-    : null;
+  cancelBtn.style.visibility = toolbarStates.COLLAB_EDIT_MODE ? 'hidden' : 'visible';
 }
 
 function select(selection, component) {
