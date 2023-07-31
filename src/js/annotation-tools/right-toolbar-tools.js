@@ -618,13 +618,14 @@ function _mapChordSymbolToText(encodedChord) {
   let foundAccidental;
 
   function combineEncodedChord(chord) {
+    if (chord === null || chord === undefined) return null;
     return `${chord.root}${chord.accidental}${chord.variation}`;
   }
 
   // conditional variable to check if same chord as before
   const sameAsLastChord =
     combineEncodedChord(encodedChord) ===
-    combineEncodedChord(lastSelectedMarker.symbolParts);
+    combineEncodedChord(lastSelectedMarker?.symbolParts);
 
   // 1) Find shorthand according to the font mapping
   let foundShorthand;
