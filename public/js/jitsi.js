@@ -77,7 +77,7 @@ joinCallButton.addEventListener("click", function (e) {
          },
 
     userInfo: {
-      displayName: userParam,
+      displayName: Jitsi_User_Name,
     },
   };
 
@@ -141,7 +141,7 @@ joinCallButton_video_only.addEventListener("click", function (e) {
         startWithVideoMuted: false,
 	},
         userInfo: {
-            displayName: userParam,
+            displayName: Jitsi_User_Name,
         },
     };
 

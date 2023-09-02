@@ -562,7 +562,7 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
   if (!window.confirm('This track will be moved and replace backing track for everyone. Are you sure?')) {
     return;
   }
-
+  //find the recording in the shared object based on its collabId
   const collabId = scrollContainer.dataset.collabId;
   if (!collabId) {
     console.error("could not find collabId for scrollContainer of id: " + scrollContainer.id);
@@ -583,17 +583,21 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
     if (data?.length > 1) {
       const src = Float32Array.from(data);
       const blob = recordingToBlob(src);
+      const BTUrl = URL.createObjectURL(blob);
 
       try {
-        window.backingTrack.loadBlob(blob);
+        loadAudioFile(BTUrl);
         // Set new key to this collabId and undo others
         window.ydoc.transact(() => {
+          //fire events that set this rec as BT in collaborators
           window.playerConfig.set('backingTrackRecordingId', collabId);
+          //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
           window.playerConfig.delete('backingTrack');
           window.playerConfig.delete('backingTrackRepository');
+          //fire events that delete the recording used as backing track in collaborators
           window.deletedSharedRecordedBlobIds.push([ collabId ]);
         });
-
+        //delete recording used as backing track
         deleteWaveForm(); 
         removeFileURLParam();
       } catch (err) {
@@ -1330,7 +1334,9 @@ function createDownloadLink(
   }
   deleteButton.dataset.collabId = id;
   deleteButton.addEventListener('click', function (event) {
+    
     var info_message = btrack
+    //TODO. alx. 'for everyone' sta strings apo katw. ara otan kapoios doulevei non collab, tha sindeetai sto course kai tha tropopoiei douleia pou egine collaboratively? kai ara to istoriko sto course tha menei?
       ? 'This track will be moved and replace backing track for everyone. Are you sure?'
       : 'This track will be removed for everyone. Are you sure you want to delete it?';
     // prettier-ignore

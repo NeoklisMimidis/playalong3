@@ -103,7 +103,8 @@ function setBackingTrackFileRemote(fileInfo) {
     console.warn('failed to set backing track file data from peers');
     return;
   }
-
+  
+  //construct file object from shared backing track file data
   let file = new File(
     [Int8Array.from(fileInfo.get('data'))],
     fileInfo.get('name'),
@@ -111,13 +112,16 @@ function setBackingTrackFileRemote(fileInfo) {
       type: fileInfo.get('type'),
     }
   );
-  let reader = new FileReader();
+  /*let reader = new FileReader();
   reader.onload = e => {
     console.log('loading remote file', e.target.result);
+    //load the read Array Buffer into wavesurfer backing track
     backingTrack.loadArrayBuffer(e.target.result);
     removeFileURLParam();
   };
   reader.readAsArrayBuffer(file);
+  */
+ loadAudioFile(file);
 }
 
 function setBackingTrackRepositoryRemote(fileName) {
@@ -134,8 +138,9 @@ function setBackingTrackRepositoryRemote(fileName) {
 
 // Load a file from url
 function loadUrlFile(f, c, u) {
-  Jitsi_User_Name = u;
+  Jitsi_User_Name = u; //TODO. alx. giati xanatithetai edw to Jitsi_User_Name? mipws katalathws? an nai delete line.
   updateFileNameLabels(f);
+  //load remote repository file as backing track
   backingTrack.load(
     `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${f}`
   );
@@ -146,7 +151,7 @@ function setBackingTrackRecordingId(id) {
     console.error("tried to set backing track to recording with id %s but it does not exist", id);
     return;
   }
-
+  //find the recording in the shared object based on its provided id
   let index = -1;
   for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
     if (window.sharedRecordedBlobs.get(i)?.get('id') === id) {
@@ -161,10 +166,13 @@ function setBackingTrackRecordingId(id) {
   }
  
   const data = window.sharedRecordedBlobs.get(index).get("data");
+  //load it as wavesurfer backing track
   if (data?.length > 1) {
     const float32Array = Float32Array.from(data);
     const blob = recordingToBlob(float32Array);
-    window.backingTrack.loadBlob(blob);
+    const BTUrl = URL.createObjectURL(blob);
+
+    window.loadAudioFile(BTUrl)
     removeFileURLParam();
   }
 }

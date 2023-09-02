@@ -167,7 +167,7 @@ function handleMarkerAddition (collabEditedMarker) {
   if (existingMarker)
     return;
 
-  addMarkerAtTime(collabEditedMarker.time, collabEditedMarker.metadata.mirLabel);
+  addMarkerAtTime(collabEditedMarker.time, collabEditedMarker.metadata.mirLabel, 'new', false);
   disableAnnotationListAndDeleteAnnotation();
   tooltips.markersSingleton.disable(); // to be re-enabled in the next function call
   updateMarkerDisplayWithColorizedRegions();
@@ -203,7 +203,7 @@ function handleMarkerMoving (collabEditedMarker, key) {
       : null; 
 
     //adding new marker...
-    const newMarker = addMarkerAtTime(collabEditedMarker.time, markerToBeRemoved.mirLabel, 'edited');
+    const newMarker = addMarkerAtTime(collabEditedMarker.time, markerToBeRemoved.mirLabel, 'edited', false);
     tooltips.markersSingleton.disable(); //to be re-enabled in the next function call
     updateMarkerDisplayWithColorizedRegions();
 

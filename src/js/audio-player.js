@@ -235,18 +235,18 @@ function sendAudioAndFetchAnalysis() {
 
   const estimatedAnalysisTime = 35; // TODO function? for estimation of analysis from file size?
 
+  if (!!Collab) {
+    window.awareness.setLocalStateField('BTAnalysis', {
+      status: 'initiated',
+    });
+  }
+
   // 2) send audio to server & update progress bar and on completion visualize annotation
   doChordAnalysis(
     ANALYSIS_SCRIPT_URL,
     annotationFileUrl,
     estimatedAnalysisTime
   );
-
-  if (!!Collab) {
-    window.awareness.setLocalStateField('BTAnalysis', {
-      status: 'initiated',
-    });
-  }
 }
 
 function doChordAnalysis(
@@ -319,6 +319,7 @@ function doChordAnalysis(
 
   let analysisTime = estimatedAnalysisTime;
   let executed = false;
+  let count = 1;
 
   // Update Progress bar update AFTER audio loaded
   let intervalId = setInterval(function () {
@@ -330,10 +331,33 @@ function doChordAnalysis(
     } else if (targetProgress == 1) {
       if (currentProgress == uploadPortion) {
         console.log('AUDIO FILE UPLOADED!👌👌👌');
+
+        if (!!Collab) {
+          window.awareness.setLocalStateField('BTAnalysis', {
+            status: 'inProgress',
+            progress: 30,
+          });
+        }
       }
 
       if (currentProgress < 97) {
-        currentProgress += analysisPortion / (analysisTime * 10); // Increase progress
+        const resolution = analysisTime * 10;
+        currentProgress += analysisPortion / resolution; // Increase progress
+
+        switch (count) {
+          case Math.round(resolution/4):
+          case Math.round(resolution/2):
+          case Math.round(resolution * 3/4): {
+            if (!!Collab) {
+              window.awareness.setLocalStateField('BTAnalysis', {
+                status: 'inProgress',
+                progress: currentProgress,
+              });
+            }
+          }         
+        }
+
+        count++;
       } else {
         currentProgress = 99;
         clearInterval(intervalId);
@@ -523,10 +547,14 @@ function loadAudioFile(input, res = false) {
 
       btrack = false;
     });
-    btrack;
+    /* TODO. alx. isws volevei. an einai na xrismiopoioithei, kai i loadAudioFIle na trexei kai
+    // ston loader kai stous collaborators, prepei na mpei ena flag isLoader gia na energopoieitai o sharing
+    // mixanismos mono se auton. episis prepei na diaxwristoun cases analoga me to input gia na energopoieitai diaforetikos
+    // sharing mixanismos analoga an paizei file(from disk), i url(rec, repository). Isws xreiazetai enopoiisi twn sharing
+    // mixanismwn stin teliki. mexri to deadline commented out kai to vlepoume.
     // Neoklis: Alex or Dimitris: check if this part is required for collab
-    if (!Collab) {
-      document.querySelector('.users-online-container').style.display = 'none';
+     if (!Collab) {
+      document.querySelector('.users-online-container').style.display = 'none';//?? giati mpike edw?
     } else if (Collab && file instanceof File) {
       shareBackingTrack(file)
         .then(() => {
@@ -537,6 +565,7 @@ function loadAudioFile(input, res = false) {
           console.error(`failed to share file ${file.name} with peers`, err)
         );
     }
+    */
   }
 
   if (file && !toolbarStates.SAVED) {

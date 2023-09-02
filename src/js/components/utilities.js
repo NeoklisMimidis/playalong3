@@ -233,7 +233,11 @@ export function fileSelectHandlers(
   const handleFileSelect = () => {
     const input = createInput();
     input.addEventListener('change', e => {
-      triggerAction(e.target.files[0]);
+      const file = e.target.files[0];
+      console.log(file);
+      triggerAction(file);
+      if (!!Collab)
+        shareBackingTrack(file);
     });
     input.click();
   };

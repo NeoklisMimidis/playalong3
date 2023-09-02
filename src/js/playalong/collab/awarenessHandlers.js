@@ -23,8 +23,9 @@ export function stateChangeHandler(changes) {
 }
 
 export function awaranessUpdateHandler() {
-  const { connectedUsers, disconnectedUsers } = formatUserList();
+  const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
 
+  configureDeleteWaveformButtons(reconnectedUserNames, disconnectedUsers);
   updateWaveformAwareness(connectedUsers);
   renderUserList([...connectedUsers, ...disconnectedUsers]);
 }
@@ -41,27 +42,28 @@ function actOnBTAnalysisStateUpdate (awStates, myClientId) {
     switch (BTAnalysisState.status) {
       case 'initiated': actOnBTAnalysisInitiated(myStateUpdating, analyzerName) 
         break;
+      case 'inProgress': actOnBTAnalysisInProgress(myStateUpdating, BTAnalysisState.progress)
+        break;
       case 'completed': actOnBTAnalysisCompleted(myStateUpdating, BTAnalysisState.jamsURL)
         break;
     }
   });
 }
 
+function actOnBTAnalysisInProgress (me, progress) {
+  if (me) return;
+  animateProgressBar(analysisLoadingBar, progress, 'Analysing');
+}
+
 function actOnBTAnalysisInitiated (me, analyzerName) {
   if (me) return;
-
-  $('#freeze-interface').modal({
-    backdrop: 'static',
-    keyboard: false
-  });
-  
-  const notificationContainer = document
-    .getElementById('freeze-interface')
-    .querySelector('.notification-container')
-
-  notificationContainer.innerHTML = `${analyzerName} has clicked 'analyze' button. Backing track analysis pending.`
-  
-  $('#freeze-interface').modal('show');
+  //notifying about analysis button having been clicked
+  const notifText = `${analyzerName} has has clicked Analyze button. Waiting for the analysis result...`;
+  const notifContext = 'info';
+  notify(notifText, notifContext);
+  //modifying BT toolbar  
+  document.getElementById(`preface-annotation`).classList.add('d-none');
+  analysisLoadingBar.classList.remove('d-none');
 }
 
 function actOnBTAnalysisCompleted (me, jamsURL) {
@@ -73,21 +75,25 @@ function actOnBTAnalysisCompleted (me, jamsURL) {
     return;
   }
 
-  $('#freeze-interface').modal('hide');
+  function callback () {
+    //modifying toolbar GUI
+    document.getElementById(`preface-annotation`).classList.remove('d-none');
+    analysisLoadingBar.classList.add('d-none');  
+  }
 
-  const notificationContainer = document
-    .getElementById('freeze-interface')
-    .querySelector('.notification-container')
-  notificationContainer.innerHTML = ``;
-
+  //notifying that analysis by server script has been completed
   if (jamsURL == 'none') {
     const notifText = `Backing track analysis has failed.`;
     const notifContext = 'danger';
     notify(notifText, notifContext);
+
+    callback();
   } else {
     const notifText = `Backing track analysis completed!`;
     const notifContext = 'info';
     notify(notifText, notifContext);
+
+    animateProgressBar(analysisLoadingBar, 100, 'Analysing', callback);
 
     loadJAMS(jamsURL);
   }
@@ -396,7 +402,7 @@ function modifyChordFinderUI(collabEditModeOn, editorData, editTime) {
     }
   }
 
-  updateMarkerDisplayWithColorizedRegions(collabEditModeOn);
+  updateMarkerDisplayWithColorizedRegions(true);
   collabEditModeOn 
     ? tooltips.regions[0].disable()
     : tooltips.regions[0].enable();
@@ -490,6 +496,9 @@ function formatUserList() {
     (entry) => !connectedUsers.includes(entry)
   );
 
+  let prevDisconectedUsers = []
+  let reconnectedUserNames = [];
+  //configuring the connected users list
   connectedUsers = [...new Set(connectedUsers)]
     .map((entry) => entry.concat(" status=online"))
     .map((entry) => {
@@ -499,7 +508,7 @@ function formatUserList() {
       return data;
     });
   connectedUsers.forEach((user) => (user.imageSrc = setUserImageUrl(user.id)));
-
+  //configuring the disconnected users list
   disconnectedUsers = [...new Set(disconnectedUsers)]
     .map((entry) => entry.concat(" status=offline"))
     .map((entry) => {
@@ -511,8 +520,15 @@ function formatUserList() {
   disconnectedUsers.forEach(
     (user) => (user.imageSrc = setUserImageUrl(user.id))
   );
+  //configuring the reconnected users list
+  const connectedNames = connectedUsers.map(user => user.name);
+  document
+    .querySelectorAll('.offline-status')
+    .forEach( e => prevDisconectedUsers.push(e.nextElementSibling.textContent) );
+  reconnectedUserNames = prevDisconectedUsers
+    .filter( user => connectedNames.includes(user) );
 
-  return { connectedUsers, disconnectedUsers };
+  return { connectedUsers, disconnectedUsers, reconnectedUserNames };
 }
 
 function updateWaveformAwareness(connected) {
@@ -527,4 +543,34 @@ function updateWaveformAwareness(connected) {
       img.classList.add("recUser-offline");
     }
   });
+}
+function configureDeleteWaveformButtons(reconnectedNames, disconnectedUsers) {
+  //make delete buttons of recordings by disconnected users visible for everyone
+  const disconnectedNames = disconnectedUsers.map(u => u.name);
+  const recordingsByDisconnected = [...document.querySelectorAll('.waveform-awareness')]
+    .filter(imageEl => disconnectedNames.includes(imageEl.title))
+    .forEach(imageEl => {
+      const recCount = imageEl
+        .nextElementSibling
+        .id.match(/\d+/)[0];
+      const recButtonsContainer = document
+        .querySelector(`#buttons${recCount}`);
+      recButtonsContainer.querySelector('.delete-button')
+        .removeAttribute('hidden');
+    });
+  
+  //rehide (for all users except the recorder) delete buttons of recordings by reconnected users
+  const recordingsByReconnected = [...document.querySelectorAll('.waveform-awareness')]
+    .filter(imageEl => reconnectedNames.includes(imageEl.title))
+    .forEach(imageEl => {
+      if (imageEl.title == userParam)
+        return;
+      const recCount = imageEl
+        .nextElementSibling
+        .id.match(/\d+/)[0];
+      const recButtonsContainer = document
+        .querySelector(`#buttons${recCount}`);
+      recButtonsContainer.querySelector('.delete-button')
+        .setAttribute('hidden', true);
+    })  ;
 }

@@ -55,11 +55,14 @@ function setupCollaboration() {
   });
 
   const sharedRecordedBlobs = ydoc.getArray("blobs");
+  //sharedRecBlobs (Y.array) has --> ymap recordings have --> metadata (id, name, recid, speed, pitch, sample rate, count) keys
+  //and data key (Y.array)
   sharedRecordedBlobs.observe((event) => {
     for (let i = 0; i < event.changes.delta.length; i++) {
       let delta = event.changes.delta[i];
       if (Array.isArray(delta.insert)) {
         for (let map of delta.insert) {
+          //3 user cases. recorder, collaborators, late collaborators
           let insert = map instanceof Y.Map ? map.toJSON() : map;
           const recUserData = {
             name: insert.userName,
@@ -67,6 +70,9 @@ function setupCollaboration() {
             imageSrc: setUserImageUrl(insert.userId)
           };
           if (
+            //case:late collaborator, i.e. user that was not present when recording was initially shared. rec template constructed 
+            //with createDownloadLink
+            //TODO: alx. sometimes late collaborator is mistakenly referred to else events. that causes error
             map.has("data") &&
             (map.get("data").length / insert.total) * 100 === 100.0
           ) {
@@ -84,6 +90,9 @@ function setupCollaboration() {
               insert.set_pitch
             );
           } else {
+            //case: recorder and collaborators. recording template constructed with fillRecordingTemplate.
+            //in this case map.data doesn t exist, because observer was triggered by map solely aparted by recording metadata
+            //events needed for transmission of recording data are triggered by sharedRecordingBlobs deep observer
             window.fillRecordingTemplate(
               insert.id,
               recUserData,
@@ -168,11 +177,12 @@ function setupCollaboration() {
             setDenominatorRemote(value);
             break;
           case "backingTrack":
-            {
+            { //setting backing track file name shown on UI
               window.setBackingTrackRemote(value.get("name"));
               const downloadProgress =
                 (value.get("data").length / value.get("size")) * 100;
               if (downloadProgress === 100.0) {
+                //when done fetching file from the user that first loaded it, set it as backing track
                 window.setBackingTrackFileRemote(value);
                 updateProgressBar(0, "#progressBar0");
               }
