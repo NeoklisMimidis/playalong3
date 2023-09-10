@@ -206,7 +206,7 @@ function startRecording() {
   recordButton.disabled = true;
   recordButton.setAttribute('title', '');
 
-  stopButton.disabled = false;
+  stopButton.removeAttribute('hidden');
   stopButton.setAttribute('title', 'Stop recording');
 
   /*
@@ -270,6 +270,7 @@ function startRecording() {
       playAll();
 
       pauseButton.disabled = false;
+      pauseButton.removeAttribute('hidden');
       pauseButton.setAttribute('title', 'Pause recording');
 
       latency = end - start;
@@ -375,11 +376,11 @@ function stopRecording() {
   AUDIO_PLAYER_CONTROLS.stopBtn.click();
 
   //disable the stop button, enable the record too allow for new recordings
-  stopButton.disabled = true;
+  stopButton.hidden = true;
   stopButton.setAttribute('title', '');
   recordButton.disabled = false;
   recordButton.setAttribute('title', 'Start recording');
-  pauseButton.disabled = true;
+  pauseButton.hidden = true;
   pauseButton.setAttribute('title', '');
   recordButton.classList.remove('flash');
   pauseButton.classList.remove('flash');
@@ -413,8 +414,11 @@ function stopRecording() {
 
   // DON'T execute the rest of the code if recording was canceled while pre count was up
   if (preCountCanceled) return;
-
+  
+  
+  
   noRecordings++;
+  
   // console.log('Number of recordings = ', noRecordings);
 
   //get the raw PCM audio data as an array of float32 numbers
@@ -678,6 +682,7 @@ function fillRecordingTemplate(
   });
 
   wavesurfers.push(wavesurfer);
+  document.getElementById('recordings_headline').hidden = false;
   wavesurfer.on('ready', function () {
     let st = new window.soundtouch.SoundTouch(wavesurfer.backend.ac.sampleRate);
     let buffer = wavesurfer.backend.buffer;
@@ -895,6 +900,8 @@ function fillRecordingTemplate(
     timelineContainer.parentNode.removeChild(timelineContainer);
     buttonContainer.parentNode.removeChild(buttonContainer);
     outmostContainer.remove();
+    var muteButtons = document.querySelectorAll('.mute-button');
+    if (muteButtons.length == 0){document.getElementById('recordings_headline').hidden = true;}
   }
 
   function deleteHandler(event) {
@@ -1061,6 +1068,7 @@ function createDownloadLink(
 
   wavesurfer.load(url);
   wavesurfers.push(wavesurfer);
+  document.getElementById('recordings_headline').hidden = false;
   wavesurfer.on('ready', function () {
     let st = new window.soundtouch.SoundTouch(wavesurfer.backend.ac.sampleRate);
     let buffer = wavesurfer.backend.buffer;
@@ -1288,6 +1296,8 @@ function createDownloadLink(
     timelineContainer.parentNode.removeChild(timelineContainer);
     buttonContainer.parentNode.removeChild(buttonContainer);
     outmostContainer.remove();
+    var muteButtons = document.querySelectorAll('.mute-button');
+    if (muteButtons.length == 0){document.getElementById('recordings_headline').hidden = true;}
   }
 
   function deleteHandler(event) {

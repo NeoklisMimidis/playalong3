@@ -387,7 +387,7 @@
             <path fill-rule="evenodd" d="M8 13A5 5 0 1 0 8 3a5 5 0 0 0 0 10z" />
           </svg>
         </button>
-        <button disabled id="pauseButton" class="btn btn-lg">
+        <button hidden id="pauseButton" class="btn btn-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="45"
@@ -401,7 +401,7 @@
             />
           </svg>
         </button>
-        <button id="stopButton" disabled class="btn btn-lg" title="">
+        <button id="stopButton" hidden class="btn btn-lg" title="">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="45"
@@ -1313,7 +1313,7 @@
         <!-- <p></p>
         <div id="formats">Format: start recording to see sample rate</div> -->
         <p></p>
-        <p><strong>Recordings:</strong></p>
+        <p hidden id="recordings_headline"><strong>Recordings:</strong></p>
         <p></p>
         <ol id="recordingsList"></ol>
       </div>
