@@ -245,8 +245,8 @@ function startRecording() {
     rec.stop();
 
     //update the format
-    document.getElementById('formats').innerHTML =
-      'Format: 1 channel pcm @ ' + audioContext.sampleRate / 1000 + 'kHz';
+    // document.getElementById('formats').innerHTML =
+    //   'Format: 1 channel pcm @ ' + audioContext.sampleRate / 1000 + 'kHz';
 
     /* assign to gumStream for later use */
     gumStream = stream;
@@ -1377,8 +1377,7 @@ function combineSelected() {
   // DEBUG ONLY PURPOSE !!!!!!!!!!!!!!!!!!!!!!! COMMENT OUT ALL ABOVE ************************************************
 
   //console.log("combine files to single wav clicked");
-  var length = 0;
-  var maxRecLenth = 0;
+
   var noBuffers = 0;
   var muteButtons = document.querySelectorAll('.mute-button');
   var playButtons = document.querySelectorAll('.play-button');
@@ -1412,6 +1411,13 @@ function combineSelected() {
   selectedBuffers = selectedBuffers.map(function (index) {
     return recordedBuffers[index];
   });
+
+  // add backing track to selected buffers if exists and is unmuted
+  if (backingTrack.isReady && !backingTrack.isMuted) {
+    var monoBackingTrack = extractMonoBackingTrackArrayBuffer(backingTrack);
+    selectedBuffers.push([monoBackingTrack]);
+  }
+
   console.log('selectedBuffers= ', selectedBuffers);
   console.log('recordedBuffers= ', recordedBuffers);
   console.log(noBuffers, ' audio recordings to be mixed to a single wav file');
@@ -1470,15 +1476,37 @@ function combineSelected() {
     }
   }
 
-  for (let n = 0; n < noBuffers; n++) {
-    length = selectedBuffers[n][0].length;
-    //console.log("Recording's ",n+1," lenght = ",length);
-    if (length > maxRecLenth) {
-      maxRecLenth = length;
-    }
+
+  mixAudioBuffers(selectedBuffers, sampleRates);
+}
+
+function extractMonoBackingTrackArrayBuffer(input) {
+  var track = input.backend.buffer;
+  //const origSampleRate = input.backend.sampleRate;
+  const origChannels = input.backend.buffer.numberOfChannels;
+  if (origChannels == 2) {
+    //console.log("starting conversion stereo to mono");
+    track = convertStereoToMono(track);
   }
-  //console.log("maximum length of selected recordings = ",maxRecLenth);
-  mixAudioBuffers(selectedBuffers, maxRecLenth, sampleRates);
+  return track.getChannelData(0);
+}
+
+function convertStereoToMono (stereoaudiobuffer) {
+  const channel1 = stereoaudiobuffer.getChannelData(0);
+  const channel2 = stereoaudiobuffer.getChannelData(1);
+  var monoChannel = new Float32Array(channel1.length); // Create a new mono channel
+  // Combine the left and right channels by averaging the samples
+  for (let i = 0; i < channel1.length; i++) {
+    monoChannel[i] = (channel1[i] + channel2[i]) / 2;
+  }
+  // Create a new mono audio buffer
+  const audioContext2 = new (window.AudioContext || window.webkitAudioContext)();
+  //const audioContext2 = new AudioContext({sampleRate: stereoaudiobuffer.backend.buffer.sampleRate,});
+  const monoAudioBuffer = audioContext2.createBuffer(1, monoChannel.length, stereoaudiobuffer.sampleRate);
+  monoAudioBuffer.copyToChannel(monoChannel, 0); // Copy the mono channel to the new buffer
+  console.log ("monoAudioBuffer from stereo backing track =",monoAudioBuffer);
+  audioContext2.close();
+  return monoAudioBuffer;
 }
 
 // this function does not work yet !!!!!!!!!!!!!!
@@ -1507,7 +1535,17 @@ function changeBufferSpeed(buffers, index, recspeed) {
   pcmBuffer.setFilter(soundtouchNode);
 }
 
-function mixAudioBuffers(buffers, length, sampleRates = []) {
+function mixAudioBuffers(buffers, sampleRates = []) {
+  var length = 0;
+  var maxRecLenth = 0;
+  for (let n = 0; n < buffers.length; n++) {
+    length = buffers[n][0].length;
+    //console.log("Recording's ",n+1," lenght = ",length);
+    if (length > maxRecLenth) {
+      maxRecLenth = length;
+    }
+  }
+  console.log("maximum length of selected recordings = ",maxRecLenth);
   console.log('sampleRates', sampleRates);
   //console.log("mixAudioBuffers started");
   //console.log("buffers[0][0][4000] =", buffers[0][0][4000]);
