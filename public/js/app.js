@@ -81,6 +81,8 @@ var Collab = false;
 if (collabParam === 'true' && courseParam !== null) {
   Collab = true;
 }
+if (!Collab)
+  document.querySelector('.users-online-container').setAttribute('hidden', true);
 
 var wavesurfers = []; // Array to hold all wavesurfers instances from recordings
 var recordedBlobs = []; // Array to hold all the recorded blobs
