@@ -490,7 +490,6 @@ function setupPlaybackSpeedEvents() {
 }
 
 // - Audio I/O export to disk
-// TODO MOVE new js file with audio i/o and analysis?
 function setupExportToDiskOrRepository() {
   // (the modal opens (shown) with html bootstrap)
 
@@ -498,38 +497,119 @@ function setupExportToDiskOrRepository() {
   const exportToDiskRepository = document.getElementById(
     'exportToDiskRepository'
   );
-  // console.log(exportToDiskRepository);
 
   exportToDiskRepository.addEventListener('click', e => {
     const includeBtrack = document.querySelector('#yes-btrack').checked;
     const includeAnnotation = document.querySelector('#yes-annotation').checked;
 
-    // console.log(includeBtrack);
-    // console.log(includeAnnotation);
+    const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+
+    const jamsToBeExported = jsonDataToJSONFile(
+      jamsFile,
+      fNameWithoutExt,
+      'jams'
+    );
 
     if (e.target.classList.contains('export-musicolab')) {
       console.log('Export to musicolab button clicked!');
 
       // TODO post request in server to save user's selected choices
+      if (includeBtrack) {
+        if (audioFileExistsInRepository) {
+          if (audioUploadedWithTheAnalysis) {
+            // move it to correct directory TODO from jams/tmp
+            moveFileToPermanentLocation(fileName, 'move'); // ✅⚡
+            audioUploadedWithTheAnalysis = false;
+          } else {
+            alert('AUDIO FILE ALREADY EXIST IN REPO! ⚠️'); // ✅
+          }
+        } else {
+          // upload audio (Case of exporting audio to repo without execution of analysis)
+          moveFileToPermanentLocation(bTrackDATA, 'upload'); // ✅⚡
+        }
+      }
+
+      if (includeAnnotation) {
+        if (annotationFileIsModified) {
+          // upload new jams because old one is modified
+          moveFileToPermanentLocation(jamsToBeExported, 'upload'); // ✅⚡
+          annotationFileIsInTempFolder = false;
+        } else {
+          if (annotationFileIsInTempFolder) {
+            // just move it from temp location to permanent one
+            const file = fNameWithoutExt + '.jams';
+            moveFileToPermanentLocation(file, 'move'); // ✅⚡
+            annotationFileIsInTempFolder = false;
+          } else {
+            alert('ANNOTATION FILE IS UNMODIFIED AND EXIST IN REPO! ⚠️'); // ✅
+          }
+        }
+      }
 
       // HIDE MODAL
       $(exportToDiskRepository).modal('hide');
     } else if (e.target.classList.contains('export-disk')) {
       console.log('Export to disk button clicked!');
 
-      const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-
       if (includeBtrack) {
         downloadFile(bTrackDATA, bTrackURL);
       }
 
       if (includeAnnotation) {
-        const jams = jsonDataToJSONFile(jamsFile, fNameWithoutExt, 'jams');
-        downloadFile(jams);
+        downloadFile(jamsToBeExported);
       }
 
       // HIDE MODAL
       $(exportToDiskRepository).modal('hide');
     }
   });
+}
+
+function moveFileToPermanentLocation(file, action, providedOnLoadCallback) {
+  console.log('store file permanently in the server 👌');
+
+  const exportLocation = checkFileType(); // 'public' 'private' 'course'
+
+  // 1) Construct FormData to encapsulate the information to be sent to the server
+  let fd = new FormData();
+  fd.append('action', action); // 'move' or 'upload'
+  fd.append('f', file); // ⚠️
+  fd.append('ufolder', exportLocation);
+
+  // 2) Monitor responses/events
+  const ajax = new XMLHttpRequest();
+
+  ajax.addEventListener('load', () => {
+    alert(
+      `File has been permanently exported to your ${exportLocation} files!`
+    );
+    if (providedOnLoadCallback) providedOnLoadCallback();
+  });
+  ajax.addEventListener('error', () => {
+    alert(`Failed to export file to your ${exportLocation} files`);
+  });
+
+  // 3) Send the request
+  ajax.open(
+    'POST',
+    'https://musicolab.hmu.gr/apprepository/moveFileResp.php',
+    true
+  );
+  ajax.send(fd);
+}
+
+function checkFileType() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const privParam = urlParams.get('priv'); //  --> 'private'
+
+  let exportLocation = privParam ? 'private' : 'public';
+
+  if (!privParam) {
+    const courseParam = urlParams.get('course'); //  --> 'course'
+    exportLocation = courseParam ? 'course' : 'public';
+  }
+
+  console.log('Export location:', exportLocation);
+
+  return exportLocation;
 }

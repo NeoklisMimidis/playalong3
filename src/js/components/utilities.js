@@ -236,8 +236,7 @@ export function fileSelectHandlers(
       const file = e.target.files[0];
       console.log(file);
       triggerAction(file);
-      if (!!Collab)
-        shareBackingTrack(file);
+      if (!!Collab) shareBackingTrack(file);
     });
     input.click();
   };
@@ -345,31 +344,6 @@ export function formatTime(seconds) {
 
   return `${paddedMinutes}:${paddedSeconds}.${deciseconds}`;
 }
-
-/*
-// Function to download the JAMS file
-export function downloadJAMS(jamsFile) {
-  const fileData = JSON.stringify(jamsFile, null, 2);
-
-  // Create a blob with the file data
-  const blob = new Blob([fileData], { type: 'application/json' });
-
-  // Create a URL for the blob
-  const url = URL.createObjectURL(blob);
-
-  // Create a temporary anchor element to trigger the download
-  const downloadLink = document.createElement('a');
-  downloadLink.href = url;
-  downloadLink.download = 'modified_annotations.jams';
-
-  // Trigger the download
-  downloadLink.click();
-
-  // Clean up the URL and anchor element
-  URL.revokeObjectURL(url);
-  downloadLink.remove();
-}
-*/
 
 export function createToggle(selector) {
   const toggleOnIcon = document.querySelector(`${selector} .fa-toggle-on`);

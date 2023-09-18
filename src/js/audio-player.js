@@ -126,7 +126,11 @@ window.loadAudioFile = loadAudioFile;
 
 window.bTrackURL = '';
 window.bTrackDATA = '';
-window.existsInRepository = false;
+
+window.audioFileExistsInRepository = false;
+window.audioUploadedWithTheAnalysis = false;
+window.annotationFileIsModified = false;
+window.annotationFileIsInTempFolder = false;
 
 // - Start of the application ||
 
@@ -140,10 +144,8 @@ window.backingTrack = wavesurfer;
 dragDropHandlers('#waveform', loadAudioFile, 'drag-over');
 fileSelectHandlers('#import-audio-btn', loadAudioFile);
 // b) Displaying annotation (JAMS) // TODO function that sends audio file to server and fetches analysis on completion
-// fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams');
-fileSelectHandlers('#musicolab-logo', loadJAMS, '.jams');
+// fileSelectHandlers('#musicolab-logo', loadJAMS, '.jams'); // (just for testing load jams with musicolab logo)
 
-// TODO later on instead of fileSelectHandlers('#analyze-chords-btn', loadJAMS, '.jams') use :
 analyzeChordsBtn.addEventListener('click', function () {
   console.log('click');
 
@@ -157,9 +159,6 @@ analyzeChordsBtn.addEventListener('click', function () {
       // User canceled || DON'T EXECUTE ANALYSIS
     });
 });
-
-// document.querySelector('#musicolab-logo').addEventListener('dblclick', e => {
-// });
 
 /* Loading files from repository */
 import audioFileURL1 from '../demo_files/test.mp3';
@@ -230,7 +229,7 @@ function sendAudioAndFetchAnalysis() {
   if (window.location.hostname === 'localhost') {
     annotationFileUrl = annotationFile1;
   } else {
-    annotationFileUrl = createURLJamsFromRepository(fileName);
+    annotationFileUrl = createURLJamsFromRepository(fileName, true);
   }
 
   const estimatedAnalysisTime = 35; // TODO function? for estimation of analysis from file size?
@@ -256,14 +255,14 @@ function doChordAnalysis(
 ) {
   console.log('doChordAnalysis 👌');
 
-  // 1)
+  // 1) Construct FormData to encapsulate the information to be sent to the server
   let fd = new FormData();
   fd.append('action', 'chordAnalysis');
   fd.append('theUrl', bTrackURL);
   fd.append('theaudio', bTrackDATA);
-  fd.append('audioExistsInRepo', existsInRepository);
+  fd.append('audioExistsInRepo', audioFileExistsInRepository);
 
-  // 2)
+  // 2) Monitor responses/events
   let ajax = new XMLHttpRequest();
 
   // Monitoring upload progress
@@ -298,6 +297,12 @@ function doChordAnalysis(
         }
       }
 
+      // ON SUCCESS of new analysis, annotation is unmodified & audio is now in server
+      annotationFileIsModified = false;
+      annotationFileIsInTempFolder = true;
+      audioUploadedWithTheAnalysis = true;
+      audioFileExistsInRepository = true;
+
       animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
     } else if (ajax.readyState === 4 && ajax.status !== 200) {
       console.log('Error: ' + ajax.status);
@@ -311,7 +316,7 @@ function doChordAnalysis(
     }
   };
 
-  // 3)
+  // 3) Logic behind animation of progress bar
   let targetProgress = 0;
   let currentProgress = 0;
   const uploadPortion = 30;
@@ -345,16 +350,16 @@ function doChordAnalysis(
         currentProgress += analysisPortion / resolution; // Increase progress
 
         switch (count) {
-          case Math.round(resolution/4):
-          case Math.round(resolution/2):
-          case Math.round(resolution * 3/4): {
+          case Math.round(resolution / 4):
+          case Math.round(resolution / 2):
+          case Math.round((resolution * 3) / 4): {
             if (!!Collab) {
               window.awareness.setLocalStateField('BTAnalysis', {
                 status: 'inProgress',
                 progress: currentProgress,
               });
             }
-          }         
+          }
         }
 
         count++;
@@ -368,7 +373,7 @@ function doChordAnalysis(
     }
   }, 100); // Update every 100ms
 
-  // 4)
+  // 4) Send the request
   ajax.open('POST', serverScriptURL, true);
   ajax.send(fd);
 }
@@ -488,7 +493,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
         bTrackURL = URL.createObjectURL(bTrackDATA);
-        existsInRepository = false        
+        audioFileExistsInRepository = false        
 
       } else if (file !== undefined) {
         // b)
@@ -496,7 +501,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = file;
         bTrackURL = fileUrl;
-        existsInRepository = false        
+        audioFileExistsInRepository = false        
 
       } else if (window.location.hostname === 'musicolab.hmu.gr'){
         // c)       
@@ -523,7 +528,7 @@ function loadAudioFile(input, res = false) {
         }
         console.log(fileName)
 
-        existsInRepository = true 
+        audioFileExistsInRepository = true 
 
       } else if (file === undefined && window.location.hostname === 'localhost') {
         // d)
@@ -531,7 +536,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = fileUrl;
         bTrackURL = fileUrl;
-        existsInRepository = false  
+        audioFileExistsInRepository = false  
       }
 
       console.log('CHECK ME HERE IS EVERYTHING!!! 😘');
@@ -546,6 +551,9 @@ function loadAudioFile(input, res = false) {
       activateAudioPlayerControls();
 
       btrack = false;
+
+      // reset audioUploadedWithTheAnalysis, bcs new audio file is uploaded with 'normal' import
+      audioUploadedWithTheAnalysis = false;
     });
     /* TODO. alx. isws volevei. an einai na xrismiopoioithei, kai i loadAudioFIle na trexei kai
     // ston loader kai stous collaborators, prepei na mpei ena flag isLoader gia na energopoieitai o sharing
@@ -793,14 +801,20 @@ function secondaryLabelInterval(pxPerSec) {
   return Math.floor(1 / timeInterval(pxPerSec));
 }
 
-function createURLJamsFromRepository(fileName) {
+function createURLJamsFromRepository(fileName, temporally = false) {
   const fileNameWithoutExtension = fileName.substring(
     0,
     fileName.lastIndexOf('.')
   ); //  Starry+Night.mp3 --> Starry+Night
 
-  const annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileNameWithoutExtension}.jams`;
-  // https://musicolab.hmu.gr/jams/Cherokee.jams
+  let annotationFileUrl;
+  if (temporally) {
+    annotationFileUrl = `https://musicolab.hmu.gr/jams/tmp/${fileNameWithoutExtension}.jams`;
+    // https://musicolab.hmu.gr/jams/Cherokee.jams
+  } else {
+    //
+    annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileNameWithoutExtension}.jams`;
+  }
 
   return annotationFileUrl;
 }

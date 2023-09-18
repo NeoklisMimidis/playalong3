@@ -291,6 +291,11 @@ export function editChord(cancel = false, selection) {
 }
 
 function saveChords() {
+  //  NOTE:⚡
+  // Serialization of the data happens with 'Export to disk disk or repository'
+  // Instead here the annotation will be saved in browser's local storage
+  // (With that way we avoid redundancy and distinguish similar features between 'Export to disk disk or repository' and 'Save chords'.)
+
   let message;
   let index = annotationList.selectedIndex;
 
@@ -333,9 +338,15 @@ function saveChords() {
 
       // reset delete button if any new annotation was created
       deleteAnnotationBtn.classList.remove('disabled');
-      
-      const jamsToBeExported = new File ([JSON.stringify(jamsFile)], 'test.jams');
-      exportFileToRepository(jamsToBeExported, 'private');
+
+      // TODO
+      // Save to local storage, which is designed to store data in its original format
+
+      // const jamsToBeExported = new File(
+      //   [JSON.stringify(jamsFile)],
+      //   'test.jams'
+      // );
+      // exportFileToRepository(jamsToBeExported, 'private');
 
       if (!!Collab) {
         const newAnnotationData = _extractModalPromptFields();
@@ -348,6 +359,8 @@ function saveChords() {
           newAnnotationData,
         });
       }
+
+      annotationFileIsModified = true; // annotation file is now modified (in contrast with analysis script)
     })
     .catch(() => {
       // User canceled
@@ -507,7 +520,9 @@ export function showChordEditor(collabEditSelection) {
 
   modalChordEditor.style.display = 'block';
   applyBtn.style.visibility = 'hidden';
-  cancelBtn.style.visibility = toolbarStates.COLLAB_EDIT_MODE ? 'hidden' : 'visible';
+  cancelBtn.style.visibility = toolbarStates.COLLAB_EDIT_MODE
+    ? 'hidden'
+    : 'visible';
 }
 
 function select(selection, component) {
@@ -671,8 +686,7 @@ function exportFileToRepository(file, exportLocation, providedOnLoadCallback) {
 
   ajax.addEventListener('load', () => {
     alert(`File has been exported to your ${exportLocation} files!`);
-    if (providedOnLoadCallback)
-      providedOnLoadCallback();
+    if (providedOnLoadCallback) providedOnLoadCallback();
   });
   ajax.addEventListener('error', () => {
     alert(`Failed to export file to your ${exportLocation} files`);
