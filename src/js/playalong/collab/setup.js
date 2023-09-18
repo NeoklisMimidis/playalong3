@@ -16,7 +16,9 @@ function setupCollaboration() {
   // const room = `${file}::${course}`;
   const room = course;
 
-  const websocketProvider = new WebsocketProvider(wsBaseUrl, room, ydoc);
+  const websocketProvider = new WebsocketProvider(wsBaseUrl, room, ydoc, {
+      params: { pathname: window.location.pathname },
+  });
   websocketProvider.on("status", (event) => {
     console.log(event.status);
     if (event.status === "connected") {
