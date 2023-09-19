@@ -68,7 +68,10 @@ function setupCollaboration() {
           if (
             //case:late collaborator, i.e. user that was not present when recording was initially shared. rec template constructed 
             //with createDownloadLink
-            //TODO: alx. sometimes late collaborator is mistakenly referred to else events. that causes error
+            //TODO: alx. sometimes late collaborator is mistakenly referred to else events. that causes error. Update: that happens...
+            //...because when the late user is connected, the observer is called sometimes with ratio of downloaded/total<1...
+            //FillRecordingTemplate is then called but normally returns without completeing any action
+            //In the final call ratio=1, so late user is referred to else and recording template is constructed as it should
             map.has("data") &&
             (map.get("data").length / insert.total) * 100 === 100.0
           ) {

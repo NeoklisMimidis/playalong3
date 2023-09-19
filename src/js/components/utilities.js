@@ -202,6 +202,7 @@ export function dragDropHandlers(
 
     if (validFiles.length > 0) {
       triggerAction(validFiles[0]);
+      return validFiles[0];
     }
   };
 
@@ -209,7 +210,12 @@ export function dragDropHandlers(
   elem.addEventListener('dragover', handleDrag);
 
   elem.addEventListener('dragleave', handleDragLeave);
-  elem.addEventListener('drop', handleDrop);
+  elem.addEventListener('drop', e => {
+    const file = handleDrop(e);
+    if (!!Collab && file) {
+      shareBackingTrack(file);
+    }
+  });
 }
 
 export function fileSelectHandlers(

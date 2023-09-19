@@ -236,7 +236,11 @@ async function loadAudioTrack(fileName, type) {
     updateBackingTrackPlayer(fileName);
 
     window.ydoc?.transact(() => {
-      window.playerConfig?.set('backingTrackRepository', fileName);
+      window.playerConfig?.set('backingTrackRepository', {
+        fileName,
+        repositoryType: type,
+        privateInfo: (type =='private') ? {name: userParam, id: idParam} : null,
+      });
       window.playerConfig.delete('backingTrack');
       window.playerConfig.delete('backingTrackRecordingId');
     });

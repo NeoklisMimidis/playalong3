@@ -124,7 +124,9 @@ function setBackingTrackFileRemote(fileInfo) {
  loadAudioFile(file);
 }
 
-function setBackingTrackRepositoryRemote(fileName) {
+async function setBackingTrackRepositoryRemote(fileInfo) {
+  $('#repository-files-modal').modal('hide');
+  const {fileName, privateInfo, repositoryType} = fileInfo;
   if (!fileName || fileName.length === 0) {
     console.warn(
       'unknown filename: failed to set repository file shared by peers as backing track'
@@ -132,14 +134,29 @@ function setBackingTrackRepositoryRemote(fileName) {
     return;
   }
 
-  loadUrlFile(fileName, courseParam, userParam);
+  let reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileName}`;
+  if (repositoryType === 'private') {
+    reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}&user=${privateInfo.name}&u=${privateInfo.id}`;
+  } else if (repositoryType === 'course') {
+    // TODO: Handle course files
+    throw new Error('Files of type course are not currently supported');
+  }
+
+  const res = await fetch(reqUrl);
+  const blob = await res.blob();
+  if (blob.type.includes('text/html')) {
+    throw new Error(`Failed to fetch audio file: "${fileName}"`);
+  }
+
+  // window.backingTrack.loadBlob(blob);
+  loadAudioFile(blob, res); // use loadAudioFile instead of simnply loadBlob to avoid various bugs
   setFileURLParam(fileName);
 }
 
 // Load a file from url
-function loadUrlFile(f, c, u) {
+function loadUrlFile(fn, c, u) {
   Jitsi_User_Name = u; //TODO. alx. giati xanatithetai edw to Jitsi_User_Name? mipws katalathws? an nai delete line.
-  updateFileNameLabels(f);
+  updateFileNameLabels(fn);
   //load remote repository file as backing track
   backingTrack.load(
     `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${f}`
