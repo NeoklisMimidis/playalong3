@@ -419,3 +419,19 @@ export function assignInputFieldEvents(selector, options) {
 export function stripHtmlTags(str) {
   return str.replace(/<[^>]+>/g, '');
 }
+
+export function checkFileType() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const privParam = urlParams.get('priv'); //  --> 'private'
+
+  let exportLocation = privParam ? 'private' : 'public';
+
+  if (!privParam) {
+    const courseParam = urlParams.get('course'); //  --> 'course'
+    exportLocation = courseParam ? 'course' : 'public';
+  }
+
+  console.log('Export location:', exportLocation);
+
+  return exportLocation;
+}

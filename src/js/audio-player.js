@@ -241,23 +241,23 @@ function sendAudioAndFetchAnalysis() {
   }
 
   // 2) send audio to server & update progress bar and on completion visualize annotation
-  doChordAnalysis(
+  doChordBeatAnalysis(
     ANALYSIS_SCRIPT_URL,
     annotationFileUrl,
     estimatedAnalysisTime
   );
 }
 
-function doChordAnalysis(
+function doChordBeatAnalysis(
   serverScriptURL,
   serverAnnotationUrl,
   estimatedAnalysisTime
 ) {
-  console.log('doChordAnalysis 👌');
+  console.log('doChordBeatAnalysis 👌');
 
   // 1) Construct FormData to encapsulate the information to be sent to the server
   let fd = new FormData();
-  fd.append('action', 'chordAnalysis');
+  fd.append('action', 'chordBeatAnalysis');
   fd.append('theUrl', bTrackURL);
   fd.append('theaudio', bTrackDATA);
   fd.append('audioExistsInRepo', audioFileExistsInRepository);
@@ -297,10 +297,12 @@ function doChordAnalysis(
         }
       }
 
-      // ON SUCCESS of new analysis, annotation is unmodified & audio is now in server
+      // On successful analysis: annotation remains unchanged and resides in temp folder.
       annotationFileIsModified = false;
       annotationFileIsInTempFolder = true;
-      audioUploadedWithTheAnalysis = true;
+
+      // Audio is guaranteed to be in the repository; uploaded only if not pre-existing.
+      audioUploadedWithTheAnalysis = audioFileExistsInRepository ? false : true;
       audioFileExistsInRepository = true;
 
       animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
@@ -493,7 +495,9 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
         bTrackURL = URL.createObjectURL(bTrackDATA);
-        audioFileExistsInRepository = false        
+        audioFileExistsInRepository = false
+        
+        setFileURLParam(fileName);
 
       } else if (file !== undefined) {
         // b)
@@ -501,7 +505,9 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = file;
         bTrackURL = fileUrl;
-        audioFileExistsInRepository = false        
+        audioFileExistsInRepository = false
+        
+        setFileURLParam(fileName);
 
       } else if (window.location.hostname === 'musicolab.hmu.gr'){
         // c)       
@@ -809,10 +815,10 @@ function createURLJamsFromRepository(fileName, temporally = false) {
 
   let annotationFileUrl;
   if (temporally) {
-    annotationFileUrl = `https://musicolab.hmu.gr/jams/tmp/${fileNameWithoutExtension}.jams`;
+    annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileNameWithoutExtension}.jams`;
     // https://musicolab.hmu.gr/jams/Cherokee.jams
   } else {
-    //
+    // TODO adjust for 'private' and 'course'
     annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileNameWithoutExtension}.jams`;
   }
 

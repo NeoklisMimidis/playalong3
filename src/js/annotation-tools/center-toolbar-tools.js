@@ -39,7 +39,7 @@ export function setupAnnotationListEvents() {
     // clear previous markers and regions
     wavesurfer.clearMarkers();
     wavesurfer.clearRegions();
-    console.log({value: this.value, jamsFile});
+    console.log({ value: this.value, jamsFile });
 
     // render new selected annotations
     renderAnnotations(selectedAnnotationData(jamsFile));
@@ -51,7 +51,10 @@ export function setupAnnotationListEvents() {
 
     //collably changing the annotation selected
     !!Collab && event.isTrusted
-      ? window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam})
+      ? window.sharedBTEditParams.set('annotationSel', {
+          value: this.value,
+          selector: userParam,
+        })
       : null;
   });
 
@@ -67,19 +70,21 @@ export function setupToggleEditEvent() {
   toggleEditBtn.addEventListener('click', function () {
     //collably initiating edit
     if (!!Collab) {
-      const status = `${toolbarStates.EDIT_MODE ? 'editCompleted' : 'editInitiated'}`;
+      const status = `${
+        toolbarStates.EDIT_MODE ? 'editCompleted' : 'editInitiated'
+      }`;
       const bTrackState = {
         status,
-        editTime: wavesurfer.getCurrentTime()
+        editTime: wavesurfer.getCurrentTime(),
       };
-      (status == 'editCompleted')
-        ? bTrackState.completingAction = 'editOff'
+      status == 'editCompleted'
+        ? (bTrackState.completingAction = 'editOff')
         : null;
       window.awareness.setLocalStateField('bTrackEdit', bTrackState);
     }
 
     toggleEdit();
-  } );
+  });
 }
 
 // - Center controls
@@ -96,6 +101,8 @@ function deleteAnnotation() {
       annotationList.remove(annotationList.selectedIndex);
       // Render the annotation (by default first drop-down list option)
       renderAnnotations(selectedAnnotationData(jamsFile));
+
+      annotationFileIsModified = true;
     })
     .catch(() => {
       // User canceled
