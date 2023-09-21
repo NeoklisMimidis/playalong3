@@ -70,13 +70,13 @@ export function setupPlayerControlsEvents() {
     if (playerStates.FOLLOW_PLAYBACK_OPTIONS.scroll) {
       selectFollowPlaybackMode(
         currentTime,
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.destinationPoint
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.resetPoint
       );
     } else {
       selectFollowPlaybackMode(
         currentTime,
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.destinationPoint,
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.pageTurnPoint
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.resetPoint,
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.turnPoint
       );
     }
     timeRuler(currentTime);

@@ -187,6 +187,9 @@ export function setupCancelEditingEvent() {
   cancelEditingBtn.addEventListener('click', cancelEditingChords);
 }
 
+/**
+ *  [Cancel] Cancel reverts back without altering. TODO
+ */
 export function setupSettingsMenu() {
   const playerSettingsBtn = document.querySelector('#player-settings-btn');
   const playerSettingsIcon = playerSettingsBtn.querySelector('.settings-icon');
@@ -674,28 +677,4 @@ function _mapChordSymbolToText(encodedChord) {
   const mirLabel = `${foundRootNote}${foundAccidental}${column}${foundShorthand}`;
 
   return mirLabel;
-}
-
-function exportFileToRepository(file, exportLocation, providedOnLoadCallback) {
-  let fd = new FormData();
-  fd.append('f', file);
-  fd.append('action', 'upload');
-  fd.append('ufolder', exportLocation);
-
-  const ajax = new XMLHttpRequest();
-
-  ajax.addEventListener('load', () => {
-    alert(`File has been exported to your ${exportLocation} files!`);
-    if (providedOnLoadCallback) providedOnLoadCallback();
-  });
-  ajax.addEventListener('error', () => {
-    alert(`Failed to export file to your ${exportLocation} files`);
-  });
-
-  ajax.open(
-    'POST',
-    'https://musicolab.hmu.gr/apprepository/uploadFileResAjax.php',
-    true
-  );
-  ajax.send(fd);
 }

@@ -103,8 +103,8 @@ export let fileName;
 export const playerStates = {
   FOLLOW_PLAYBACK: true,
   FOLLOW_PLAYBACK_OPTIONS: {
-    destinationPoint: '0.20',
-    pageTurnPoint: '0.80',
+    resetPoint: '0.20',
+    turnPoint: '0.80',
     scroll: false, // if scroll false then page turn
   },
   REPEAT: false,
