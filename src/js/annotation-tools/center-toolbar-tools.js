@@ -128,7 +128,7 @@ function toggleEdit() {
     wavesurfer.seekAndCenter(progress);
   }
 
-  // Edit mode controls  #buttons: Edit chords || Save chords || Cancel
+  // Edit mode controls  #buttons: Edit chords || Save || Cancel
   audioFileName.classList.toggle('d-none');
   editModeTools.querySelectorAll('.btn-edit-mode').forEach(button => {
     button.classList.toggle('d-none');

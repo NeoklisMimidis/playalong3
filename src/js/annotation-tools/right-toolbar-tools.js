@@ -40,7 +40,7 @@ import {
   deleteAnnotationBtn,
   // Right controls & related Edit Mode Controls(Editing)
   editChordBtn,
-  saveChordsBtn,
+  saveEditingBtn,
   cancelEditingBtn,
   //  --Chord Editor table controls--
   modalChordEditor,
@@ -174,10 +174,10 @@ export function setupEditChordEvents() {
 }
 
 /**
- *  [Save chords] Save chords stores changes made either as separate or replaced annotation (except original annotation)
+ *  [Save] Saves stores locally changes made (at chords and beats) either as separate or replaced annotation (except original annotation)
  */
 export function setupSaveChordsEvent() {
-  saveChordsBtn.addEventListener('click', saveChords);
+  saveEditingBtn.addEventListener('click', saveEditing);
 }
 
 /**
@@ -214,6 +214,13 @@ export function setupSettingsMenu() {
   settingsMenuFollowPlayback();
 }
 
+/**
+ * Configure Chord Categories in Chord Editor
+ *
+ * Allows the user to enable or disable the display of chord categories within the chord editor through radio buttons ("On" and "Off"). Supported categories include Major, Minor, Augmented, Diminished, Half Diminished, Fifth, Dominant, Add Chords, Suspended, Altered Chords, Dominant Altered, and Dominant Altered Seventh.
+ *
+ * @function settingsMenuChordEditorCategories
+ */
 function settingsMenuChordEditorCategories() {
   const chordCategoriesMenu = document.querySelector('#chord-categories-menu');
 
@@ -293,11 +300,11 @@ export function editChord(cancel = false, selection) {
   updateMarkerDisplayWithColorizedRegions();
 }
 
-function saveChords() {
+function saveEditing() {
   //  NOTE:⚡
   // Serialization of the data happens with 'Export to disk disk or repository'
   // Instead here the annotation will be saved in browser's local storage
-  // (With that way we avoid redundancy and distinguish similar features between 'Export to disk disk or repository' and 'Save chords'.)
+  // (With that way we avoid redundancy and distinguish similar features between 'Export to disk disk or repository' and 'Save'.)
 
   let message;
   let index = annotationList.selectedIndex;
@@ -379,7 +386,7 @@ function cancelEditingChords() {
     .then(() => {
       // User confirmed
       wavesurfer.clearMarkers();
-      // This needs to be before (for similar reason as stated in saveChords)
+      // This needs to be before (for similar reason as stated in saveEditing)
       disableSaveChordsAndCancelEditing();
       renderAnnotations(selectedAnnotationData(jamsFile));
 

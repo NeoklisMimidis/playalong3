@@ -68,7 +68,7 @@ export const toggleEditBtn = document.querySelector('#toggle-edit-btn');
 export const editModeTools = document.querySelector('#right-toolbar-controls');
 export const audioFileName = document.querySelector('#audio-file-name');
 export const editChordBtn = document.querySelector('#edit-chord-btn');
-export const saveChordsBtn = document.querySelector('#save-chords-btn');
+export const saveEditingBtn = document.querySelector('#save-editing-btn');
 export const cancelEditingBtn = document.querySelector('#cancel-editing-btn');
 
 //  --Chord Editor table controls--
@@ -100,7 +100,7 @@ export function initAnnotationTools() {
   /* Events (for editor) */
   // // Default browsers warning when exiting without saving
   // window.addEventListener('beforeunload', function (e) {
-  //   if (saveChordsBtn.classList.contains('disabled')) return;
+  //   if (saveEditingBtn.classList.contains('disabled')) return;
   //   e.returnValue = '';
   // });
 
@@ -200,7 +200,7 @@ export function disableSaveChordsAndCancelEditing() {
     deleteAnnotationBtn.classList.remove('disabled');
   }
 
-  saveChordsBtn.classList.add('disabled');
+  saveEditingBtn.classList.add('disabled');
   cancelEditingBtn.classList.add('disabled');
 
   // update the SAVED state
@@ -213,7 +213,7 @@ export function disableAnnotationListAndDeleteAnnotation() {
   annotationList.classList.add('disabled');
   deleteAnnotationBtn.classList.add('disabled');
 
-  saveChordsBtn.classList.remove('disabled');
+  saveEditingBtn.classList.remove('disabled');
   cancelEditingBtn.classList.remove('disabled');
 
   // update the SAVED state
