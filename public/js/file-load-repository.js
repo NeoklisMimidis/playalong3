@@ -240,9 +240,10 @@ async function loadAudioTrack(fileName, type) {
         fileName,
         repositoryType: type,
         privateInfo: (type =='private') ? {name: userParam, id: idParam} : null,
+        sharer: userParam
       });
       window.playerConfig.delete('backingTrack');
-      window.playerConfig.delete('backingTrackRecordingId');
+      window.playerConfig.delete('backingTrackRecording');
     });
   } catch (err) {
     let errorMsg = err.message;
