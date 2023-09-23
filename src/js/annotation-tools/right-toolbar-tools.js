@@ -1,5 +1,5 @@
 // Created wavesurfer instance from audio-player.js
-import { wavesurfer } from '../audio-player.js';
+import { wavesurfer, fileName } from '../audio-player.js';
 import {
   jamsFile,
   addMarkerAtTime,
@@ -309,6 +309,7 @@ function saveEditing() {
   let message;
   let index = annotationList.selectedIndex;
 
+  console.log(jamsFile);
   const selectedAnnotation = jamsFile.annotations[index];
   const currDataSource = selectedAnnotation.annotation_metadata.data_source;
 
@@ -349,14 +350,10 @@ function saveEditing() {
       // reset delete button if any new annotation was created
       deleteAnnotationBtn.classList.remove('disabled');
 
-      // TODO
+      // TODO: When analysis comes, the data is stored in local storage, this format of storage ALWAYS asks user permission if he wants to load it. In addition you can also update the content of that file saved in local storage with the save editing functions which is enabled after user has edited the file in some way
       // Save to local storage, which is designed to store data in its original format
-
-      // const jamsToBeExported = new File(
-      //   [JSON.stringify(jamsFile)],
-      //   'test.jams'
-      // );
-      // exportFileToRepository(jamsToBeExported, 'private');
+      localStorage.setItem(fileName, JSON.stringify(jamsFile));
+      // option to delete this storage? --button? or in settings menu?
 
       if (!!Collab) {
         const newAnnotationData = _extractModalPromptFields();
@@ -370,7 +367,7 @@ function saveEditing() {
         });
       }
 
-      annotationFileIsModified = true; // annotation file is now modified (in contrast with analysis script)
+      fStates.annotationExistsInRepo = false; // modified annotation file doesn't exist in repo!
     })
     .catch(() => {
       // User canceled

@@ -1,7 +1,7 @@
 'use strict';
 
 // Created wavesurfer instance from audio-player.js
-import { wavesurfer } from '../audio-player.js';
+import { wavesurfer, fileName } from '../audio-player.js';
 
 import {
   initAnnotationTools,
@@ -19,7 +19,7 @@ import {
   MARKERS_SINGLETON_PROPS,
   createTippySingleton,
 } from '../components/tooltips.js';
-import { loadFile } from '../components/utilities.js';
+import { loadFile, renderModalMessage } from '../components/utilities.js';
 
 import {
   EDIT_MODE_ENABLED_STYLE,
@@ -32,9 +32,10 @@ export let jamsFile;
 let averageTempoWithoutSpeedFactor = 0;
 
 // -
-export function loadJAMS(input) {
+/*export function loadJAMS(input) {
   if (input === undefined) return;
   console.log('loadJams() input:', input);
+  console.log('⚡⚡⚡⚡⚡⚡⚡🌍💪');
 
   const [fileUrl, file] = loadFile(input);
   // console.log(fileUrl, file);
@@ -74,14 +75,158 @@ export function loadJAMS(input) {
       initAnnotationTools();
 
       resetToolbar();
+
+      console.log('Loading JAMS has been successfully completed! ✌️');
     })
     .catch(error => {
       // Handle the error from any part of the promise chain
       console.error(error);
-      throw new Error('Failed to fetch JAMS file for the above reason! ⚠️');
+      console.error('Failed to fetch JAMS file for the above reason! ⚠️');
+
+      console.log('try to load from local storage..');
+      // LoadJAMSFromLocalStorage
+      jamsFile = JSON.parse(localStorage.getItem('test.mp3'));
+
+      if (jamsFile === null) {
+        console.error(
+          `There is not a jams file matching the audio file in browser's local storage`
+        );
+      } else {
+        // Here ask user if he wants load from local storage. TODO
+
+        // Reset markers,regions & toolbarStates
+        wavesurfer.clearMarkers();
+        wavesurfer.clearRegions();
+        // init toolbar states: MUST HAPPEN BEFORE renderAnnotations() ❗ because states affect the rendering of the new annotation with updateMarkerDisplayWithColorizedRegions()
+        toolbarStates.EDIT_MODE = false;
+        toolbarStates.SNAP_ON_BEATS = false;
+        toolbarStates.CLICK_TRACK = false;
+        toolbarStates.SAVED = true;
+        console.log(toolbarStates);
+
+        createAnnotationsList(jamsFile);
+
+        //set collab annotation selection
+        if (Collab) {
+          const annotationSelected =
+            window.sharedBTEditParams?.get('annotationSel')?.value;
+          annotationSelected
+            ? (annotationList.value = annotationSelected)
+            : null;
+        }
+
+        // Render first annotation
+        annotatedChordsAtBeatsData = selectedAnnotationData(jamsFile);
+        renderAnnotations(annotatedChordsAtBeatsData);
+
+        // Assign the events for the toolbar and waveform (all the functionality about annotation-tools lies here!)
+        initAnnotationTools();
+
+        resetToolbar();
+      }
+
+      console.log('Loading JAMS has been successfully completed! ✌️');
     });
 
-  console.log('Loading JAMS has been successfully completed! ✌️');
+  // console.log('Loading JAMS has been successfully completed! ✌️');
+
+  return [annotatedChordsAtBeatsData, jamsFile];
+}
+*/
+
+export function loadJAMS(input) {
+  if (input === undefined) return;
+  console.log('loadJams() input:', input);
+
+  const [fileUrl, file] = loadFile(input);
+
+  // let jamsFile;
+  let annotatedChordsAtBeatsData;
+
+  function handleJAMSData(jamsData) {
+    jamsFile = jamsData;
+
+    // Reset markers,regions & toolbarStates
+    wavesurfer.clearMarkers();
+    wavesurfer.clearRegions();
+    // init toolbar states: MUST HAPPEN BEFORE renderAnnotations() ❗ because states affect the rendering of the new annotation with updateMarkerDisplayWithColorizedRegions()
+
+    // Init toolbar states
+    Object.assign(toolbarStates, {
+      EDIT_MODE: false,
+      SNAP_ON_BEATS: false,
+      CLICK_TRACK: false,
+      SAVED: true,
+    });
+    // console.log('Toolbar states reset', toolbarStates);
+
+    createAnnotationsList(jamsFile);
+
+    //set collab annotation selection
+    if (Collab) {
+      const annotationSelected =
+        window.sharedBTEditParams?.get('annotationSel')?.value;
+      annotationSelected ? (annotationList.value = annotationSelected) : null;
+    }
+
+    // Render first annotation
+    annotatedChordsAtBeatsData = selectedAnnotationData(jamsFile);
+    renderAnnotations(annotatedChordsAtBeatsData);
+
+    // Assign the events for the toolbar and waveform (all the functionality about annotation-tools lies here!)
+    initAnnotationTools();
+
+    resetToolbar();
+
+    console.log('Loading JAMS has been successfully completed! ✌️');
+
+    // Save to local storage, which is designed to store data in its original format
+    localStorage.setItem(fileName, JSON.stringify(jamsFile));
+
+    return annotatedChordsAtBeatsData;
+  }
+
+  // Giving priority to fetch from server and NOT from browser's local storage
+  fetch(fileUrl)
+    .then(response => response.json())
+    .then(jams => {
+      jamsFile = jams;
+      [annotatedChordsAtBeatsData] = handleJAMSData(jams);
+
+      // annotation is loaded from repo
+      fStates.annotationExistsInRepo = true;
+    })
+    .catch(error => {
+      console.error('\n⚠️ FETCH ERROR :\n', error);
+
+      // Attempt to load from local storage
+      const jamsFromLocalStorage = JSON.parse(localStorage.getItem(fileName));
+      console.log('trying to load annotation from local storage..');
+
+      if (!jamsFromLocalStorage) {
+        console.error('No matching JAMS file in local storage.');
+        return;
+      } else {
+        const message = `An analysis was found in your browser's local storage that matches the currently loaded audio file: <span class="text-primary">"${fileName}"</span> <br><br><span class="text-info">Would you like to load this annotation?</span> 🤷‍♂️`;
+
+        renderModalMessage(message)
+          .then(() => {
+            // User confirmed load from browser storage
+            jamsFile = jamsFromLocalStorage;
+            // annotatedChordsAtBeatsData = handleJAMSData(jamsFromLocalStorage);
+            [annotatedChordsAtBeatsData] = handleJAMSData(jamsFromLocalStorage);
+
+            //
+            fStates.annotationExistsInRepo = false;
+          })
+          .catch(() => {
+            // User canceled deletion
+            console.log(
+              `User selected to not load analysis from browser's local storage`
+            );
+          });
+      }
+    });
 
   return [annotatedChordsAtBeatsData, jamsFile];
 }
@@ -123,7 +268,7 @@ export function selectedAnnotationData(jamsFile) {
   const selectedAnnotation = jamsFile.annotations[annotationList.selectedIndex];
   const currDataSource = selectedAnnotation.annotation_metadata.data_source;
 
-  console.log({ index: annotationList.selectedIndex, currDataSource });
+  // console.log({ index: annotationList.selectedIndex, currDataSource });
 
   if (currDataSource === 'program') {
     deleteAnnotationBtn.classList.add('disabled');
@@ -585,7 +730,7 @@ export function updateAverageTempo() {
   bpmBox.innerText = averageTempo;
   window.metronome.setTempo(averageTempo);
 
-  console.log('----------------------------');
-  console.log('average tempo changed!:');
-  console.log(averageTempo);
+  // console.log('----------------------------');
+  // console.log('average tempo changed!:');
+  // console.log(averageTempo);
 }

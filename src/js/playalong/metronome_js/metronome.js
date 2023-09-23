@@ -142,7 +142,7 @@ class Metronome {
     });
 
     var that = this;
-    console.log(that);
+    // console.log(that);
 
     function nextNote() {
       // Advance current note and time by a 16th note...

@@ -102,7 +102,7 @@ function deleteAnnotation() {
       // Render the annotation (by default first drop-down list option)
       renderAnnotations(selectedAnnotationData(jamsFile));
 
-      annotationFileIsModified = true;
+      fStates.annotationExistsInRepo = false; // modified annotation file doesn't exist in repo!
     })
     .catch(() => {
       // User canceled
