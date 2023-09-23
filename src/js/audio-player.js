@@ -103,8 +103,8 @@ export let fileName;
 export const playerStates = {
   FOLLOW_PLAYBACK: true,
   FOLLOW_PLAYBACK_OPTIONS: {
-    destinationPoint: '0.20',
-    pageTurnPoint: '0.80',
+    resetPoint: '0.20',
+    turnPoint: '0.80',
     scroll: false, // if scroll false then page turn
   },
   REPEAT: false,
@@ -127,10 +127,14 @@ window.loadAudioFile = loadAudioFile;
 window.bTrackURL = '';
 window.bTrackDATA = '';
 
-window.audioFileExistsInRepository = false;
-window.audioUploadedWithTheAnalysis = false;
-window.annotationFileIsModified = false;
-window.annotationFileIsInTempFolder = false;
+const fStates = {
+  audioExistsInRepo: false,
+  audioInAnalysisTempFolder: false,
+  annotationExistsInRepo: false,
+  annotationInAnalysisTempFolder: false,
+};
+
+window.fStates = fStates;
 
 // - Start of the application ||
 
@@ -141,8 +145,26 @@ window.backingTrack = wavesurfer;
 
 /* Loading file with Handlers about selection or dragging the appropriate files for app initialization */
 // a) Importing audio
-dragDropHandlers('#waveform', loadAudioFile, 'drag-over');
-fileSelectHandlers('#import-audio-btn', loadAudioFile);
+// dragDropHandlers('#waveform', loadAudioFile, 'drag-over');
+dragDropHandlers(
+  '#waveform',
+  audioUrl => {
+    // loadAudioFile(audioUrl);
+    loadFilesInOrder(
+      audioUrl,
+      'just random string to trigger loadJams from browser storage'
+    );
+  },
+  'drag-over'
+);
+// fileSelectHandlers('#import-audio-btn', loadAudioFile);
+fileSelectHandlers('#import-audio-btn', audioUrl => {
+  // loadAudioFile(audioUrl);
+  loadFilesInOrder(
+    audioUrl,
+    'just random string to trigger loadJams from browser storage'
+  );
+});
 // b) Displaying annotation (JAMS) // TODO function that sends audio file to server and fetches analysis on completion
 // fileSelectHandlers('#musicolab-logo', loadJAMS, '.jams'); // (just for testing load jams with musicolab logo)
 
@@ -260,7 +282,7 @@ function doChordBeatAnalysis(
   fd.append('action', 'chordBeatAnalysis');
   fd.append('theUrl', bTrackURL);
   fd.append('theaudio', bTrackDATA);
-  fd.append('audioExistsInRepo', audioFileExistsInRepository);
+  fd.append('audioExistsInRepo', fStates.audioExistsInRepo);
 
   // 2) Monitor responses/events
   let ajax = new XMLHttpRequest();
@@ -298,12 +320,12 @@ function doChordBeatAnalysis(
       }
 
       // On successful analysis: annotation remains unchanged and resides in temp folder.
-      annotationFileIsModified = false;
-      annotationFileIsInTempFolder = true;
+      fStates.annotationExistsInRepo = true;
+      fStates.annotationInAnalysisTempFolder = true;
 
       // Audio is guaranteed to be in the repository; uploaded only if not pre-existing.
-      audioUploadedWithTheAnalysis = audioFileExistsInRepository ? false : true;
-      audioFileExistsInRepository = true;
+      fStates.audioInAnalysisTempFolder = !fStates.audioExistsInRepo;
+      fStates.audioExistsInRepo = true;
 
       animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
     } else if (ajax.readyState === 4 && ajax.status !== 200) {
@@ -495,7 +517,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
         bTrackURL = URL.createObjectURL(bTrackDATA);
-        audioFileExistsInRepository = false
+        fStates.audioExistsInRepo = false
         
         setFileURLParam(fileName);
 
@@ -505,7 +527,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = file;
         bTrackURL = fileUrl;
-        audioFileExistsInRepository = false
+        fStates.audioExistsInRepo = false
         
         setFileURLParam(fileName);
 
@@ -534,18 +556,16 @@ function loadAudioFile(input, res = false) {
         }
         console.log(fileName)
 
-        audioFileExistsInRepository = true 
-
+        fStates.audioExistsInRepo = true 
       } else if (file === undefined && window.location.hostname === 'localhost') {
         // d)
         fileName = 'test.mp3';
 
         bTrackDATA = fileUrl;
         bTrackURL = fileUrl;
-        audioFileExistsInRepository = false  
+        fStates.audioExistsInRepo = false  
       }
 
-      console.log('CHECK ME HERE IS EVERYTHING!!! 😘');
       console.log(`backing track URL : ${bTrackURL}`);
       console.log(`backing track DATA :  ${bTrackDATA}`);
 
@@ -558,8 +578,11 @@ function loadAudioFile(input, res = false) {
 
       btrack = false;
 
-      // reset audioUploadedWithTheAnalysis, bcs new audio file is uploaded with 'normal' import
-      audioUploadedWithTheAnalysis = false;
+      // reset audio file status bcs it is uploaded with 'normal' import
+      fStates.audioInAnalysisTempFolder = false;
+      //reset annotation file status
+      fStates.annotationExistsInRepo = false;
+      fStates.annotationInAnalysisTempFolder = false;
     });
     /* TODO. alx. isws volevei. an einai na xrismiopoioithei, kai i loadAudioFIle na trexei kai
     // ston loader kai stous collaborators, prepei na mpei ena flag isLoader gia na energopoieitai o sharing

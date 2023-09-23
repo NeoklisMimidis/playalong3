@@ -70,13 +70,13 @@ export function setupPlayerControlsEvents() {
     if (playerStates.FOLLOW_PLAYBACK_OPTIONS.scroll) {
       selectFollowPlaybackMode(
         currentTime,
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.destinationPoint
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.resetPoint
       );
     } else {
       selectFollowPlaybackMode(
         currentTime,
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.destinationPoint,
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.pageTurnPoint
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.resetPoint,
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.turnPoint
       );
     }
     timeRuler(currentTime);
@@ -520,20 +520,19 @@ function setupExportToDiskOrRepository() {
       'jams'
     );
 
-    // TODO change logic of file states update, to something more concrete to avoid bugs (audioUploadedWithTheAnalysis.. etc)
+    // TODO change logic of file states update, to something more concrete to avoid bugs (fStates.audioInAnalysisTempFolder.. etc)
     if (e.target.classList.contains('export-musicolab')) {
       console.log('Export to musicolab button clicked!');
 
       if (includeBtrack) {
-        if (audioFileExistsInRepository) {
-          if (audioUploadedWithTheAnalysis) {
+        if (fStates.audioExistsInRepo) {
+          if (fStates.audioInAnalysisTempFolder) {
             function onSuccessResetStatusVariable() {
-              audioUploadedWithTheAnalysis = false;
+              fStates.audioInAnalysisTempFolder = false;
             }
 
             // move from var/www/html/jams to permanent location
             finalizeFileStorage(fileName, 'move', onSuccessResetStatusVariable);
-            audioUploadedWithTheAnalysis = false; // ⚠️
           } else {
             alert('AUDIO FILE ALREADY EXIST IN REPO! ⚠️');
           }
@@ -544,20 +543,10 @@ function setupExportToDiskOrRepository() {
       }
 
       if (includeAnnotation) {
-        if (annotationFileIsModified) {
-          function onSuccessResetStatusVariable() {
-            annotationFileIsModified = false;
-          }
-          // upload new jams because old one is modified
-          finalizeFileStorage(
-            jamsToBeExported,
-            'upload',
-            onSuccessResetStatusVariable
-          );
-        } else {
-          if (annotationFileIsInTempFolder) {
+        if (fStates.annotationExistsInRepo) {
+          if (fStates.annotationInAnalysisTempFolder) {
             function onSuccessResetStatusVariable() {
-              annotationFileIsInTempFolder = false;
+              fStates.annotationInAnalysisTempFolder = false;
             }
 
             // just move it from temp location to permanent one
@@ -566,6 +555,16 @@ function setupExportToDiskOrRepository() {
           } else {
             alert('ANNOTATION FILE IS UNMODIFIED AND EXIST IN REPO! ⚠️');
           }
+        } else {
+          function onSuccessResetStatusVariable() {
+            fStates.annotationExistsInRepo = true;
+          }
+          // upload new jams because old one is modified
+          finalizeFileStorage(
+            jamsToBeExported,
+            'upload',
+            onSuccessResetStatusVariable
+          );
         }
       }
 

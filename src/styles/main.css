@@ -294,6 +294,10 @@ h1 {
   transform: rotate(-45deg);
 }
 
+#player-settings-btn .settings-icon:hover {
+  opacity: 0.6;
+}
+
 #player-settings-btn .dropdown-menu {
   border-radius: 1rem;
   position: absolute;

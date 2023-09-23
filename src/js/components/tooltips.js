@@ -60,7 +60,7 @@ tippy('#center-toolbar-controls', {
   interactive: true,
 });
 
-const rightToolbarControls = `<strong>Edit chord</strong> <i class="fa-solid fa-pen fa-sm"></i>, allows modifying the selected chord.<br><strong>Save chords</strong> <i class="fa-solid fa-floppy-disk fa-sm"></i>, stores changes made  either as separate or replaced annotation (except original annotation)<br><strong>Cancel</strong>   <i class="fa-solid fa-xmark fa-sm"></i>, reverts back without altering.<br><span style="font-style: italic;">Customize and manage your chord edits with ease.</span>`;
+const rightToolbarControls = `<strong>Edit chord</strong> <i class="fa-solid fa-pen fa-sm"></i>, allows modifying the selected chord.<br><strong>Save</strong> <i class="fa-solid fa-floppy-disk fa-sm"></i>, stores changes in browser's local storage, as either separate or replaced annotation (excluding original annotation).<br><strong>Cancel</strong>   <i class="fa-solid fa-xmark fa-sm"></i>, reverts back without altering.<br><span style="font-style: italic;">Customize and manage your chord edits with ease.</span>`;
 tippy('#right-toolbar-controls', {
   content: rightToolbarControls,
   delay: [800, 100],

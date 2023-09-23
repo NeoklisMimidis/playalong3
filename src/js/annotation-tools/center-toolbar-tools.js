@@ -102,7 +102,7 @@ function deleteAnnotation() {
       // Render the annotation (by default first drop-down list option)
       renderAnnotations(selectedAnnotationData(jamsFile));
 
-      annotationFileIsModified = true;
+      fStates.annotationExistsInRepo = false; // modified annotation file doesn't exist in repo!
     })
     .catch(() => {
       // User canceled
@@ -128,7 +128,7 @@ function toggleEdit() {
     wavesurfer.seekAndCenter(progress);
   }
 
-  // Edit mode controls  #buttons: Edit chords || Save chords || Cancel
+  // Edit mode controls  #buttons: Edit chords || Save || Cancel
   audioFileName.classList.toggle('d-none');
   editModeTools.querySelectorAll('.btn-edit-mode').forEach(button => {
     button.classList.toggle('d-none');

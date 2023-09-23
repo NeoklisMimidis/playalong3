@@ -1,5 +1,5 @@
 // Created wavesurfer instance from audio-player.js
-import { wavesurfer } from '../audio-player.js';
+import { wavesurfer, fileName } from '../audio-player.js';
 import {
   jamsFile,
   addMarkerAtTime,
@@ -40,7 +40,7 @@ import {
   deleteAnnotationBtn,
   // Right controls & related Edit Mode Controls(Editing)
   editChordBtn,
-  saveChordsBtn,
+  saveEditingBtn,
   cancelEditingBtn,
   //  --Chord Editor table controls--
   modalChordEditor,
@@ -174,10 +174,10 @@ export function setupEditChordEvents() {
 }
 
 /**
- *  [Save chords] Save chords stores changes made either as separate or replaced annotation (except original annotation)
+ *  [Save] Saves stores locally changes made (at chords and beats) either as separate or replaced annotation (except original annotation)
  */
 export function setupSaveChordsEvent() {
-  saveChordsBtn.addEventListener('click', saveChords);
+  saveEditingBtn.addEventListener('click', saveEditing);
 }
 
 /**
@@ -187,6 +187,9 @@ export function setupCancelEditingEvent() {
   cancelEditingBtn.addEventListener('click', cancelEditingChords);
 }
 
+/**
+ *  [Cancel] Cancel reverts back without altering. TODO
+ */
 export function setupSettingsMenu() {
   const playerSettingsBtn = document.querySelector('#player-settings-btn');
   const playerSettingsIcon = playerSettingsBtn.querySelector('.settings-icon');
@@ -211,6 +214,13 @@ export function setupSettingsMenu() {
   settingsMenuFollowPlayback();
 }
 
+/**
+ * Configure Chord Categories in Chord Editor
+ *
+ * Allows the user to enable or disable the display of chord categories within the chord editor through radio buttons ("On" and "Off"). Supported categories include Major, Minor, Augmented, Diminished, Half Diminished, Fifth, Dominant, Add Chords, Suspended, Altered Chords, Dominant Altered, and Dominant Altered Seventh.
+ *
+ * @function settingsMenuChordEditorCategories
+ */
 function settingsMenuChordEditorCategories() {
   const chordCategoriesMenu = document.querySelector('#chord-categories-menu');
 
@@ -290,15 +300,16 @@ export function editChord(cancel = false, selection) {
   updateMarkerDisplayWithColorizedRegions();
 }
 
-function saveChords() {
+function saveEditing() {
   //  NOTE:⚡
   // Serialization of the data happens with 'Export to disk disk or repository'
   // Instead here the annotation will be saved in browser's local storage
-  // (With that way we avoid redundancy and distinguish similar features between 'Export to disk disk or repository' and 'Save chords'.)
+  // (With that way we avoid redundancy and distinguish similar features between 'Export to disk disk or repository' and 'Save'.)
 
   let message;
   let index = annotationList.selectedIndex;
 
+  console.log(jamsFile);
   const selectedAnnotation = jamsFile.annotations[index];
   const currDataSource = selectedAnnotation.annotation_metadata.data_source;
 
@@ -339,14 +350,10 @@ function saveChords() {
       // reset delete button if any new annotation was created
       deleteAnnotationBtn.classList.remove('disabled');
 
-      // TODO
+      // TODO: When analysis comes, the data is stored in local storage, this format of storage ALWAYS asks user permission if he wants to load it. In addition you can also update the content of that file saved in local storage with the save editing functions which is enabled after user has edited the file in some way
       // Save to local storage, which is designed to store data in its original format
-
-      // const jamsToBeExported = new File(
-      //   [JSON.stringify(jamsFile)],
-      //   'test.jams'
-      // );
-      // exportFileToRepository(jamsToBeExported, 'private');
+      localStorage.setItem(fileName, JSON.stringify(jamsFile));
+      // option to delete this storage? --button? or in settings menu?
 
       if (!!Collab) {
         const newAnnotationData = _extractModalPromptFields();
@@ -360,7 +367,7 @@ function saveChords() {
         });
       }
 
-      annotationFileIsModified = true; // annotation file is now modified (in contrast with analysis script)
+      fStates.annotationExistsInRepo = false; // modified annotation file doesn't exist in repo!
     })
     .catch(() => {
       // User canceled
@@ -376,7 +383,7 @@ function cancelEditingChords() {
     .then(() => {
       // User confirmed
       wavesurfer.clearMarkers();
-      // This needs to be before (for similar reason as stated in saveChords)
+      // This needs to be before (for similar reason as stated in saveEditing)
       disableSaveChordsAndCancelEditing();
       renderAnnotations(selectedAnnotationData(jamsFile));
 
@@ -674,28 +681,4 @@ function _mapChordSymbolToText(encodedChord) {
   const mirLabel = `${foundRootNote}${foundAccidental}${column}${foundShorthand}`;
 
   return mirLabel;
-}
-
-function exportFileToRepository(file, exportLocation, providedOnLoadCallback) {
-  let fd = new FormData();
-  fd.append('f', file);
-  fd.append('action', 'upload');
-  fd.append('ufolder', exportLocation);
-
-  const ajax = new XMLHttpRequest();
-
-  ajax.addEventListener('load', () => {
-    alert(`File has been exported to your ${exportLocation} files!`);
-    if (providedOnLoadCallback) providedOnLoadCallback();
-  });
-  ajax.addEventListener('error', () => {
-    alert(`Failed to export file to your ${exportLocation} files`);
-  });
-
-  ajax.open(
-    'POST',
-    'https://musicolab.hmu.gr/apprepository/uploadFileResAjax.php',
-    true
-  );
-  ajax.send(fd);
 }

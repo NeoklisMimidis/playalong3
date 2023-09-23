@@ -8,8 +8,8 @@ import { assignInputFieldEvents } from '../components/utilities.js';
 
 export function selectFollowPlaybackMode(
   currentTime,
-  destinationPoint,
-  pageTurnPoint = destinationPoint
+  resetPoint,
+  turnPoint = resetPoint
 ) {
   // Continue only if follow playback is activated
   if (!playerStates.FOLLOW_PLAYBACK) return;
@@ -24,7 +24,7 @@ export function selectFollowPlaybackMode(
   const minPxDelta = 1 / wavesurfer.params.pixelRatio;
 
   // calculating the next turn point
-  const pageTurnPointInPixels = parentWidth * pageTurnPoint + scrollWidthStart;
+  const turnPointInPixels = parentWidth * turnPoint + scrollWidthStart;
 
   const currentTimeInPixels = currentTime * wavesurfer.params.minPxPerSec;
 
@@ -34,12 +34,12 @@ export function selectFollowPlaybackMode(
     return;
   }
 
-  if (currentTimeInPixels >= pageTurnPointInPixels * minPxDelta) {
+  if (currentTimeInPixels >= turnPointInPixels * minPxDelta) {
     let target;
 
-    if (destinationPoint === pageTurnPoint) {
+    if (resetPoint === turnPoint) {
       // 1) Scrolling playback at user selected point
-      const offset = parentWidth * pageTurnPoint * minPxDelta;
+      const offset = parentWidth * turnPoint * minPxDelta;
 
       const scrollPlayback = currentTimeInPixels - offset;
 
@@ -48,9 +48,9 @@ export function selectFollowPlaybackMode(
     } else {
       // 2) Page turn playback
       const pageTurnPlayback =
-        (parentWidth * pageTurnPoint +
+        (parentWidth * turnPoint +
           scrollWidthStart -
-          parentWidth * destinationPoint) *
+          parentWidth * resetPoint) *
         minPxDelta;
 
       // limit target to valid range (0 to maxScroll)
@@ -115,18 +115,31 @@ export function disableFollowPlaybackWhenMovingScrollbar(e) {
 }
 
 /**
- * settingsMenuFollowPlayback handles interaction with playback options
- * according to the user choice in settings menu.
+ * Follow Playback: Manages playback behavior in accordance with user-defined settings.
  *
- * The destination point input has a range from 0 to 1 with steps of 0.05,
- * and the page turn point input has a range from the current destination
- * point value to 1 with steps of 0.05.
+ * Two modes of playback interaction are supported:
+ * 1. Scroll Mode
+ * 2. Page Turn Mode
  *
+ * @function settingsMenuFollowPlayback
+ *
+ * Scroll Mode:
+ * - Scroll Point: Specifies the fraction of the displayed waveform that triggers scrolling.
+ *   - Values: Ranges between 0 and 1, incremented by steps of 0.05.
+ *
+ * Page Turn Mode:
+ * - Reset Point: Defines the position where the playback cursor resets.
+ *   - Values: Ranges between 0 and 1, incremented by steps of 0.05.
+ * - Turn Point: Identifies the position where the "page turn" occurs.
+ *   - Values: Ranges between the current Reset Point value and 1, incremented by steps of 0.05.
+ *
+ * These modes manipulate the playback cursor's position and behavior to provide a more
+ * customized playback experience.
  */
 export function settingsMenuFollowPlayback() {
   const firstInput = document.querySelector('#firstInput');
   const leftInputOptions = {
-    default: playerStates.FOLLOW_PLAYBACK_OPTIONS.destinationPoint,
+    default: playerStates.FOLLOW_PLAYBACK_OPTIONS.resetPoint,
     step: 0.05,
     min: 0,
     max: 1,
@@ -136,7 +149,7 @@ export function settingsMenuFollowPlayback() {
 
   const secondInput = document.querySelector('#secondInput');
   const rightInputOptions = {
-    default: playerStates.FOLLOW_PLAYBACK_OPTIONS.pageTurnPoint,
+    default: playerStates.FOLLOW_PLAYBACK_OPTIONS.turnPoint,
     step: 0.05,
     min: leftInputOptions.current,
     max: 1,
@@ -175,7 +188,7 @@ export function settingsMenuFollowPlayback() {
 
       if (leftInputOptions.current > rightInputOptions.current) {
         secondInput.querySelector('.box').innerText = leftInputOptions.current;
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.pageTurnPoint =
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.turnPoint =
           leftInputOptions.current;
       }
     } else if (e.target.closest('#firstInput .input-field')) {
@@ -187,14 +200,14 @@ export function settingsMenuFollowPlayback() {
         secondInput.querySelector('.box').innerText = leftInputOptions.current;
 
         // this the same as scrolling playback
-        playerStates.FOLLOW_PLAYBACK_OPTIONS.pageTurnPoint =
+        playerStates.FOLLOW_PLAYBACK_OPTIONS.turnPoint =
           leftInputOptions.current;
       }
 
-      playerStates.FOLLOW_PLAYBACK_OPTIONS.destinationPoint =
+      playerStates.FOLLOW_PLAYBACK_OPTIONS.resetPoint =
         leftInputOptions.current;
     } else if (e.target.closest('#secondInput .input-field')) {
-      playerStates.FOLLOW_PLAYBACK_OPTIONS.pageTurnPoint =
+      playerStates.FOLLOW_PLAYBACK_OPTIONS.turnPoint =
         rightInputOptions.current;
     }
   });

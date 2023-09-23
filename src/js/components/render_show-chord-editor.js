@@ -87,7 +87,7 @@ aria-hidden="true"
           </thead>
           <tbody class="Chords">
             <tr>
-              <th scope="col" class="text-center small p-1" colspan="4">
+              <th scope="col" class="text-center small p-1" colspan="3">
                 Major
               </th>
               <th scope="col" class="text-center small p-1" colspan="7">
@@ -133,7 +133,7 @@ aria-hidden="true"
                 Add chords
               </th>
 
-              <th scope="col" class="text-center small p-1" colspan="5">
+              <th scope="col" class="text-center small p-1" colspan="4">
                 Suspended
               </th>
             </tr>
