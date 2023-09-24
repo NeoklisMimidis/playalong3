@@ -636,12 +636,16 @@ function finalizeFileStorage(file, action, providedOnLoadCallback = null) {
       }
       if (providedOnLoadCallback) providedOnLoadCallback();
     } else {
-      alert(`Failed to export file to your ${exportLocation} files`);
+      alert(
+        `HTTP Error: Failed to export file to your ${exportLocation} files. Status code: ${ajax.status}`
+      );
     }
   });
 
   ajax.addEventListener('error', () => {
-    alert(`Failed to export file to your ${exportLocation} files`);
+    alert(
+      `Network Error: Failed to export file to your ${exportLocation} files`
+    );
   });
 
   // 3) Send the request

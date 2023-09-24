@@ -163,11 +163,12 @@ export function loadJAMS(input) {
     createAnnotationsList(jamsFile);
 
     //set collab annotation selection
-    if (Collab) {
-      const annotationSelected =
-        window.sharedBTEditParams?.get('annotationSel')?.value;
-      annotationSelected ? (annotationList.value = annotationSelected) : null;
-    }
+    // if (Collab) {
+    //   const annotationSelected =
+    //     window.sharedBTEditParams?.get('annotationSel')?.value;
+    //   annotationSelected ? (annotationList.value = annotationSelected) : null;
+    // }
+    // neoklis: // this condition creates BUG in collab url scenario at the selectedAnnotationData function!
 
     // Render first annotation
     annotatedChordsAtBeatsData = selectedAnnotationData(jamsFile);
@@ -186,10 +187,17 @@ export function loadJAMS(input) {
     return annotatedChordsAtBeatsData;
   }
 
+  // console.log('file url', fileUrl);
+  // console.log('file', file);
+
   // Giving priority to fetch from server and NOT from browser's local storage
   fetch(fileUrl)
-    .then(response => response.json())
+    .then(response => {
+      // console.log('response:', response);
+      return response.json();
+    })
     .then(jams => {
+      // console.log('jams', jams);
       jamsFile = jams;
       [annotatedChordsAtBeatsData] = handleJAMSData(jams);
 

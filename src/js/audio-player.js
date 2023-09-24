@@ -200,7 +200,9 @@ if (window.location.hostname === 'localhost') {
   urlFileName !== null
 ) {
   // B) MusiCoLab server:
-  const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${urlFileName}`;
+  const f = `f=${urlFileName}`;
+  const u = userParam ? `&user=${userParam}` : '';
+  const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?${f}${u}`;
   const annotationFileUrl = createURLJamsFromRepository(urlFileName);
 
   loadFilesInOrder(audioFileURL, annotationFileUrl);
@@ -842,7 +844,10 @@ function createURLJamsFromRepository(fileName, temporally = false) {
     // https://musicolab.hmu.gr/jams/Cherokee.jams
   } else {
     // TODO adjust for 'private' and 'course'
-    annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileNameWithoutExtension}.jams`;
+
+    const f = `f=${fileNameWithoutExtension}.jams`;
+    const u = userParam ? `&user=${userParam}` : '';
+    annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?${f}${u}`;
   }
 
   return annotationFileUrl;
