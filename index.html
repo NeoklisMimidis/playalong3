@@ -1187,17 +1187,31 @@
               <div id="export-option">
                 <label><strong>Export to:</strong></label>
 
-                <div id="export-btns">
-                  <button
-                    disabled
-                    type="button"
-                    class="btn btn-primary export-musicolab"
-                  >
-                    MusiCoLab
-                  </button>
-                  <button type="button" class="btn btn-primary export-disk">
-                    Disk
-                  </button>
+                <div id="export-container">
+                  <div id="export-musicolab">
+                    <div class="input-list">
+                      <select class="no-border">
+                        <option value="public">public</option>
+                        <option value="private">private</option>
+                        <option value="course">course</option>
+                      </select>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn btn-primary export-musicolab"
+                    >
+                      MusiCoLab
+                    </button>
+                  </div>
+
+                  <div class="vertical-line-separator"></div>
+
+                  <div id="export-disk">
+                    <button type="button" class="btn btn-primary export-disk">
+                      Disk
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -497,9 +497,21 @@ function setupExportToDiskOrRepository() {
     'export-to-disk-or-repository-btn'
   );
   exportToDiskOrRepositoryBtn.addEventListener('click', e => {
-    const exportMusicolabBtn = document.querySelector('.export-musicolab');
+    const exportMusicolabBtn = document.querySelector(
+      '#export-musicolab button'
+    );
+    const exportMusicolabSel = document.querySelector(
+      '#export-musicolab select'
+    );
+
     // userParam global from app.js!
-    if (userParam) exportMusicolabBtn.disabled = false;
+    if (userParam) {
+      exportMusicolabBtn.disabled = false;
+      exportMusicolabSel.disabled = false;
+    } else {
+      exportMusicolabBtn.disabled = true;
+      exportMusicolabSel.disabled = true;
+    }
   });
   // ALSO, the modal opens (shown) with html bootstrap
 
@@ -507,6 +519,7 @@ function setupExportToDiskOrRepository() {
   const exportToDiskRepository = document.getElementById(
     'exportToDiskRepository'
   );
+  // $(exportToDiskRepository).modal('show'); // just for testing!
 
   exportToDiskRepository.addEventListener('click', e => {
     const includeBtrack = document.querySelector('#yes-btrack').checked;
