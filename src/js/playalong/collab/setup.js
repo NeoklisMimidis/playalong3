@@ -177,7 +177,7 @@ function setupCollaboration() {
             break;
           case "backingTrack":
             { //setting backing track file name shown on UI
-              window.setBackingTrackRemote(value.get("name"));
+              window.setBackingTrackRemote(value.get("name"), value.get("sharer"));
               const downloadProgress =
                 (value.get("data").length / value.get("size")) * 100;
               if (downloadProgress === 100.0) {
@@ -190,8 +190,8 @@ function setupCollaboration() {
           case "backingTrackRepository":
             window.setBackingTrackRepositoryRemote(value);
             break;
-          case "backingTrackRecordingId":
-            window.setBackingTrackRecordingId(value);
+          case "backingTrackRecording":
+            window.setBackingTrackRecording(value);
             break;
           default:
             console.warn("unsupported configuration variable: ", key);

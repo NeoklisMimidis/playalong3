@@ -633,7 +633,7 @@ function loadAudioFile(input, res = false) {
 /**
  * Reset player controls, markers, regions and previous waveform
  */
-function resetAudioPlayer() {
+export function resetAudioPlayer() {
   // Reveal player and controls (useful for first load in slow connections)
   audioPlayerAndControlsContainer.classList.remove('d-none');
 
@@ -661,6 +661,8 @@ function resetAudioPlayer() {
 
   console.log('resetAudioPlayer is complete 😁');
 }
+window.resetAudioPlayer = resetAudioPlayer; //alx.needed for use in backing-track.js which is not a module and cannot import
+
 
 /**
  * Setup events for audio player and create tooltips
@@ -755,6 +757,7 @@ export function animateProgressBar(
     }, 500);
   }
 }
+window.animateProgressBar = animateProgressBar; //alx.needed for use in backing-track.js which is not a module and cannot import
 
 // - Functions for customization of Wavesurfer Timeline
 /**

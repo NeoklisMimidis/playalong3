@@ -64,9 +64,10 @@ async function shareBackingTrack(file) {
       fileInfo.set('size', file.size);
       fileInfo.set('type', file.type);
       fileInfo.set('data', chunksArray);
+      fileInfo.set('sharer', userParam);
       window.playerConfig.set('backingTrack', fileInfo);
       window.playerConfig.delete('backingTrackRepository');
-      window.playerConfig.delete('backingTrackRecordingId');
+      window.playerConfig.delete('backingTrackRecording');
     });
 
     // fileInfo.set("data", chunksArray);
@@ -90,11 +91,16 @@ function setFileURLParam(file) {
 }
 
 // Load the backing track another peer has loaded on the file picker
-function setBackingTrackRemote(fileName) {
+function setBackingTrackRemote(fileName, sharer) {
   if (!fileName) {
     console.warn('failed to set backing track from peers');
     return;
   }
+
+  const notifText = `${sharer} has imported ${fileName} from their hard drive as the new backing track.`;
+  const notifContext = 'info';
+  notify(notifText, notifContext);
+
   updateFileNameLabels(fileName);
 }
 
@@ -126,13 +132,19 @@ function setBackingTrackFileRemote(fileInfo) {
 
 async function setBackingTrackRepositoryRemote(fileInfo) {
   $('#repository-files-modal').modal('hide');
-  const {fileName, privateInfo, repositoryType} = fileInfo;
+
+  const {fileName, privateInfo, repositoryType, sharer} = fileInfo;
+
   if (!fileName || fileName.length === 0) {
     console.warn(
       'unknown filename: failed to set repository file shared by peers as backing track'
     );
     return;
   }
+
+  const notifText = `${sharer} has imported ${fileName} from repository as the new backing track.`;
+  const notifContext = 'info';
+  notify(notifText, notifContext);
 
   let reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?f=${fileName}`;
   if (repositoryType === 'private') {
@@ -142,8 +154,28 @@ async function setBackingTrackRepositoryRemote(fileInfo) {
     throw new Error('Files of type course are not currently supported');
   }
 
+  window.resetAudioPlayer();
+
   const res = await fetch(reqUrl);
-  const blob = await res.blob();
+  const resClone = await res.clone();
+
+  //animating progress mechanism
+  const waveformLoadingBar = document.getElementById(
+    'waveform-loading-bar'
+  );
+  const reader = res.body.getReader();
+  const contentLength = +res.headers.get('Content-Length');
+  let receivedLength = 0;
+  while (true) {
+    const {done, value} = await reader.read();
+    if (done) {
+      break;
+    }
+    receivedLength += value.length;
+    window.animateProgressBar(waveformLoadingBar, receivedLength/contentLength);
+  }
+
+  const blob = await resClone.blob();
   if (blob.type.includes('text/html')) {
     throw new Error(`Failed to fetch audio file: "${fileName}"`);
   }
@@ -163,7 +195,7 @@ function loadUrlFile(fn, c, u) {
   );
 }
 
-function setBackingTrackRecordingId(id) {
+function setBackingTrackRecording({id, sharer}) {
   if (id === undefined || id === null) {
     console.error("tried to set backing track to recording with id %s but it does not exist", id);
     return;
@@ -181,6 +213,13 @@ function setBackingTrackRecordingId(id) {
     console.error("could not find track for id: " + id);
     return;
   }
+
+  const recorderName = window.sharedRecordedBlobs.get(index).get("userName");
+  const notifText = `${sharer} has set
+   ${(recorderName == sharer) ? 'their recording' : `recording of ${recorderName}`}
+   as the new backing track.`;
+  const notifContext = 'info';
+  notify(notifText, notifContext);
  
   const data = window.sharedRecordedBlobs.get(index).get("data");
   //load it as wavesurfer backing track
@@ -189,7 +228,7 @@ function setBackingTrackRecordingId(id) {
     const blob = recordingToBlob(float32Array);
     const BTUrl = URL.createObjectURL(blob);
 
-    window.loadAudioFile(BTUrl)
+    window.loadAudioFile(BTUrl);
     removeFileURLParam();
   }
 }

@@ -128,12 +128,6 @@ recordButton.addEventListener('click', () => {
 });
 stopButton.addEventListener('click', () => {
   stopRecording();
-  !!Collab
-    ? window.awareness.setLocalStateField('record', {
-        status: 'stop',
-        recUserData: { id: idParam, name: userParam },
-      })
-    : null;
 });
 pauseButton.addEventListener('click', pauseRecording);
 playPauseAllButton.addEventListener('click', playpauseAll);
@@ -353,7 +347,7 @@ function pauseRecording() {
 function stopRecording() {
   // stop metronome & hide pre count modal (& and check if preCountCanceled)
   preCountRecordingModal();
-
+  //alx pros Neokli: auto xreiazetai na ginetai collably?
   resetPlaybackVolume();
 
   console.log('stopButton clicked');
@@ -414,48 +408,88 @@ function stopRecording() {
   console.log('disabled StopALl button');
   stopAllButton.setAttribute('title', '');
 
+  function actOnInvalidRecord () {
+    !!Collab
+    ? window.awareness.setLocalStateField('record', {
+        status: 'stop',
+        recUserData: { id: idParam, name: userParam },
+        isValid: false
+      })
+    : null;
+
+    if (count == 1) {
+      //if no other recording --> rehide not needed buttons...
+      const initialButtons = [
+        'recordButton',
+        'start-close-call-btn',
+        'metronome-btn'
+      ];
+
+      [...document.getElementById('controls').children]
+        .filter(e => e.tagName === 'BUTTON' && !initialButtons.includes(e.id))
+        .forEach(e => e.setAttribute('hidden', true));
+    }
+    //...and disable the playback speed bar
+    document.getElementById('speedSlider').disabled = false;
+  }
+
   // DON'T execute the rest of the code if recording was canceled while pre count was up
-  if (preCountCanceled) return;
-  
-  
-  
-  noRecordings++;
-  
+  if (preCountCanceled) {
+    actOnInvalidRecord();
+    return;
+  }  
+    
   // console.log('Number of recordings = ', noRecordings);
 
   //get the raw PCM audio data as an array of float32 numbers
   rec.getBuffer(function (buffer) {
-    recordedBuffers.push(buffer); //push the buffer to an array
-    //console.log("recordedBuffers = ", recordedBuffers);
+    const data = Array.from(buffer[0]);
+    //discriminating cases depending on whether there was a recording larger than 0.5s or not
+    if (data.length > sampleRate) {//case 'rec>1s': save and possibly share recording
+      noRecordings++;
+      recordedBuffers.push(buffer); //push the buffer to an array
+      //console.log("recordedBuffers = ", recordedBuffers);
 
-    if (!!Collab && window.sharedRecordedBlobs != null) {
-      const data = Array.from(buffer[0]);
-      const obj = {
-        id: generateID(),
-        speed: speed01,
-        set_pitch: 1 / speed01,
-        userName: userParam,
-        userId: idParam,
-        sampleRate,
-        count,
-      };
-      addSharedBuffer(data, obj);
-    }
+      !!Collab
+      ? window.awareness.setLocalStateField('record', {
+          status: 'stop',
+          recUserData: { id: idParam, name: userParam },
+          isValid: true
+        })
+      : null;    
+
+      if (!!Collab && window.sharedRecordedBlobs != null) {
+        const obj = {
+          id: generateID(),
+          speed: speed01,
+          set_pitch: 1 / speed01,
+          userName: userParam,
+          userId: idParam,
+          sampleRate,
+          count,
+        };
+        addSharedBuffer(data, obj);
+      }
+
+      if (!Collab) {
+        rec.exportWAV(createDownloadLink);
+      }
+
+      rec.exportWAV(function (blob) {
+        recordedBlobs.push(blob);
+        //console.log("recordedBlobs", recordedBlobs);
+      });
+      console.log('recordedBlobs', recordedBlobs);
+      console.log('recordedBuffers = ', recordedBuffers);
+      //recordedBuffers.forEach(buffer => {
+      //	console.log("length",buffer.byteLength);
+      //});
+
+    } else {
+      actOnInvalidRecord();
+      return;
+    }    
   });
-
-  if (!Collab) {
-    rec.exportWAV(createDownloadLink);
-  }
-
-  rec.exportWAV(function (blob) {
-    recordedBlobs.push(blob);
-    //console.log("recordedBlobs", recordedBlobs);
-  });
-  console.log('recordedBlobs', recordedBlobs);
-  console.log('recordedBuffers = ', recordedBuffers);
-  //recordedBuffers.forEach(buffer => {
-  //	console.log("length",buffer.byteLength);
-  //});
 }
 // end recording section ///////////////////////////////////////////////////////
 
@@ -532,7 +566,7 @@ function createRecordingTemplate(recUserData) {
   document.body.appendChild(outmostContainer);
 
   //creating the image container
-  if (Collab) {
+  if (!!Collab) {
     const isOnline = [...window.awareness.getStates()].some(
       ([id, state]) => state.user.name == recUserData.name
     );
@@ -596,7 +630,7 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
         // Set new key to this collabId and undo others
         window.ydoc.transact(() => {
           //fire events that set this rec as BT in collaborators
-          window.playerConfig.set('backingTrackRecordingId', collabId);
+          window.playerConfig.set('backingTrackRecording', {id: collabId, sharer: userParam});
           //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
           window.playerConfig.delete('backingTrack');
           window.playerConfig.delete('backingTrackRepository');
@@ -1408,7 +1442,7 @@ function combineSelected() {
       selectedBuffers.push(index);
 
       if (
-        Collab &&
+        !!Collab &&
         window.sharedRecordedBlobs.length === recordedBuffers.length
       ) {
         let sampleRate = window.sharedRecordedBlobs

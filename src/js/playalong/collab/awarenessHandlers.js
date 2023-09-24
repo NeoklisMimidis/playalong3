@@ -7,6 +7,7 @@ import { createAnnotationsList, jamsFile, loadJAMS, renderAnnotations, selectedA
 import { tooltips } from "../../components/tooltips";
 import { setUserImageUrl, renderUserList } from "./users";
 import { handleMarkerSelection } from "./sharedTypesHandlers";
+import { add } from "lib0/indexeddb";
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(
@@ -446,7 +447,7 @@ function actOnRecordStateUpdate (awStates, myClientId) {
     switch (rState.status) {
       case 'start': actOnStartRecording(myStateUpdating, recUserData) 
       break;
-      case 'stop': actOnStopRecording(myStateUpdating, recUserData.name)
+      case 'stop': actOnStopRecording(myStateUpdating, recUserData.name, rState.isValid)
       break;
     }
   });
@@ -466,12 +467,38 @@ function actOnStartRecording(me, recUserData) {
   }
 }
 
-function actOnStopRecording(me, userName) {
+function actOnStopRecording(me, userName, isValid) {
+  //removing user image and recording button flashing
   recordButton.classList.remove('flash');
-  document
+
+
+  if (isValid) {
+    document
+      .getElementById(`scrollContainer${count}`)
+      .previousElementSibling
+      .classList.remove('flash');
+    
+    if (!me) {
+      //display all buttons needed when rec exists. enable playback speed bar
+      let additionalButtonsToDisplay = [
+        'stopallButton',
+        'combineselectedButton',
+        'playpauseallButton'
+      ];    
+      additionalButtonsToDisplay = additionalButtonsToDisplay
+        .map(id => document.getElementById(id));
+      additionalButtonsToDisplay.forEach(e => e.removeAttribute('hidden', false));
+      additionalButtonsToDisplay[2].innerHTML=
+        '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>'
+      ;      
+      document.getElementById('speedSlider').disabled = false;      
+    } 
+  } else {
+    document
     .getElementById(`scrollContainer${count}`)
-    .previousElementSibling
-    .classList.remove('flash');
+    .parentElement
+    .remove();
+  }
 
   if (me) {
     setTimeout(
@@ -480,7 +507,8 @@ function actOnStopRecording(me, userName) {
   } else {    
     otherUserRecording = false;
 
-    const notifText = `${userName} has stopped recording.`;
+    const notifText = `${userName} has stopped recording.
+      ${isValid ? 'Recording is valid.' : 'Recording is not valid.'}`;
     const notifContext = 'info';
     notify(notifText, notifContext);
   }
