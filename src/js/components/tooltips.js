@@ -51,6 +51,7 @@ const centerToolbarControls = `The <strong>annotation list</strong> allows you t
 tippy('#center-toolbar-controls', {
   content: centerToolbarControls,
   delay: [800, 100],
+  offset: [50, -2],
   theme: 'translucent',
   // theme: 'light-border',
   // placement: 'right-start',
@@ -64,6 +65,7 @@ const rightToolbarControls = `<strong>Edit chord</strong> <i class="fa-solid fa-
 tippy('#right-toolbar-controls', {
   content: rightToolbarControls,
   delay: [800, 100],
+  offset: [150, -4],
   theme: 'translucent',
   // theme: 'light-border',
   // placement: 'right-start',
@@ -92,7 +94,7 @@ tippy('.fa-circle-info', {
   theme: 'translucent',
   placement: 'right-end',
   interactive: true,
-  offset: [50, 10],
+  offset: [-150, 10],
   maxWidth: '390px',
 });
 
