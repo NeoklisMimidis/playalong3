@@ -626,6 +626,7 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
       const BTUrl = URL.createObjectURL(blob);
 
       try {
+        btrack = true;
         loadAudioFile(BTUrl);
         // Set new key to this collabId and undo others
         window.ydoc.transact(() => {

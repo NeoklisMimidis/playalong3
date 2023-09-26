@@ -228,6 +228,7 @@ function setBackingTrackRecording({id, sharer}) {
     const blob = recordingToBlob(float32Array);
     const BTUrl = URL.createObjectURL(blob);
 
+    btrack = true;
     window.loadAudioFile(BTUrl);
     removeFileURLParam();
   }
