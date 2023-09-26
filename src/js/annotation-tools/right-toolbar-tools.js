@@ -366,8 +366,6 @@ function saveEditing() {
           newAnnotationData,
         });
       }
-
-      fStates.annotationExistsInRepo = false; // modified annotation file doesn't exist in repo!
     })
     .catch(() => {
       // User canceled

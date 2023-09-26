@@ -99,9 +99,6 @@ export function loadJAMS(input) {
       // console.log('jams', jams);
       jamsFile = jams;
       [annotatedChordsAtBeatsData] = handleJAMSData(jams);
-
-      // annotation is loaded from repo
-      fStates.annotationExistsInRepo = true;
     })
     .catch(error => {
       console.error('\n⚠️ FETCH ERROR :\n', error);
@@ -122,9 +119,6 @@ export function loadJAMS(input) {
             jamsFile = jamsFromLocalStorage;
             // annotatedChordsAtBeatsData = handleJAMSData(jamsFromLocalStorage);
             [annotatedChordsAtBeatsData] = handleJAMSData(jamsFromLocalStorage);
-
-            //
-            fStates.annotationExistsInRepo = false;
           })
           .catch(() => {
             // User canceled deletion

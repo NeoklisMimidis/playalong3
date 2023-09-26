@@ -101,8 +101,6 @@ function deleteAnnotation() {
       annotationList.remove(annotationList.selectedIndex);
       // Render the annotation (by default first drop-down list option)
       renderAnnotations(selectedAnnotationData(jamsFile));
-
-      fStates.annotationExistsInRepo = false; // modified annotation file doesn't exist in repo!
     })
     .catch(() => {
       // User canceled

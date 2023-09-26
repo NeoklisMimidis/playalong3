@@ -127,14 +127,7 @@ window.loadAudioFile = loadAudioFile;
 window.bTrackURL = '';
 window.bTrackDATA = '';
 
-const fStates = {
-  audioExistsInRepo: false,
-  audioInAnalysisTempFolder: false,
-  annotationExistsInRepo: false,
-  annotationInAnalysisTempFolder: false,
-};
-
-window.fStates = fStates;
+window.audioExistsInRepo = false;
 
 // - Start of the application ||
 
@@ -202,7 +195,7 @@ if (window.location.hostname === 'localhost') {
   // B) MusiCoLab server:
   const f = `f=${urlFileName}`;
   const u = userParam ? `&user=${userParam}` : '';
-  const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?${f}${u}`;
+  const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?${f}${u}`; // TODO This needs to also count for url from private files!
   const annotationFileUrl = createURLJamsFromRepository(urlFileName);
 
   loadFilesInOrder(audioFileURL, annotationFileUrl);
@@ -284,7 +277,12 @@ function doChordBeatAnalysis(
   fd.append('action', 'chordBeatAnalysis');
   fd.append('theUrl', bTrackURL);
   fd.append('theaudio', bTrackDATA);
-  fd.append('audioExistsInRepo', fStates.audioExistsInRepo);
+
+  let exists = false;
+  if (['public', 'private', 'course'].includes(audioExistsInRepo)) {
+    exists = true;
+  }
+  fd.append('audioExistsInRepo', exists); // 'true'
 
   // 2) Monitor responses/events
   let ajax = new XMLHttpRequest();
@@ -320,14 +318,7 @@ function doChordBeatAnalysis(
           });
         }
       }
-
-      // On successful analysis: annotation remains unchanged and resides in temp folder.
-      fStates.annotationExistsInRepo = true;
-      fStates.annotationInAnalysisTempFolder = true;
-
-      // Audio is guaranteed to be in the repository; uploaded only if not pre-existing.
-      fStates.audioInAnalysisTempFolder = !fStates.audioExistsInRepo;
-      fStates.audioExistsInRepo = true;
+      audioExistsInRepo = 'jams';
 
       animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
     } else if (ajax.readyState === 4 && ajax.status !== 200) {
@@ -519,7 +510,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
         bTrackURL = URL.createObjectURL(bTrackDATA);
-        fStates.audioExistsInRepo = false
+        audioExistsInRepo = false
         
         setFileURLParam(fileName);
 
@@ -529,7 +520,7 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = file;
         bTrackURL = fileUrl;
-        fStates.audioExistsInRepo = false
+        audioExistsInRepo = false
         
         setFileURLParam(fileName);
 
@@ -550,22 +541,25 @@ function loadAudioFile(input, res = false) {
           //(I don't like it that it executes here but.. whatever)
           const annotationFile = createURLJamsFromRepository(f)
           loadJAMS(annotationFile)
+
+          // audioExistsInRepo = 'public' // updates from file-load-repository.js accordingly
         } else{
           // With link from repository (https://musicolab.hmu.gr/apprepository/publicFiles.php)
           fileName = urlFileName 
           bTrackDATA = fileUrl 
           bTrackURL = fileUrl
+
+          audioExistsInRepo = 'public' // case of loading directly from repository button
         }
         console.log(fileName)
 
-        fStates.audioExistsInRepo = true 
       } else if (file === undefined && window.location.hostname === 'localhost') {
         // d)
         fileName = 'test.mp3';
 
         bTrackDATA = fileUrl;
         bTrackURL = fileUrl;
-        fStates.audioExistsInRepo = false  
+        audioExistsInRepo = false  
       }
 
       console.log(`backing track URL : ${bTrackURL}`);
@@ -579,12 +573,6 @@ function loadAudioFile(input, res = false) {
       activateAudioPlayerControls();
 
       btrack = false;
-
-      // reset audio file status bcs it is uploaded with 'normal' import
-      fStates.audioInAnalysisTempFolder = false;
-      //reset annotation file status
-      fStates.annotationExistsInRepo = false;
-      fStates.annotationInAnalysisTempFolder = false;
     });
     /* TODO. alx. isws volevei. an einai na xrismiopoioithei, kai i loadAudioFIle na trexei kai
     // ston loader kai stous collaborators, prepei na mpei ena flag isLoader gia na energopoieitai o sharing
@@ -662,7 +650,6 @@ export function resetAudioPlayer() {
   console.log('resetAudioPlayer is complete 😁');
 }
 window.resetAudioPlayer = resetAudioPlayer; //alx.needed for use in backing-track.js which is not a module and cannot import
-
 
 /**
  * Setup events for audio player and create tooltips

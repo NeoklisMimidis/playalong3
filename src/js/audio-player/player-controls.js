@@ -161,7 +161,7 @@ function keyboardAudioPlayerShortcuts(e) {
   } else if (key === 'Minus' || key === 'NumpadSubtract') {
     zoomOut(e);
   } else if (key === 'KeyR') {
-    record(e);
+    // record(e);
   } else if (key === 'KeyL') {
     repeat(e);
   } else {
@@ -533,52 +533,24 @@ function setupExportToDiskOrRepository() {
       'jams'
     );
 
-    // TODO change logic of file states update, to something more concrete to avoid bugs (fStates.audioInAnalysisTempFolder.. etc)
+    //
     if (e.target.classList.contains('export-musicolab')) {
       console.log('Export to musicolab button clicked!');
 
-      if (includeBtrack) {
-        if (fStates.audioExistsInRepo) {
-          if (fStates.audioInAnalysisTempFolder) {
-            function onSuccessResetStatusVariable() {
-              fStates.audioInAnalysisTempFolder = false;
-            }
+      // Neoklis --> alex this status variable needs to be shared collab, when 'import from course' will be achievable
 
-            // move from var/www/html/jams to permanent location
-            finalizeFileStorage(fileName, 'move', onSuccessResetStatusVariable);
-          } else {
-            alert('AUDIO FILE ALREADY EXIST IN REPO! ⚠️');
-          }
+      if (includeBtrack) {
+        if (audioExistsInRepo) {
+          finalizeFileStorage(fileName, 'copy', audioExistsInRepo); //  'jams' or 'private' (or 'course' if import from course)
         } else {
-          // upload audio (Case of exporting audio to repo without execution of analysis)
+          // upload audio
           finalizeFileStorage(bTrackDATA, 'upload');
         }
       }
 
       if (includeAnnotation) {
-        if (fStates.annotationExistsInRepo) {
-          if (fStates.annotationInAnalysisTempFolder) {
-            function onSuccessResetStatusVariable() {
-              fStates.annotationInAnalysisTempFolder = false;
-            }
-
-            // just move it from temp location to permanent one
-            const file = fNameWithoutExt + '.jams';
-            finalizeFileStorage(file, 'move', onSuccessResetStatusVariable);
-          } else {
-            alert('ANNOTATION FILE IS UNMODIFIED AND EXIST IN REPO! ⚠️');
-          }
-        } else {
-          function onSuccessResetStatusVariable() {
-            fStates.annotationExistsInRepo = true;
-          }
-          // upload new jams because old one is modified
-          finalizeFileStorage(
-            jamsToBeExported,
-            'upload',
-            onSuccessResetStatusVariable
-          );
-        }
+        // always upload jams, small files and avoid a lot of status variables
+        finalizeFileStorage(jamsToBeExported, 'upload');
       }
 
       // HIDE MODAL
@@ -600,41 +572,56 @@ function setupExportToDiskOrRepository() {
   });
 }
 
-function finalizeFileStorage(file, action, providedOnLoadCallback = null) {
+// -
+
+function finalizeFileStorage(file, action, sfolder = null) {
   console.log(`permanently store the file in the server 👌`);
 
-  const exportLocation = checkFileType(); // 'public' 'private' 'course'
+  // const exportLocation = checkFileType(); // 'public' 'private' 'course'
+  let selectedValue = document.querySelector('#export-musicolab select').value;
+  const exportLocation = selectedValue; // 'public' 'private' 'course'
+  console.log(exportLocation);
+
+  // Cases of audio already in repository:
+  // 1)'jams' -->analysis
+  // 2) 'public' 'private' 'course' --? Import from repository
+  const currentRepoLocation = sfolder;
+  if (currentRepoLocation) {
+    if (currentRepoLocation === exportLocation) {
+      alert(`File already in ${currentRepoLocation}!`);
+      return;
+    } else {
+      console.log(`Copying from ${currentRepoLocation} to ${exportLocation}`);
+    }
+  }
 
   // 1) Construct FormData to encapsulate the information to be sent to the server
   let fd = new FormData();
-  fd.append('action', action); // 'move' or 'upload'
+  fd.append('action', action); // 'move' or 'upload' // ⚠️
   fd.append('f', file); // ⚠️
   fd.append('ufolder', exportLocation);
+  fd.append('sfolder', currentRepoLocation);
 
   // 2) Monitor responses/events
   const ajax = new XMLHttpRequest();
 
   ajax.addEventListener('load', () => {
     console.log(ajax.responseText); // Printing server-side echo response
-    // alert(
-    //   `File has been permanently exported to your ${exportLocation} files!`
-    // );
-    // if (providedOnLoadCallback) providedOnLoadCallback();
 
     if (ajax.status >= 200 && ajax.status < 300) {
       const serverResponse = JSON.parse(ajax.responseText);
 
       if (
-        serverResponse.fileMoveStatus === 'File moved successfully' ||
-        serverResponse.fileMoveStatus === 'File uploaded successfully'
+        serverResponse.fileStatus === 'File copied successfully' ||
+        serverResponse.fileStatus === 'File uploaded successfully'
       ) {
         alert(
           `File has been successfully processed and exported to your ${exportLocation} files.`
         );
       } else {
-        alert(`Failed to process file: ${serverResponse.fileMoveStatus}`);
+        alert(`Failed to process file: ${serverResponse.fileStatus}`);
       }
-      if (providedOnLoadCallback) providedOnLoadCallback();
+      // if (providedOnLoadCallback) providedOnLoadCallback();
     } else {
       alert(
         `HTTP Error: Failed to export file to your ${exportLocation} files. Status code: ${ajax.status}`

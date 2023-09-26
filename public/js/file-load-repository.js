@@ -233,14 +233,16 @@ async function loadAudioTrack(fileName, type) {
 
     // window.backingTrack.loadBlob(blob);
     loadAudioFile(blob, res); // use loadAudioFile instead of simnply loadBlob to avoid various bugs
+    audioExistsInRepo = type; // upload type of load to apply logic of export accordingly
     updateBackingTrackPlayer(fileName);
 
     window.ydoc?.transact(() => {
       window.playerConfig?.set('backingTrackRepository', {
         fileName,
         repositoryType: type,
-        privateInfo: (type =='private') ? {name: userParam, id: idParam} : null,
-        sharer: userParam
+        privateInfo:
+          type == 'private' ? { name: userParam, id: idParam } : null,
+        sharer: userParam,
       });
       window.playerConfig.delete('backingTrack');
       window.playerConfig.delete('backingTrackRecording');
