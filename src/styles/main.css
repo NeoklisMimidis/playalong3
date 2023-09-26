@@ -838,7 +838,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 }
 
 #exportToDiskRepository .modal-content {
-  width: 300px;
+  width: 290px;
 }
 
 #exportToDiskRepository .modal-body {
@@ -853,11 +853,47 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   flex-basis: 50%;
 }
 
-#exportToDiskRepository #export-btns {
-  text-align: right;
-}
 #exportToDiskRepository #export-option {
   padding-top: 10px;
+}
+
+#export-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#export-container #export-musicolab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-basis: 70%;
+}
+
+#export-container #export-disk {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  flex-basis: 20%;
+}
+
+#export-container .vertical-line-separator {
+  justify-content: center;
+  flex-basis: 1.5%;
+  background-color: rgb(222 222 222);
+  height: 50px;
+}
+
+#export-musicolab .input-list {
+  width: 70px;
+  background: var(--theme-color6);
+  text-align: center;
+  font-size: 90%;
+}
+
+#export-musicolab .input-list option:disabled {
+  color: red;
 }
 
 /*  // - */
