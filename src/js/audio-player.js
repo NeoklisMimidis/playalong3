@@ -251,7 +251,24 @@ function sendAudioAndFetchAnalysis() {
     annotationFileUrl = createURLJamsFromRepository(fileName, true);
   }
 
-  const estimatedAnalysisTime = 35; // TODO function? for estimation of analysis from file size?
+  const audioDurationInSeconds = backingTrack.backend.buffer.duration;
+  /**
+   * Estimate analysis time based on audio duration using a simple linear regression model.
+   * y = 0.1543x + 6.113, where y is the analysis time and x is the audio duration in seconds.
+   * @param {number} audioDuration - The duration of the audio in seconds.
+   * @returns {number} The estimated analysis time in seconds.
+   */
+  function estimateAnalysisTime(audioDuration) {
+    const slope = 0.1543;
+    const intercept = 2.113; // Actual bias is 6.113 but let also utilize that progress bar stops when almost complete
+
+    return slope * audioDuration + intercept;
+  }
+  // Also round up the result
+  const estimatedAnalysisTime = Math.ceil(
+    estimateAnalysisTime(audioDurationInSeconds)
+  );
+  // const estimatedAnalysisTime = 35;
 
   if (!!Collab) {
     window.awareness.setLocalStateField('BTAnalysis', {
@@ -347,7 +364,7 @@ function doChordBeatAnalysis(
   // 3) Logic behind animation of progress bar
   let targetProgress = 0;
   let currentProgress = 0;
-  const uploadPortion = 30;
+  const uploadPortion = 35;
   const analysisPortion = 99 - uploadPortion;
 
   let analysisTime = estimatedAnalysisTime;
@@ -373,8 +390,11 @@ function doChordBeatAnalysis(
         }
       }
 
-      if (currentProgress < 97) {
-        const resolution = analysisTime * 10;
+      if (currentProgress < 99) {
+        // const resolution = analysisTime * 10;
+        // resolution: is used to control the granularity of the progress bar's update for the analysis portion
+        let resolution =
+          currentProgress > 94 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
         currentProgress += analysisPortion / resolution; // Increase progress
 
         switch (count) {
