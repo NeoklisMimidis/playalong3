@@ -1,4 +1,9 @@
-import { wavesurfer, playerStates, fileName } from '../audio-player.js';
+import {
+  wavesurfer,
+  playerStates,
+  fileName,
+  filesToDelete,
+} from '../audio-player.js';
 import { jamsFile } from './render-annotations.js';
 
 import {
@@ -643,3 +648,26 @@ function finalizeFileStorage(file, action, sfolder = null) {
   );
   ajax.send(fd);
 }
+
+// On progress
+window.addEventListener('beforeunload', function (event) {
+  // TODO Also add here logic for Collab. If collab & a user is still inside then just return otherwise execute
+
+  if (filesToDelete.length === 0) return;
+  // // Files you want to delete || imported from audio-player.js
+  // e.g. const filesToDelete = ['disco0.mp3', 'egoDeath2.jams'];
+
+  // Prepare data to send to the server
+  const formData = new FormData();
+  formData.append('files_to_delete', JSON.stringify(filesToDelete));
+
+  // Send a POST request to the PHP script
+  fetch(
+    'https://musicolab.hmu.gr/apprepository/deleteTempAnalysisFilesPAT.php',
+    {
+      method: 'POST',
+      body: formData,
+      keepalive: true,
+    }
+  );
+});

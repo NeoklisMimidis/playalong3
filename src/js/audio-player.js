@@ -129,6 +129,8 @@ window.bTrackDATA = '';
 
 window.audioExistsInRepo = false;
 
+export let filesToDelete = [];
+
 // - Start of the application ||
 
 toggleAudioInOutSidebarControls();
@@ -318,8 +320,17 @@ function doChordBeatAnalysis(
           });
         }
       }
-      audioExistsInRepo = 'jams';
 
+      // Extracts the JSON portion from the server's response.
+      // This is a workaround for the server returning JSON wrapped in HTML.
+      const jsonStart = ajax.responseText.indexOf('{');
+      const jsonEnd = ajax.responseText.lastIndexOf('}') + 1;
+      const jsonString = ajax.responseText.substring(jsonStart, jsonEnd);
+      const serverResponse = JSON.parse(jsonString);
+      filesToDelete.push(...serverResponse.filename);
+      console.log('filesToDelete:', filesToDelete);
+
+      audioExistsInRepo = 'jams';
       animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
     } else if (ajax.readyState === 4 && ajax.status !== 200) {
       console.log('Error: ' + ajax.status);
