@@ -235,7 +235,8 @@ aria-hidden="true"
         </table>
       </div>
 
-      <div class="d-flex justify-content-end">
+      <div class="d-flex justify-content-end" style="
+      padding-right: 150px;" >
         <button
           id="cancel-btn"
           class="btn btn-light btn-lg mx-3"
@@ -444,7 +445,8 @@ aria-hidden="true"
         </table>
       </div>
 
-      <div class="d-flex justify-content-end">
+      <div class="d-flex justify-content-end" style="
+      padding-right: 150px;" >
         <button
           id="cancel-btn"
           class="btn btn-light btn-lg mx-3"

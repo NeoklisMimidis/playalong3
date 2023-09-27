@@ -187,9 +187,9 @@ const urlFileName = urlParams.get('f');
 
 if (window.location.hostname === 'localhost') {
   // A) Localhost (preload audio):
-  // resetAudioPlayer();
+  resetAudioPlayer();
   // loadFilesInOrder(audioFileURL1);
-  loadFilesInOrder(audioFileURL1, annotationFile1);
+  // loadFilesInOrder(audioFileURL1, annotationFile1);
 } else if (
   window.location.hostname === 'musicolab.hmu.gr' &&
   urlFileName !== null
@@ -443,7 +443,7 @@ function initWavesurfer() {
     barWidth: 2,
     normalize: true,
 
-    // height: 128, // (default==128)
+    height: 128, // (default==128)
     // cursorColor: '#9e7215',
     // hideScrollbar: true,
 
