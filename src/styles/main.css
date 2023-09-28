@@ -832,7 +832,8 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   border-bottom-right-radius: 10px;
 }
 
-#audio-sidebar-text :hover {
+#audio-sidebar-text:hover,
+#audio-sidebar-controls:hover ~ #audio-sidebar-text {
   color: var(--color-highlight--2);
 }
 
@@ -1221,7 +1222,7 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 #preCountModal {
   position: absolute;
   left: 50%;
-  transform: translate(-50%, -20%);
+  transform: translate(-50%, -6%);
   text-align: center;
   user-select: none;
   border-radius: 15px;

@@ -82,7 +82,9 @@ if (collabParam === 'true' && courseParam !== null) {
   Collab = true;
 }
 if (!Collab)
-  document.querySelector('.users-online-container').setAttribute('hidden', true);
+  document
+    .querySelector('.users-online-container')
+    .setAttribute('hidden', true);
 
 var wavesurfers = []; // Array to hold all wavesurfers instances from recordings
 var recordedBlobs = []; // Array to hold all the recorded blobs
@@ -191,13 +193,7 @@ speedSliderElem?.addEventListener('change', () => {
 function startRecording() {
   //console.log("recordButton clicked");
   document.getElementById('speedSlider').disabled = true;
-  stopAllButton.setAttribute('hidden', 'true');
-  playPauseAllButton.setAttribute('hidden', 'true');
-  combineSelectedButton.hidden = true;
-  var playButtons = document.querySelectorAll('.play-button');
-  var playPauseButtons = document.querySelectorAll('.play-pause-button');
-  //console.log("click all play buttons")
-  //console.log("playButtons.length = ",playButtons.length);
+  hideUnhideElements(true);
 
   recordButton.disabled = true;
   recordButton.setAttribute('title', '');
@@ -347,7 +343,7 @@ function pauseRecording() {
 function stopRecording() {
   // stop metronome & hide pre count modal (& and check if preCountCanceled)
   preCountRecordingModal();
-  //alx pros Neokli: auto xreiazetai na ginetai collably?
+  //alx pros Neokli: auto xreiazetai na ginetai collably? // neoklis: oxi, apo thn stigmi poy stelnonte ta mute states douleyei automata san collab
   resetPlaybackVolume();
 
   console.log('stopButton clicked');
@@ -383,11 +379,8 @@ function stopRecording() {
 
   playPauseAllButton.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-  playPauseAllButton.hidden = false;
   playPauseAllButton.title = 'Play all';
-  stopAllButton.hidden = false;
 
-  combineSelectedButton.hidden = false;
   //reset button just in case the recording is stopped while paused
   pauseButton.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z" /></svg>';
@@ -408,21 +401,21 @@ function stopRecording() {
   console.log('disabled StopALl button');
   stopAllButton.setAttribute('title', '');
 
-  function actOnInvalidRecord () {
+  function actOnInvalidRecord() {
     !!Collab
-    ? window.awareness.setLocalStateField('record', {
-        status: 'stop',
-        recUserData: { id: idParam, name: userParam },
-        isValid: false
-      })
-    : null;
+      ? window.awareness.setLocalStateField('record', {
+          status: 'stop',
+          recUserData: { id: idParam, name: userParam },
+          isValid: false,
+        })
+      : null;
 
     if (count == 1) {
       //if no other recording --> rehide not needed buttons...
       const initialButtons = [
         'recordButton',
         'start-close-call-btn',
-        'metronome-btn'
+        'metronome-btn',
       ];
 
       [...document.getElementById('controls').children]
@@ -437,26 +430,27 @@ function stopRecording() {
   if (preCountCanceled) {
     actOnInvalidRecord();
     return;
-  }  
-    
+  }
+
   // console.log('Number of recordings = ', noRecordings);
 
   //get the raw PCM audio data as an array of float32 numbers
   rec.getBuffer(function (buffer) {
     const data = Array.from(buffer[0]);
     //discriminating cases depending on whether there was a recording larger than 0.5s or not
-    if (data.length > sampleRate) {//case 'rec>1s': save and possibly share recording
+    if (data.length > sampleRate) {
+      //case 'rec>1s': save and possibly share recording
       noRecordings++;
       recordedBuffers.push(buffer); //push the buffer to an array
       //console.log("recordedBuffers = ", recordedBuffers);
 
       !!Collab
-      ? window.awareness.setLocalStateField('record', {
-          status: 'stop',
-          recUserData: { id: idParam, name: userParam },
-          isValid: true
-        })
-      : null;    
+        ? window.awareness.setLocalStateField('record', {
+            status: 'stop',
+            recUserData: { id: idParam, name: userParam },
+            isValid: true,
+          })
+        : null;
 
       if (!!Collab && window.sharedRecordedBlobs != null) {
         const obj = {
@@ -484,12 +478,14 @@ function stopRecording() {
       //recordedBuffers.forEach(buffer => {
       //	console.log("length",buffer.byteLength);
       //});
-
     } else {
       actOnInvalidRecord();
       return;
-    }    
+    }
   });
+
+  // a small time out
+  setTimeout(() => hideUnhideElements(false), 250);
 }
 // end recording section ///////////////////////////////////////////////////////
 
@@ -599,13 +595,19 @@ function createRecordingTemplate(recUserData) {
 }
 
 function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
-  if (!window.confirm('This track will be moved and replace backing track for everyone. Are you sure?')) {
+  if (
+    !window.confirm(
+      'This track will be moved and replace backing track for everyone. Are you sure?'
+    )
+  ) {
     return;
   }
   //find the recording in the shared object based on its collabId
   const collabId = scrollContainer.dataset.collabId;
   if (!collabId) {
-    console.error("could not find collabId for scrollContainer of id: " + scrollContainer.id);
+    console.error(
+      'could not find collabId for scrollContainer of id: ' + scrollContainer.id
+    );
     return;
   }
 
@@ -619,7 +621,7 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
 
   if (index !== -1) {
     // Load this track on backingTrack wavesurfer (window.backingTrack)
-    const data = window.sharedRecordedBlobs.get(index).get("data");
+    const data = window.sharedRecordedBlobs.get(index).get('data');
     if (data?.length > 1) {
       const src = Float32Array.from(data);
       const blob = recordingToBlob(src);
@@ -631,18 +633,21 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
         // Set new key to this collabId and undo others
         window.ydoc.transact(() => {
           //fire events that set this rec as BT in collaborators
-          window.playerConfig.set('backingTrackRecording', {id: collabId, sharer: userParam});
+          window.playerConfig.set('backingTrackRecording', {
+            id: collabId,
+            sharer: userParam,
+          });
           //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
           window.playerConfig.delete('backingTrack');
           window.playerConfig.delete('backingTrackRepository');
           //fire events that delete the recording used as backing track in collaborators
-          window.deletedSharedRecordedBlobIds.push([ collabId ]);
+          window.deletedSharedRecordedBlobIds.push([collabId]);
         });
         //delete recording used as backing track
-        deleteWaveForm(); 
+        deleteWaveForm();
         removeFileURLParam();
       } catch (err) {
-        console.error("Failed to load blob as backing track", { blob, err });
+        console.error('Failed to load blob as backing track', { blob, err });
       }
     }
   }
@@ -656,7 +661,9 @@ function fillRecordingTemplate(
 ) {
   const scrollContainer = document.getElementById(`scrollContainer${count}`);
   if (!scrollContainer) {
-    console.error("Could not find scrollContainer of id: scrollContainer" + count);
+    console.error(
+      'Could not find scrollContainer of id: scrollContainer' + count
+    );
     return;
   }
   scrollContainer.dataset.collabId = id;
@@ -938,11 +945,15 @@ function fillRecordingTemplate(
     buttonContainer.parentNode.removeChild(buttonContainer);
     outmostContainer.remove();
     var muteButtons = document.querySelectorAll('.mute-button');
-    if (muteButtons.length == 0){document.getElementById('recordings_headline').hidden = true;}
+    if (muteButtons.length == 0) {
+      document.getElementById('recordings_headline').hidden = true;
+    }
+
+    setTimeout(() => hideUnhideElements(), 250);
   }
 
   function deleteHandler(event) {
-    deleteWaveForm(); 
+    deleteWaveForm();
     if (!!Collab && event.currentTarget.dataset.collabId) {
       let indexToUpdate = -1;
       for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
@@ -1296,11 +1307,11 @@ function createDownloadLink(
   function backingButtonHandler() {
     btrack = true;
     deleteButton.click();
-  };
+  }
 
   function backingButtonHandlerCollab() {
     useAsBackingTrackCollab(scrollContainer, deleteWaveForm);
-  };
+  }
 
   //create use_as_backing_track buttons
   var backingButton = document.createElement('button');
@@ -1308,7 +1319,10 @@ function createDownloadLink(
     '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M151.6 42.4C145.5 35.8 137 32 128 32s-17.5 3.8-23.6 10.4l-88 96c-11.9 13-11.1 33.3 2 45.2s33.3 11.1 45.2-2L96 146.3V448c0 17.7 14.3 32 32 32s32-14.3 32-32V146.3l32.4 35.4c11.9 13 32.2 13.9 45.2 2s13.9-32.2 2-45.2l-88-96zM320 480h32c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32z"/></svg>';
   backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button';
   backingButton.setAttribute('title', 'Use as backing track');
-  backingButton.addEventListener('click', Collab ? backingButtonHandlerCollab : backingButtonHandler);
+  backingButton.addEventListener(
+    'click',
+    Collab ? backingButtonHandlerCollab : backingButtonHandler
+  );
   buttonContainer.appendChild(backingButton);
 
   function deleteWaveForm() {
@@ -1327,14 +1341,29 @@ function createDownloadLink(
     console.log('deleting recording #' + deleteIndex, 'was clicked');
     recordedBuffers[deleteIndex - 1][0] = [0];
     console.log('recordedBuffers', recordedBuffers);
-    wavesurfers.splice(deleteIndex - 1, 1);
+
+    // BUG: wavesurfers deletion logic is not correct! needs fixing || TODO || can lead to bugs e.g. in setPlaybackVolume()
+    // console.log(`🚀: - deleteWaveForm bef- wavesurfers:`, wavesurfers);
+    // console.log(`🚀: - deleteWaveForm - deleteIndex:`, deleteIndex);
+    const deletedElements = wavesurfers.splice(deleteIndex - 1, 1);
+    // if (deletedElements.length === 0) {
+    //   alert('No element was deleted!');
+    // }
+    // console.log(`🚀: - deleteWaveForm aft- wavesurfers:`, wavesurfers);
+    // console.log(`🚀: - deleteWaveForm - deleteIndex:`, deleteIndex);
+
     console.log('wavesurfers', wavesurfers);
+
     scrollContainer.parentNode.removeChild(scrollContainer);
     timelineContainer.parentNode.removeChild(timelineContainer);
     buttonContainer.parentNode.removeChild(buttonContainer);
     outmostContainer.remove();
     var muteButtons = document.querySelectorAll('.mute-button');
-    if (muteButtons.length == 0){document.getElementById('recordings_headline').hidden = true;}
+    if (muteButtons.length == 0) {
+      document.getElementById('recordings_headline').hidden = true;
+    }
+
+    setTimeout(() => hideUnhideElements(), 250);
   }
 
   function deleteHandler(event) {
@@ -1381,10 +1410,9 @@ function createDownloadLink(
   }
   deleteButton.dataset.collabId = id;
   deleteButton.addEventListener('click', function (event) {
-    
     var info_message = btrack
-    //TODO. alx. 'for everyone' sta strings apo katw. ara otan kapoios doulevei non collab, tha sindeetai sto course kai tha tropopoiei douleia pou egine collaboratively? kai ara to istoriko sto course tha menei?
-      ? 'This track will be moved and replace backing track for everyone. Are you sure?'
+      ? //TODO. alx. 'for everyone' sta strings apo katw. ara otan kapoios doulevei non collab, tha sindeetai sto course kai tha tropopoiei douleia pou egine collaboratively? kai ara to istoriko sto course tha menei?
+        'This track will be moved and replace backing track for everyone. Are you sure?'
       : 'This track will be removed for everyone. Are you sure you want to delete it?';
     // prettier-ignore
     if (window.confirm(info_message)) {
@@ -1523,7 +1551,6 @@ function combineSelected() {
     }
   }
 
-
   mixAudioBuffers(selectedBuffers, sampleRates);
 }
 
@@ -1538,7 +1565,7 @@ function extractMonoBackingTrackArrayBuffer(input) {
   return track.getChannelData(0);
 }
 
-function convertStereoToMono (stereoaudiobuffer) {
+function convertStereoToMono(stereoaudiobuffer) {
   const channel1 = stereoaudiobuffer.getChannelData(0);
   const channel2 = stereoaudiobuffer.getChannelData(1);
   var monoChannel = new Float32Array(channel1.length); // Create a new mono channel
@@ -1547,11 +1574,16 @@ function convertStereoToMono (stereoaudiobuffer) {
     monoChannel[i] = (channel1[i] + channel2[i]) / 2;
   }
   // Create a new mono audio buffer
-  const audioContext2 = new (window.AudioContext || window.webkitAudioContext)();
+  const audioContext2 = new (window.AudioContext ||
+    window.webkitAudioContext)();
   //const audioContext2 = new AudioContext({sampleRate: stereoaudiobuffer.backend.buffer.sampleRate,});
-  const monoAudioBuffer = audioContext2.createBuffer(1, monoChannel.length, stereoaudiobuffer.sampleRate);
+  const monoAudioBuffer = audioContext2.createBuffer(
+    1,
+    monoChannel.length,
+    stereoaudiobuffer.sampleRate
+  );
   monoAudioBuffer.copyToChannel(monoChannel, 0); // Copy the mono channel to the new buffer
-  console.log ("monoAudioBuffer from stereo backing track =",monoAudioBuffer);
+  console.log('monoAudioBuffer from stereo backing track =', monoAudioBuffer);
   audioContext2.close();
   return monoAudioBuffer;
 }
@@ -1592,7 +1624,7 @@ function mixAudioBuffers(buffers, sampleRates = []) {
       maxRecLenth = length;
     }
   }
-  console.log("maximum length of selected recordings = ",maxRecLenth);
+  console.log('maximum length of selected recordings = ', maxRecLenth);
   console.log('sampleRates', sampleRates);
   //console.log("mixAudioBuffers started");
   //console.log("buffers[0][0][4000] =", buffers[0][0][4000]);
@@ -1829,6 +1861,7 @@ function speedSliderEnableCheck() {
   }
 }
 
+// used in playalong\collab
 function showHiddenButtons() {
   playPauseAllButton.hidden = false;
   playPauseAllButton.setAttribute('title', 'Play all');
@@ -2034,4 +2067,26 @@ function resetStopAllButton() {
   }
 
   // console.log('At least one source of audio is still playing:', audioIsPLaying);
+}
+
+function hideUnhideElements(recording) {
+  const muteButtons = document.querySelectorAll('.mute-button');
+  let count = muteButtons.length;
+
+  if (backingTrack.isReady) count++;
+
+  const isHidden = recording || count < 2;
+
+  stopAllButton.hidden = isHidden;
+  playPauseAllButton.hidden = isHidden;
+  combineSelectedButton.hidden = isHidden;
+
+  const pSpeedCont = document.getElementById('playback-speed-container');
+  pSpeedCont.hidden = count <= 0;
+
+  return `total count is ${count}. Where ${
+    backingTrack.isReady
+      ? 'one is the backing track!'
+      : 'none is the backing track!'
+  }`;
 }

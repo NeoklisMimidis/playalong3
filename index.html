@@ -350,14 +350,8 @@
     </div>
 
     <center>
-      <h1>Play along</h1>
-      <!-- <h3>
-        <font>Play along</font>
-        <font color="red"> (use headphones while recording)</font>
-      </h3> -->
-      <div hidden id="waveform_mic">
-        <!--Here will appear microphone input animation when recording-->
-      </div>
+      <h1>Play-along Together</h1>
+
       <div id="controls">
         <button id="start-close-call-btn" class="btn btn-lg">
           <svg
@@ -633,7 +627,11 @@
           </div>
         </button>
 
-        <div style="margin-top: -5px; margin-bottom: 5px">
+        <div
+          id="playback-speed-container"
+          style="margin-top: -5px; margin-bottom: 5px"
+          hidden
+        >
           <span
             id="playback_speed"
             style="padding-left: 30px; padding-right: 15px"
@@ -1321,16 +1319,18 @@
       <!-- 🎶🎶❗❗❗❗🎶🎶 -->
       <!-- 🎶🎶🎶🎶🎶🎶🎶 -->
       <!-- 🎶🎶🎶🎶🎶🎶🎶 -->
+    </center>
 
-      <div>
-        <!-- <p></p>
-        <div id="formats">Format: start recording to see sample rate</div> -->
-        <p></p>
+    <div style="display: flex; margin-top: 20px">
+      <div style="flex: 0.21; justify-content: center; display: flex">
         <p hidden id="recordings_headline"><strong>Recordings:</strong></p>
-        <p></p>
         <ol id="recordingsList"></ol>
       </div>
-    </center>
+
+      <div hidden id="waveform_mic" style="flex: 0.6">
+        <!--Here will appear microphone input animation when recording-->
+      </div>
+    </div>
 
     <div class="btn-group dropup users-online-container">
       <button

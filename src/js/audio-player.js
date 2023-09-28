@@ -604,6 +604,7 @@ function loadAudioFile(input, res = false) {
       activateAudioPlayerControls();
 
       btrack = false;
+      hideUnhideElements(); // this is for playAll, stopAll mix from app.js
     });
     /* TODO. alx. isws volevei. an einai na xrismiopoioithei, kai i loadAudioFIle na trexei kai
     // ston loader kai stous collaborators, prepei na mpei ena flag isLoader gia na energopoieitai o sharing
