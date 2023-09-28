@@ -248,6 +248,7 @@ async function loadAudioTrack(fileName, type) {
       window.playerConfig?.set('backingTrackRepository', {
         fileName,
         repositoryType: type,
+        courseId: type === 'course' ? sessionStorage.getItem("courseId") : null,
         privateInfo:
           type == 'private' ? { name: userParam, id: idParam } : null,
         sharer: userParam,
