@@ -1,4 +1,5 @@
 const REPOSITORY_TRACKS = {
+  courseId: 3,
   public: [
     { filenameShort: '6_Light_jazz.mp3' },
     { filenameShort: 'All the things you are.mp3' },
@@ -69,6 +70,8 @@ async function initRepositoryTrackList(courseParam, collabParam) {
     );
     const data = await res.json();
 
+    sessionStorage.setItem("courseId", data.courseId ?? null);
+
     let treeData = tracksToTreeView(data);
     createTreeView(treeData);
   } catch (err) {
@@ -119,7 +122,9 @@ function tracksToTreeView(tracks) {
     return { ...prev, [key]: tracks[key]?.length ?? 0 };
   }, {});
 
-  return Object.entries(tracks).map(([type, files]) => {
+  return Object.entries(tracks)
+    .filter(([key, _]) => ['private', 'course', 'public'].includes(key))
+    .map(([type, files]) => {
     return {
       text: `<span>${type}</span><span class="ml-2 badge badge-primary">${sizes[type]}</span>`,
       selectable: sizes[type] > 0,
@@ -221,8 +226,11 @@ async function loadAudioTrack(fileName, type) {
     if (type === 'private') {
       reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}&user=${userParam}&u=${idParam}`;
     } else if (type === 'course') {
-      // TODO: Handle course files
-      throw new Error('Files of type course are not currently supported');
+      let courseId = sessionStorage.getItem("courseId");
+      if (courseId === null) {
+        throw new Error(`Failed to find "courseId" in sessionStorage`);
+      }
+      reqUrl = `https://musicolab.hmu.gr/apprepository/downloadCourseFile.php?fileid=${courseId}&u=${idParam}&f=${fileName}&user=${userParam}`;
     }
 
     const res = await fetch(reqUrl, { signal: abortController.signal });
@@ -240,6 +248,7 @@ async function loadAudioTrack(fileName, type) {
       window.playerConfig?.set('backingTrackRepository', {
         fileName,
         repositoryType: type,
+        courseId: type === 'course' ? sessionStorage.getItem("courseId") : null,
         privateInfo:
           type == 'private' ? { name: userParam, id: idParam } : null,
         sharer: userParam,

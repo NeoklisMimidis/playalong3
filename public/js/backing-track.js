@@ -133,7 +133,7 @@ function setBackingTrackFileRemote(fileInfo) {
 async function setBackingTrackRepositoryRemote(fileInfo) {
   $('#repository-files-modal').modal('hide');
 
-  const {fileName, privateInfo, repositoryType, sharer} = fileInfo;
+  const {fileName, privateInfo, repositoryType, sharer, courseId } = fileInfo;
 
   if (!fileName || fileName.length === 0) {
     console.warn(
@@ -150,8 +150,7 @@ async function setBackingTrackRepositoryRemote(fileInfo) {
   if (repositoryType === 'private') {
     reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}&user=${privateInfo.name}&u=${privateInfo.id}`;
   } else if (repositoryType === 'course') {
-    // TODO: Handle course files
-    throw new Error('Files of type course are not currently supported');
+    reqUrl = `https://musicolab.hmu.gr/apprepository/downloadCourseFile.php?fileid=${courseId}&u=${idParam}&f=${fileName}&user=${userParam}`;
   }
 
   window.resetAudioPlayer();
