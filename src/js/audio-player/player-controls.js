@@ -649,7 +649,7 @@ function finalizeFileStorage(file, action, sfolder = null) {
   ajax.send(fd);
 }
 
-// On progress
+// On progress. ALX
 window.addEventListener('beforeunload', function (event) {
   // TODO Also add here logic for Collab. If collab & a user is still inside then just return otherwise execute
 
