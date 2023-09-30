@@ -80,7 +80,7 @@ export function loadJAMS(input) {
 
     console.log('Loading JAMS has been successfully completed! ✌️');
 
-    // Save to local storage, which is designed to store data in its original format
+    // Save to local storage, which is designed to store data in its original format.ALX
     localStorage.setItem(fileName, JSON.stringify(jamsFile));
 
     return annotatedChordsAtBeatsData;

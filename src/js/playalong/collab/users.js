@@ -23,7 +23,7 @@ export const userData = {
 
 export function setUserImageUrl(id = idParam) {
   const path = id
-    ? `moodle/user/pix.php/${id}/f1.jpg`
+    ? `lms/user/pix.php/${id}/f1.jpg`
     : "apprepository/playalong-collab/defaultUser.svg";
   return new URL(path, `https://musicolab.hmu.gr`).toString();
 }

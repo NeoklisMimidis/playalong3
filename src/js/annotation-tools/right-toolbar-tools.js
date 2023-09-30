@@ -680,3 +680,67 @@ function _mapChordSymbolToText(encodedChord) {
 
   return mirLabel;
 }
+
+function exportFileToRepository(file, exportLocation) {
+  const content = getAceEditor()?.session.getValue();
+  if (content === undefined || content.length === 0) {
+    console.error('Failed to export empty Kern content');
+    return;
+  }
+
+  const { file: filenameFromURL } = getURLInfo();
+  let scoreName = filenameFromURL;
+  const scoreMeta = sessionStorage.getItem('score-metadata');
+  if (scoreMeta === null) {
+    console.warn(
+      'Could not find metadata for this score. Using URL filename as title.'
+    );
+  } else {
+    scoreName = JSON.parse(scoreMeta).title + '.krn';
+    // scoreName = title.split(' ').join('_') + '.krn';
+  }
+
+  let firstTry = true;
+  let nameFromPrompt = '';
+  while (nameFromPrompt !== null && !nameFromPrompt.endsWith('.krn')) {
+    if (firstTry) {
+      nameFromPrompt = window.prompt(
+        'Enter a name for your private file (must have a .krn extension)',
+        scoreName
+      );
+      firstTry = false;
+    } else {
+      nameFromPrompt = window.prompt(
+        'The name you provided was not correct.\nEnter a new name for your private file (must have a .krn extension)',
+        nameFromPrompt + '.krn'
+      );
+    }
+  }
+
+  if (nameFromPrompt === null) {
+    console.warn(
+      'Prompt was cancelled or a valid file name was not provided. Skipping file exporting'
+    );
+    return;
+  }
+
+  let fd = new FormData();
+  fd.append('f', file);
+  fd.append('action', 'upload');
+  fd.append('ufolder', exportLocation);
+
+  const ajax = new XMLHttpRequest();
+  ajax.addEventListener('load', () => {
+    alert(`File has been exported to your ${exportLocation} files!`);
+  });
+  ajax.addEventListener('error', () => {
+    alert(`Failed to export file to your ${exportLocation} files`);
+  });
+
+  ajax.open(
+    'POST',
+    'https://musicolab.hmu.gr/apprepository/uploadFileResAjax.php',
+    true
+  );
+  ajax.send(fd);
+}
