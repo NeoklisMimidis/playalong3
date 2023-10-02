@@ -129,7 +129,7 @@ window.bTrackDATA = '';
 
 window.audioExistsInRepo = false;
 
-export let filesToDelete = [];//ALX
+export let filesToDelete = []; //ALX
 
 // - Start of the application ||
 
@@ -259,8 +259,8 @@ function sendAudioAndFetchAnalysis() {
    * @returns {number} The estimated analysis time in seconds.
    */
   function estimateAnalysisTime(audioDuration) {
-    const slope = 0.1543;
-    const intercept = 2.113; // Actual bias is 6.113 but let also utilize that progress bar stops when almost complete
+    const slope = 0.1743; // Actual slope is 0.1543
+    const intercept = 8.113; // Actual bias is 6.113
 
     return slope * audioDuration + intercept;
   }
@@ -390,11 +390,11 @@ function doChordBeatAnalysis(
         }
       }
 
-      if (currentProgress < 99) {
+      if (currentProgress < 98.5) {
         // const resolution = analysisTime * 10;
         // resolution: is used to control the granularity of the progress bar's update for the analysis portion
         let resolution =
-          currentProgress > 94 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
+          currentProgress > 90 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
         currentProgress += analysisPortion / resolution; // Increase progress
 
         switch (count) {
