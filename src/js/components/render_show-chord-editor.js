@@ -222,9 +222,9 @@ aria-hidden="true"
               <td class="variation">s</td>
               <td class="variation">K</td>
 
-              <td class="variation">t</td>
-              <td class="variation">N</td>
               <td class="variation">P</td>
+              <td class="variation">N</td>
+              <td class="variation">t</td>
 
               <td class="variation">I</td>
               <td class="variation">0</td>
@@ -432,9 +432,9 @@ aria-hidden="true"
               <td class="variation">s</td>
               <td class="variation">K</td>
 
-              <td class="variation">t</td>
-              <td class="variation">N</td>
               <td class="variation">P</td>
+              <td class="variation">N</td>
+              <td class="variation">t</td>
 
               <td class="variation">I</td>
               <td class="variation">0</td>

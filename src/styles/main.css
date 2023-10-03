@@ -696,13 +696,31 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 /* // - */
 .span-chord-symbol {
   justify-content: flex-start;
-  transform: translate(5px, 5px);
+  transform: translate(8px, 5px);
   white-space: nowrap;
   height: 2rem;
-  border-radius: 0.3em;
+  border-radius: 0.55em;
   box-shadow: 2px 2px 0px var(--color-dark--4);
   color: var(--theme-color5);
   background-color: var(--theme-color6);
+  padding: 4px;
+}
+
+.span-chord-symbol > * {
+  position: relative;
+  top: -16px;
+  left: 2px;
+}
+
+/* GJT fonts used in waveform marker labels */
+.span-chord-symbol .root {
+  font-size: 36px;
+}
+.span-chord-symbol .accidental {
+  font-size: 28px;
+}
+.span-chord-symbol .variation {
+  font-size: 28px;
 }
 
 .span-chord-highlight {
@@ -983,12 +1001,6 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   src: url('./Rootslashbarsrepeats-Regular.otf');
   font-style: normal;
   font-weight: 400;
-}
-
-/* .svg-font is used for fonts in waveform marker labels */
-.svg-font {
-  font-family: SVG_fonts !important;
-  font-size: 25px !important;
 }
 
 .root {

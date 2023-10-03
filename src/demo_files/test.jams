@@ -211,7 +211,7 @@
         {
           "time": 16,
           "duration": 0.5,
-          "value": "A:sus4(7b,13)",
+          "value": "A:sus4(b7,13)",
           "confidence": null
         },
         {
@@ -253,7 +253,7 @@
         {
           "time": 19.5,
           "duration": 0.5,
-          "value": "A:7(b5,b9)",
+          "value": "A:7(b9,b5)",
           "confidence": null
         },
         {
@@ -265,13 +265,13 @@
         {
           "time": 20.5,
           "duration": 0.5,
-          "value": "A:7(b5,#9)",
+          "value": "A:7(#9,b5)",
           "confidence": null
         },
         {
           "time": 21,
           "duration": 0.5,
-          "value": "A:7(#5,#9)",
+          "value": "A:7(#9,#5)",
           "confidence": null
         },
         {
@@ -337,7 +337,7 @@
         {
           "time": 26.5,
           "duration": 0.5,
-          "value": "A:min#5",
+          "value": "A:min(#5)",
           "confidence": null
         },
         {
@@ -498,13 +498,13 @@
         {
           "time": 4,
           "duration": 0.4,
-          "value": "Fb:maj",
+          "value": "E#:maj",
           "confidence": null
         },
         {
           "time": 4.4,
           "duration": 0.4,
-          "value": "E#:maj",
+          "value": "Fb:maj",
           "confidence": null
         },
         {
@@ -611,19 +611,19 @@
         {
           "time": 2.8925566556572,
           "duration": 1.669,
-          "value": "D:maj",
+          "value": "D:7(b9,b5)/5",
           "confidence": null
         },
         {
           "time": 4.561424737662642,
           "duration": 1.563,
-          "value": "E:maj",
+          "value": "E:minmaj7/6",
           "confidence": null
         },
         {
           "time": 6.124332941445515,
           "duration": 1.788,
-          "value": "F:maj",
+          "value": "F:hdim7(b9)/b7",
           "confidence": null
         },
         {

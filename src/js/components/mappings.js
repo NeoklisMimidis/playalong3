@@ -1,15 +1,18 @@
 /**
+ * Variations Array of Chord Types
  *
- * Chord mapping that contains variations of 65 Shorthands & 2 Special cases (67 total)
+ * This array maps chord shorthand notation to various other forms, such as a simplified version, full description, and encoded font representation.
+ * The chord shorthands are based on Christopher Harte's format used in MIREX and the analyzed JAMS file.
  *
- * SVG_fonts.otf (fonts file)
+ * The array contains a total of 67 chord type objects. These include 62 cases from the fonts file and an additional 5 cases (N, X, maj, sus2, sus4).
  *
- * Mapping between encoding font format & shorthand or accidental
- *  -1st column is encoded (font) chord symbols
- *  -2nd is MIREX chord shorthands
+ * Fields:
+ * - `shorthand`: The chord type in shorthand notation (e.g., "N", "maj9").
+ * - `simplified`: A simplified or commonly used abbreviation for the chord type. This form is often used as a tooltip label in edit mode.
+ * - `description`: The full name description of the chord type, which is also used for tooltips.
+ * - `encoded`: The encoded representation of the chord type using a specific font format from SVG_fonts.otf.
  *
  */
-
 export const variations = [
   {
     shorthand: 'N',
@@ -100,7 +103,7 @@ export const variations = [
   {
     shorthand: 'dim',
     simplified: 'dim',
-    description: 'Diminished',
+    description: 'Diminished triad',
     encoded: '&gt;', // unicode equivalent '>'
   },
   {
@@ -133,25 +136,25 @@ export const variations = [
   {
     shorthand: '7',
     simplified: 'dom7',
-    description: 'Dominant seventh',
+    description: 'Seventh',
     encoded: '7',
   },
   {
     shorthand: '9',
     simplified: 'dom9',
-    description: 'Dominant ninth',
+    description: 'Ninth',
     encoded: '9',
   },
   {
     shorthand: '9(11)',
     simplified: 'dom11',
-    description: 'Dominant eleventh',
+    description: 'Eleventh',
     encoded: 'Q',
   },
   {
     shorthand: '9(11,13)',
     simplified: 'dom13',
-    description: 'Dominant thirteenth',
+    description: 'Thirteenth',
     encoded: 'U',
   },
 
@@ -194,7 +197,7 @@ export const variations = [
   {
     shorthand: 'min(9)',
     simplified: 'm(add9)',
-    description: 'Minor add ninth',
+    description: 'Minor added ninth',
     encoded: '%',
   },
 
@@ -211,28 +214,27 @@ export const variations = [
     encoded: `4<text id="disable-font-label">4</text>`,
   },
   {
-    shorthand: 'sus4(7b,13)',
+    shorthand: 'sus4(b7,13)',
     simplified: '7sus4(add13)',
-    description: 'Suspended seventh added thirteenth',
+    description: 'Seventh suspended added thirteenth',
     encoded: 'H',
   },
   {
     shorthand: 'sus4(b7)',
     simplified: '7sus4',
-    description: 'Dominant seventh suspended fourth',
+    description: 'Seventh suspended fourth',
     encoded: '[',
   },
-  // FIXME
   {
     shorthand: 'sus4(b7,9)',
     simplified: '9sus4',
-    description: 'Dominant ninth suspended fourth',
+    description: 'Ninth suspended fourth',
     encoded: ']',
   },
   {
     shorthand: 'sus4(b7,9,13)',
     simplified: '13sus4',
-    description: 'Dominant thirteenth suspended fourth',
+    description: 'Thirteenth suspended fourth',
     encoded: '&lt;', // unicode equivalent '<'
   },
 
@@ -257,8 +259,8 @@ export const variations = [
     encoded: 'q',
   },
   {
-    shorthand: '7(b5,b9)',
-    simplified: '7b5b9',
+    shorthand: '7(b9,b5)',
+    simplified: '7b9b5',
     description: 'Seventh flat fifth flat ninth',
     encoded: 'L',
   },
@@ -269,14 +271,14 @@ export const variations = [
     encoded: 'J',
   },
   {
-    shorthand: '7(b5,#9)',
-    simplified: '7b5#9',
+    shorthand: '7(#9,b5)',
+    simplified: '7#9b5',
     description: 'Seventh flat fifth sharp ninth',
     encoded: 'O',
   },
   {
-    shorthand: '7(#5,#9)',
-    simplified: '7',
+    shorthand: '7(#9,#5)',
+    simplified: '7#9#5',
     description: 'Seventh sharp fifth sharp ninth',
     encoded: 'M',
   },
@@ -295,14 +297,14 @@ export const variations = [
   {
     shorthand: '7(b9,#9)',
     simplified: '7b9#9',
-    description: 'Seventh sharp ninth flat ninth',
+    description: 'Seventh flat ninth sharp ninth',
     encoded: 'K',
   },
   {
-    shorthand: '7(#11)',
-    simplified: '7#11',
-    description: 'Seventh sharp eleventh',
-    encoded: 't',
+    shorthand: '7(b9,#11)',
+    simplified: '7b9#11',
+    description: 'Seventh flat ninth sharp eleventh',
+    encoded: 'P',
   },
   {
     shorthand: '7(#9,#11)',
@@ -310,11 +312,12 @@ export const variations = [
     description: 'Seventh sharp ninth sharp eleventh',
     encoded: 'N',
   },
+
   {
-    shorthand: '7(b9,#11)',
-    simplified: '7b9#11',
-    description: 'Seventh flat ninth sharp eleventh',
-    encoded: 'P',
+    shorthand: '7(#11)',
+    simplified: '7#11',
+    description: 'Seventh sharp eleventh',
+    encoded: 't',
   },
   {
     shorthand: '7(b9,b13)',
@@ -344,7 +347,7 @@ export const variations = [
     encoded: '5',
   },
   {
-    shorthand: 'min#5',
+    shorthand: 'min(#5)',
     simplified: 'm#5',
     description: 'Minor sharp fifth',
     encoded: 'V',
@@ -352,13 +355,13 @@ export const variations = [
   {
     shorthand: 'sus4(b9)',
     simplified: '7susb9',
-    description: 'Dominant seventh suspended flat ninth',
+    description: 'Seventh suspended flat ninth',
     encoded: 'v',
   },
   {
     shorthand: 'sus4(b13)',
     simplified: '7susb13',
-    description: 'Dominant seventh suspended flat thirteenth',
+    description: 'Seventh suspended flat thirteenth',
     encoded: 'w',
   },
   {
@@ -375,57 +378,57 @@ export const variations = [
   },
   {
     shorthand: 'maj7(#11)',
-    simplified: 'M7(#11)',
+    simplified: 'M7#11',
     description: 'Major seventh sharp eleventh',
     encoded: 'x',
   },
   {
     shorthand: 'maj9(#11)',
-    simplified: 'M9(#11)',
+    simplified: 'M9#11',
     description: 'Major ninth sharp eleventh',
     encoded: 'y',
   },
   {
     shorthand: '9(b5)',
     simplified: '9b5',
-    description: 'Dominant ninth flat fifth',
+    description: 'Ninth flat fifth',
     encoded: 'T',
   },
   {
     shorthand: '9(#5)',
     simplified: '9#5',
-    description: 'Dominant ninth sharp fifth',
+    description: 'Ninth sharp fifth',
     encoded: 'n',
   },
   {
     shorthand: '9(#11)',
     simplified: '9#11',
-    description: 'Dominant ninth sharp eleventh',
+    description: 'Ninth sharp eleventh',
     encoded: 'r',
   },
 
   {
     shorthand: '9(11,b13)',
     simplified: '9b13',
-    description: 'Dominant ninth flat thirteenth',
+    description: 'Ninth flat thirteenth',
     encoded: '2',
   },
   {
     shorthand: 'b9(11,13)',
     simplified: '13b9',
-    description: 'Dominant thirteenth flat ninth',
+    description: 'Thirteenth flat ninth',
     encoded: 'u',
   },
   {
     shorthand: '#9(11,13)',
     simplified: '13#9',
-    description: 'Dominant thirteenth sharp ninth',
+    description: 'Thirteenth sharp ninth',
     encoded: 'o',
   },
   {
     shorthand: '9(#11,13)',
     simplified: '13#11',
-    description: 'Dominant thirteenth sharp eleventh',
+    description: 'Thirteenth sharp eleventh',
     encoded: 'l',
   },
 ];
