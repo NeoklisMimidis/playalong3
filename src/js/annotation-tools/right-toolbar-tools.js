@@ -587,8 +587,18 @@ function _updateChordVariable(selection, component) {
 
   // Checking conditions on trimmed like text with innerText & replace
   const selectedText = selection.innerText;
+
+  // Decodes HTML entities in a string and returns the decoded string (e.g. '>' is automatically converted to '&gt;' etc).
+  function decodeHtmlEntities(str) {
+    var textArea = document.createElement('textarea');
+    textArea.innerHTML = str;
+    return textArea.value;
+  }
+
   // this is still the previous selected variation
-  const trimmedPrevVariation = stripHtmlTags(chord.new.variation);
+  let trimmedPrevVariation = decodeHtmlEntities(
+    stripHtmlTags(chord.new.variation)
+  );
 
   // Condition to uncheck all other cases except 'N.C.' & '??'
   if (selectedText === '??' || selectedText === 'N.C.') {

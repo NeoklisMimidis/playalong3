@@ -241,7 +241,6 @@ export function addMarkerAtTime(
   const chordSymbolSpan = marker.el.querySelector('.marker-label span');
 
   // Adding classes to displayed spans, for easier manipulation of styles from CSS stylesheet
-  chordSymbolSpan.classList.add('svg-font'); //applying the genius jam tracks font
   chordSymbolSpan.classList.add('span-chord-symbol'); // add a class for easier manipulation from CSS stylesheet
 
   const [symbolLabel, symbolParts] = _mapChordTextToSymbol(chordParts);
@@ -451,7 +450,7 @@ function _mapChordTextToSymbol(chordParts) {
   const { rootNote, accidental, shorthand, bassNote } = chordParts;
 
   // 1)Displayed root is same as root from MIREX format
-  const displayedRootNote = `<strong>${rootNote}</strong>`;
+  const displayedRootNote = `<strong class='root'>${rootNote}</strong>`;
 
   // 2)Displayed accidental according to the font mapping
   let displayedAccidental;
@@ -459,7 +458,8 @@ function _mapChordTextToSymbol(chordParts) {
     mappingEl => mappingEl.simplified === accidental
   );
   if (matchingAccidental) {
-    displayedAccidental = matchingAccidental.encoded || '';
+    displayedAccidental =
+      `<strong class='accidental'>${matchingAccidental.encoded}</strong>` || '';
   }
 
   // 3)Displayed shorthand according to the font mapping
@@ -470,12 +470,14 @@ function _mapChordTextToSymbol(chordParts) {
   if (matchingShorthand) {
     // in the case of maj assign '' otherwise the encoded font
     displayedShorthand =
-      shorthand === 'maj' ? '' : matchingShorthand.encoded || '';
+      shorthand === 'maj'
+        ? ''
+        : `<text class='variation'>${matchingShorthand.encoded}</text>` || '';
   }
 
   // 4)Displayed bass note plus adding a forward slash in front
   const bassNoteWithSlash = bassNote !== '' ? '/' + bassNote : '';
-  const displayedBassNote = `<text id="disable-font-label">${bassNoteWithSlash}</text>`;
+  const displayedBassNote = `<text>${bassNoteWithSlash}</text>`;
 
   // ..and finally the encoded innerHTML for symbol display on top of markers
   const encodedFontSymbol = `${displayedRootNote}${displayedAccidental}${
@@ -485,13 +487,13 @@ function _mapChordTextToSymbol(chordParts) {
   // .. and the parts separate for other use cases
   const symbolParts = {
     root: rootNote,
-    accidental: accidental,
+    accidental: matchingAccidental.encoded,
     variation: matchingShorthand.encoded,
     inversion: bassNoteWithSlash,
 
     displayedRootNote: displayedRootNote,
     displayedAccidental: displayedAccidental,
-    displayedVariation: matchingShorthand.encoded,
+    displayedVariation: displayedShorthand,
     displayedInversion: displayedBassNote,
   };
 
