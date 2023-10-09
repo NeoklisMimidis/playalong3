@@ -70,7 +70,7 @@ async function initRepositoryTrackList(courseParam, collabParam) {
     );
     const data = await res.json();
 
-    sessionStorage.setItem("courseId", data.courseId ?? null);
+    sessionStorage.setItem('courseId', data.courseId ?? null);
 
     let treeData = tracksToTreeView(data);
     createTreeView(treeData);
@@ -125,19 +125,19 @@ function tracksToTreeView(tracks) {
   return Object.entries(tracks)
     .filter(([key, _]) => ['private', 'course', 'public'].includes(key))
     .map(([type, files]) => {
-    return {
-      text: `<span>${type}</span><span class="ml-2 badge badge-primary">${sizes[type]}</span>`,
-      selectable: sizes[type] > 0,
-      state: {
-        expanded: false,
-        disabled: typeDisabled(type),
-      },
-      nodes: files?.map(file => ({
-        text: file.filenameShort,
-        icon: 'fa fa-file',
-      })),
-    };
-  });
+      return {
+        text: `<span>${type}</span><span class="ml-2 badge badge-primary">${sizes[type]}</span>`,
+        selectable: sizes[type] > 0,
+        state: {
+          expanded: false,
+          disabled: typeDisabled(type),
+        },
+        nodes: files?.map(file => ({
+          text: file.filenameShort,
+          icon: 'fa fa-file',
+        })),
+      };
+    });
 }
 
 /**
@@ -174,10 +174,11 @@ document.getElementById('tree')?.addEventListener('click', event => {
   }
 });
 
-function updateBackingTrackPlayer(fileName) {
+function updateBackingTrackPlayer(fileName, type) {
   $('#repository-files-modal').modal('hide');
   // updateFileNameLabels(fileName); // no need now with loadAudioFile
-  setFileURLParam(fileName);
+  // setFileURLParam(fileName);
+  updateURLParams({ f: fileName, type: type });
 }
 
 function updateFileNameLabels(fileName) {
@@ -226,7 +227,7 @@ async function loadAudioTrack(fileName, type) {
     if (type === 'private') {
       reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}&user=${userParam}&u=${idParam}`;
     } else if (type === 'course') {
-      let courseId = sessionStorage.getItem("courseId");
+      let courseId = sessionStorage.getItem('courseId');
       if (courseId === null) {
         throw new Error(`Failed to find "courseId" in sessionStorage`);
       }
@@ -242,13 +243,13 @@ async function loadAudioTrack(fileName, type) {
     // window.backingTrack.loadBlob(blob);
     loadAudioFile(blob, res); // use loadAudioFile instead of simnply loadBlob to avoid various bugs
     audioExistsInRepo = type; // upload type of load to apply logic of export accordingly
-    updateBackingTrackPlayer(fileName);
+    updateBackingTrackPlayer(fileName, type);
 
     window.ydoc?.transact(() => {
       window.playerConfig?.set('backingTrackRepository', {
         fileName,
         repositoryType: type,
-        courseId: type === 'course' ? sessionStorage.getItem("courseId") : null,
+        courseId: type === 'course' ? sessionStorage.getItem('courseId') : null,
         privateInfo:
           type == 'private' ? { name: userParam, id: idParam } : null,
         sharer: userParam,

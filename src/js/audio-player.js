@@ -195,9 +195,7 @@ if (window.location.hostname === 'localhost') {
   urlFileName !== null
 ) {
   // B) MusiCoLab server:
-  const f = `f=${urlFileName}`;
-  const u = userParam ? `&user=${userParam}` : '';
-  const audioFileURL = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?${f}${u}`; // TODO This needs to also count for url from private files!
+  const audioFileURL = createURLFromRepository();
   const annotationFileUrl = createURLJamsFromRepository(urlFileName);
 
   loadFilesInOrder(audioFileURL, annotationFileUrl);
@@ -297,11 +295,17 @@ function doChordBeatAnalysis(
   fd.append('theUrl', bTrackURL);
   fd.append('theaudio', bTrackDATA);
 
-  let exists = false;
-  if (['public', 'private', 'course'].includes(audioExistsInRepo)) {
-    exists = true;
+  if (audioExistsInRepo === 'private') {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userID = urlParams.get('id'); //user id
+    fd.append('userID', userID);
+  } else if (audioExistsInRepo === 'course') {
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseID = urlParams.get('fileid');
+    fd.append('fileID', courseID);
   }
-  fd.append('audioExistsInRepo', exists); // 'true'
+
+  fd.append('audioExistsInRepo', audioExistsInRepo);
 
   // 2) Monitor responses/events
   let ajax = new XMLHttpRequest();
@@ -542,8 +546,9 @@ function loadAudioFile(input, res = false) {
         bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
         bTrackURL = URL.createObjectURL(bTrackDATA);
         audioExistsInRepo = false
+            
+        updateURLParams({'f': fileName, 'type': ''}); // adds fileName removes type
         
-        setFileURLParam(fileName);
 
       } else if (file !== undefined) {
         // b)
@@ -551,9 +556,9 @@ function loadAudioFile(input, res = false) {
 
         bTrackDATA = file;
         bTrackURL = fileUrl;
-        audioExistsInRepo = false
-        
-        setFileURLParam(fileName);
+        audioExistsInRepo = false        
+   
+        updateURLParams({ 'f': fileName, 'type': '' });
 
       } else if (window.location.hostname === 'musicolab.hmu.gr'){
         // c)       
@@ -573,14 +578,16 @@ function loadAudioFile(input, res = false) {
           const annotationFile = createURLJamsFromRepository(f)
           loadJAMS(annotationFile)
 
-          // audioExistsInRepo = 'public' // updates from file-load-repository.js accordingly
+          // audioExistsInRepo & updateURLParams are updated from file-load-repository.js accordingly
         } else{
-          // With link from repository (https://musicolab.hmu.gr/apprepository/publicFiles.php)
+          // With link from repository (https://musicolab.hmu.gr/apprepository/downloadPublicFiles.php etc)
           fileName = urlFileName 
           bTrackDATA = fileUrl 
           bTrackURL = fileUrl
 
-          audioExistsInRepo = 'public' // case of loading directly from repository button
+          const type = urlParams.get('type'); // public, private, course
+          audioExistsInRepo = type// case of loading directly from repository button
+          // updateURLParams({ 'f': fileName, 'type': type });//NO NEED ALREADY COMES WITH APPROPRIATE PARAMS!
         }
         console.log(fileName)
 
@@ -865,12 +872,34 @@ function createURLJamsFromRepository(fileName, temporally = false) {
     annotationFileUrl = `https://musicolab.hmu.gr/jams/${fileNameWithoutExtension}.jams`;
     // https://musicolab.hmu.gr/jams/Cherokee.jams
   } else {
-    // TODO adjust for 'private' and 'course'
-
-    const f = `f=${fileNameWithoutExtension}.jams`;
-    const u = userParam ? `&user=${userParam}` : '';
-    annotationFileUrl = `https://musicolab.hmu.gr/apprepository/downloadPublicFile.php?${f}${u}`;
+    const jamsFileName = `${fileNameWithoutExtension}.jams`;
+    annotationFileUrl = createURLFromRepository(jamsFileName);
   }
 
   return annotationFileUrl;
+}
+
+export function createURLFromRepository(jamsFileName = null) {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const type = urlParams.get('type'); // public, private, course
+  const user = urlParams.get('user'); // connected user
+  const userID = urlParams.get('id'); // user id
+
+  let file = jamsFileName || urlParams.get('f'); // loaded audio file
+
+  let courseID = '';
+
+  let phpFunction = 'downloadPublicFile.php';
+  if (type === 'private') {
+    phpFunction = 'downloadPrivateFile.php';
+  } else if (type === 'course') {
+    courseID = urlParams.get('course'); // ?? needed for collab? but NOT ready from kalohr || downloadCourseFile.php has a fileId param || What is this?
+    phpFunction = 'downloadCourseFile.php';
+  }
+
+  const url = `https://musicolab.hmu.gr/apprepository/${phpFunction}?&user=${user}&u=${userID}&f=${file}&fileid=${courseID}`;
+  console.log('❤️❤️❤️❤️❤️ url:', url);
+
+  return url;
 }

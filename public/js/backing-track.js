@@ -90,6 +90,22 @@ function setFileURLParam(file) {
   history.pushState({}, '', '?' + urlParams.toString());
 }
 
+// Function to update URL parameters based on an object.
+function updateURLParams(paramsObject) {
+  for (const key in paramsObject) {
+    if (paramsObject.hasOwnProperty(key)) {
+      const value = paramsObject[key];
+      if (value === '') {
+        //(If a value in paramsObject is an empty string (''), it will remove the corresponding parameter)
+        urlParams.delete(key);
+      } else {
+        urlParams.set(key, value);
+      }
+    }
+  }
+  history.pushState({}, '', '?' + urlParams.toString());
+}
+
 // Load the backing track another peer has loaded on the file picker
 function setBackingTrackRemote(fileName, sharer) {
   if (!fileName) {
@@ -109,7 +125,7 @@ function setBackingTrackFileRemote(fileInfo) {
     console.warn('failed to set backing track file data from peers');
     return;
   }
-  
+
   //construct file object from shared backing track file data
   let file = new File(
     [Int8Array.from(fileInfo.get('data'))],
@@ -127,13 +143,13 @@ function setBackingTrackFileRemote(fileInfo) {
   };
   reader.readAsArrayBuffer(file);
   */
- loadAudioFile(file);
+  loadAudioFile(file);
 }
 
 async function setBackingTrackRepositoryRemote(fileInfo) {
   $('#repository-files-modal').modal('hide');
 
-  const {fileName, privateInfo, repositoryType, sharer, courseId } = fileInfo;
+  const { fileName, privateInfo, repositoryType, sharer, courseId } = fileInfo;
 
   if (!fileName || fileName.length === 0) {
     console.warn(
@@ -159,19 +175,20 @@ async function setBackingTrackRepositoryRemote(fileInfo) {
   const resClone = await res.clone();
 
   //animating progress mechanism
-  const waveformLoadingBar = document.getElementById(
-    'waveform-loading-bar'
-  );
+  const waveformLoadingBar = document.getElementById('waveform-loading-bar');
   const reader = res.body.getReader();
   const contentLength = +res.headers.get('Content-Length');
   let receivedLength = 0;
   while (true) {
-    const {done, value} = await reader.read();
+    const { done, value } = await reader.read();
     if (done) {
       break;
     }
     receivedLength += value.length;
-    window.animateProgressBar(waveformLoadingBar, receivedLength/contentLength);
+    window.animateProgressBar(
+      waveformLoadingBar,
+      receivedLength / contentLength
+    );
   }
 
   const blob = await resClone.blob();
@@ -194,9 +211,12 @@ function loadUrlFile(fn, c, u) {
   );
 }
 
-function setBackingTrackRecording({id, sharer}) {
+function setBackingTrackRecording({ id, sharer }) {
   if (id === undefined || id === null) {
-    console.error("tried to set backing track to recording with id %s but it does not exist", id);
+    console.error(
+      'tried to set backing track to recording with id %s but it does not exist',
+      id
+    );
     return;
   }
   //find the recording in the shared object based on its provided id
@@ -209,18 +229,20 @@ function setBackingTrackRecording({id, sharer}) {
   }
 
   if (index === -1) {
-    console.error("could not find track for id: " + id);
+    console.error('could not find track for id: ' + id);
     return;
   }
 
-  const recorderName = window.sharedRecordedBlobs.get(index).get("userName");
+  const recorderName = window.sharedRecordedBlobs.get(index).get('userName');
   const notifText = `${sharer} has set
-   ${(recorderName == sharer) ? 'their recording' : `recording of ${recorderName}`}
+   ${
+     recorderName == sharer ? 'their recording' : `recording of ${recorderName}`
+   }
    as the new backing track.`;
   const notifContext = 'info';
   notify(notifText, notifContext);
- 
-  const data = window.sharedRecordedBlobs.get(index).get("data");
+
+  const data = window.sharedRecordedBlobs.get(index).get('data');
   //load it as wavesurfer backing track
   if (data?.length > 1) {
     const float32Array = Float32Array.from(data);
