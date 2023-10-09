@@ -301,8 +301,8 @@ function doChordBeatAnalysis(
     fd.append('userID', userID);
   } else if (audioExistsInRepo === 'course') {
     const urlParams = new URLSearchParams(window.location.search);
-    const courseID = urlParams.get('fileid');
-    fd.append('fileID', courseID);
+    const courseID = urlParams.get('courseid');
+    fd.append('courseID', courseID);
   }
 
   fd.append('audioExistsInRepo', audioExistsInRepo);
@@ -348,10 +348,11 @@ function doChordBeatAnalysis(
       const jsonEnd = ajax.responseText.lastIndexOf('}') + 1;
       const jsonString = ajax.responseText.substring(jsonStart, jsonEnd);
       const serverResponse = JSON.parse(jsonString);
+      if (serverResponse.filename.length === 2) audioExistsInRepo = 'jams'; // gimich check if audio was uploaded successfully
+
       filesToDelete.push(...serverResponse.filename);
       console.log('filesToDelete:', filesToDelete);
 
-      audioExistsInRepo = 'jams';
       animateProgressBar(analysisLoadingBar, 100, 'Analysing', cb);
     } else if (ajax.readyState === 4 && ajax.status !== 200) {
       console.log('Error: ' + ajax.status);
@@ -894,11 +895,11 @@ export function createURLFromRepository(jamsFileName = null) {
   if (type === 'private') {
     phpFunction = 'downloadPrivateFile.php';
   } else if (type === 'course') {
-    courseID = urlParams.get('course'); // ?? needed for collab? but NOT ready from kalohr || downloadCourseFile.php has a fileId param || What is this?
+    courseID = urlParams.get('courseid');
     phpFunction = 'downloadCourseFile.php';
   }
 
-  const url = `https://musicolab.hmu.gr/apprepository/${phpFunction}?&user=${user}&u=${userID}&f=${file}&fileid=${courseID}`;
+  const url = `https://musicolab.hmu.gr/apprepository/${phpFunction}?&user=${user}&u=${userID}&f=${file}&courseid=${courseID}`;
   console.log('❤️❤️❤️❤️❤️ url:', url);
 
   return url;

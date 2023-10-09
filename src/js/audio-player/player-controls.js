@@ -517,6 +517,15 @@ function setupExportToDiskOrRepository() {
       exportMusicolabBtn.disabled = true;
       exportMusicolabSel.disabled = true;
     }
+
+    const courseID = new URLSearchParams(window.location.search).get(
+      'courseid'
+    );
+    if (courseID) {
+      exportMusicolabSel[2].disabled = false;
+    } else {
+      exportMusicolabSel[2].disabled = true;
+    }
   });
   // ALSO, the modal opens (shown) with html bootstrap
 
@@ -608,6 +617,11 @@ function finalizeFileStorage(file, action, sfolder = null) {
   fd.append('f', file); // ⚠️
   fd.append('ufolder', exportLocation);
   fd.append('sfolder', currentRepoLocation);
+
+  const courseID = new URLSearchParams(window.location.search).get('courseid');
+  if (courseID) {
+    fd.append('courseID', courseID);
+  }
 
   // 2) Monitor responses/events
   const ajax = new XMLHttpRequest();
