@@ -166,7 +166,7 @@ async function setBackingTrackRepositoryRemote(fileInfo) {
   if (repositoryType === 'private') {
     reqUrl = `https://musicolab.hmu.gr/apprepository/downloadPrivateFile.php?f=${fileName}&user=${privateInfo.name}&u=${privateInfo.id}`;
   } else if (repositoryType === 'course') {
-    reqUrl = `https://musicolab.hmu.gr/apprepository/downloadCourseFile.php?fileid=${courseId}&u=${idParam}&f=${fileName}&user=${userParam}`;
+    reqUrl = `https://musicolab.hmu.gr/apprepository/downloadCourseFile.php?course=${courseParam}&courseid=${courseId}&u=${idParam}&f=${fileName}&user=${userParam}`;
   }
 
   window.resetAudioPlayer();

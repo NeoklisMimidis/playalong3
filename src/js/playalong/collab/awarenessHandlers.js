@@ -1,5 +1,5 @@
-import * as Y from "yjs";
 import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toggleEditBtn, toolbarStates } from "../../annotation-tools";
+import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toolbarStates } from "../../annotation-tools";
 import { _createNewAnnotation, closeModal, editChord, showChordEditor } from "../../annotation-tools/right-toolbar-tools";
 import { analysisLoadingBar, animateProgressBar, audioSidebarText, toolbar, wavesurfer } from "../../audio-player";
 import { zoomIn, zoomOut } from "../../audio-player/player-controls";
@@ -7,7 +7,6 @@ import { createAnnotationsList, jamsFile, loadJAMS, renderAnnotations, selectedA
 import { tooltips } from "../../components/tooltips";
 import { setUserImageUrl, renderUserList } from "./users";
 import { handleMarkerSelection } from "./sharedTypesHandlers";
-import { add } from "lib0/indexeddb";
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(
@@ -15,7 +14,7 @@ export function stateChangeHandler(changes) {
   );
   const myClientId = window.awareness.clientID;
     console.log({awStates, myClientId});
-  
+
   actOnBTAnalysisStateUpdate(awStates, myClientId);
   actOnRecordStateUpdate(awStates, myClientId);
   actOnBTrackEditStateUpdate(awStates, myClientId);

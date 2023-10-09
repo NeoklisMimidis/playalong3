@@ -231,7 +231,7 @@ async function loadAudioTrack(fileName, type) {
       if (courseId === null) {
         throw new Error(`Failed to find "courseId" in sessionStorage`);
       }
-      reqUrl = `https://musicolab.hmu.gr/apprepository/downloadCourseFile.php?fileid=${courseId}&u=${idParam}&f=${fileName}&user=${userParam}`;
+      reqUrl = `https://musicolab.hmu.gr/apprepository/downloadCourseFile.php?course=${courseParam}&courseid=${courseId}&u=${idParam}&f=${fileName}&user=${userParam}`;
     }
 
     const res = await fetch(reqUrl, { signal: abortController.signal });

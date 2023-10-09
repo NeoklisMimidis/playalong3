@@ -42,13 +42,13 @@ function setupCollaboration() {
     `user=${userData.name} id=${userData.id}`
   );
 
-  websocketProvider.awareness.setLocalStateField("user", userData);
-  websocketProvider.awareness.on("update", awaranessUpdateHandler);
-  websocketProvider.awareness.on("change", stateChangeHandler);
-
   window.websocketProvider = websocketProvider;
   window.awareness = websocketProvider.awareness;
   window.permanentUserData = permanentUserData;
+
+  websocketProvider.awareness.on("update", awaranessUpdateHandler);
+  websocketProvider.awareness.on("change", stateChangeHandler);
+  websocketProvider.awareness.setLocalStateField("user", userData);
 
   const sharedRecordedBlobs = ydoc.getArray("blobs");
   //sharedRecBlobs (Y.array) has --> ymap recordings have --> metadata (id, name, recid, speed, pitch, sample rate, count) keys
