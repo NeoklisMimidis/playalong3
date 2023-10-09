@@ -273,9 +273,12 @@ export function handleMarkerSelection(selectedMarkerTime) {
   const prevSelection = mainWaveform.querySelector(
     '.collaboratively-selected-marker'
   );
-  prevSelection
-    ? (prevSelection.querySelector('.span-chord-symbol').style.color = '')
-    : null;
+  
+  if (prevSelection) {
+    prevSelection.querySelector('.span-chord-symbol').style.color = '';
+    prevSelection.classList.remove('collaboratively-selected-marker');
+  }
+    
   //centering waveform view at selected marker time
   const progress = selectedMarkerTime / wavesurfer.getDuration();
   wavesurfer.seekAndCenter(progress);

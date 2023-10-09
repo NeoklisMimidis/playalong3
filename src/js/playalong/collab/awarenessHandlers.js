@@ -1,5 +1,5 @@
 import * as Y from "yjs";
-import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toolbarStates } from "../../annotation-tools";
+import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toggleEditBtn, toolbarStates } from "../../annotation-tools";
 import { _createNewAnnotation, closeModal, editChord, showChordEditor } from "../../annotation-tools/right-toolbar-tools";
 import { analysisLoadingBar, animateProgressBar, audioSidebarText, toolbar, wavesurfer } from "../../audio-player";
 import { zoomIn, zoomOut } from "../../audio-player/player-controls";
@@ -374,11 +374,18 @@ function actOnBTrackEditInitiated (me, editorData, editTime) {
 
 function actOnBTrackEditCompleted (me, editorData, editTime) {
   bTeditor = null; //TODO. delete if btEditor name not needed
+  
+
 
   if (me) {
+    //deactivate edit btn until bTrackEdit status is null, so as to avoid bugs relative to rapid edit btn clicking
+    toggleEditBtn.setAttribute('disabled', true);
     setTimeout(
-      () => window.awareness.setLocalStateField('bTrackEdit', null),
-      200);
+      () => {
+        toggleEditBtn.removeAttribute('disabled');
+        window.awareness.setLocalStateField('bTrackEdit', null)
+      }
+    , 200);
     return;
   }
 

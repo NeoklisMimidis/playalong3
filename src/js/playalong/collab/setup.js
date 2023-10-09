@@ -143,10 +143,14 @@ function setupCollaboration() {
   function setNumeratorRemote(v) {
     parent.metronome.setNumerator(v);
     numerator.value = v;
+
+    createModalPreCount();
   }
   function setDenominatorRemote(v) {
     parent.metronome.setDenominator(v);
     denominator.value = v;
+
+    createModalPreCount();
   }
 
   // Configuration variables for the playback player
