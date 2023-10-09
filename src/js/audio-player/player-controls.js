@@ -537,6 +537,8 @@ function setupExportToDiskOrRepository() {
       fNameWithoutExt,
       'jams'
     );
+    console.log('---------------------------');
+    console.log(jamsToBeExported);
 
     //
     if (e.target.classList.contains('export-musicolab')) {
@@ -620,6 +622,21 @@ function finalizeFileStorage(file, action, sfolder = null) {
         serverResponse.fileStatus === 'File copied successfully' ||
         serverResponse.fileStatus === 'File uploaded successfully'
       ) {
+        if (file.type !== 'application/json') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const type = urlParams.get('type');
+
+          // If NOT already loaded a file from repo, which means type is not set, then updateURLParams
+          if (!type) {
+            audioExistsInRepo = exportLocation; // this is only for audio!!
+            updateURLParams({ type: exportLocation }); // this is only for audio!!
+
+            bTrackDATA = window.location.href;
+            bTrackURL = window.location.href;
+            // const audioFileURL = createURLFromRepository();
+          }
+        }
+
         alert(
           `File has been successfully processed and exported to your ${exportLocation} files.`
         );
