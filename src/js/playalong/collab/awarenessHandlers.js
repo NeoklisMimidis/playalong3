@@ -1,5 +1,4 @@
 import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toggleEditBtn, toolbarStates } from "../../annotation-tools";
-import { annotationList, chordEditor, deleteAnnotationBtn, disableAnnotationListAndDeleteAnnotation, disableSaveChordsAndCancelEditing, toolbarStates } from "../../annotation-tools";
 import { _createNewAnnotation, closeModal, editChord, showChordEditor } from "../../annotation-tools/right-toolbar-tools";
 import { analysisLoadingBar, animateProgressBar, audioSidebarText, toolbar, wavesurfer } from "../../audio-player";
 import { zoomIn, zoomOut } from "../../audio-player/player-controls";
