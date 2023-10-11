@@ -763,11 +763,10 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 }
 
 #time-ruler-btn {
-  /* margin-left: auto; */
   margin-left: 0.4em;
-  font-size: 160%;
+  font-size: 120%;
   color: var(--color-dark--4);
-  font-weight: 580;
+  font-weight: lighter;
 }
 
 #center-player-controls {
@@ -1290,7 +1289,7 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 }
 
 /* Specific Styles per Media Query */
-@media (max-width: 875px) {
+@media (max-width: 882px) {
   .control-label {
     width: 2.5rem;
   }
@@ -1312,7 +1311,7 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   }
 }
 
-@media (min-width: 876px) and (max-width: 930px) {
+@media (min-width: 883px) and (max-width: 930px) {
   .control-label {
     width: 3.7rem;
   }
@@ -1340,7 +1339,7 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 
 @media (min-width: 1002px) and (max-width: 1199px) {
   .control-label {
-    width: 4.2rem;
+    width: 4.6rem;
   }
   #annotation-list {
     font-size: 13px;
@@ -1352,10 +1351,22 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   #time-ruler-btn {
     font-size: 120%;
   }
+
+  .zoom-control-label {
+    width: 3.8rem;
+  }
 }
 
 @media (min-width: 1200px) {
   .control-label {
     width: 4.8rem;
+  }
+
+  #center-player-controls {
+    gap: 1.4em;
+  }
+
+  #time-ruler-btn {
+    font-size: 150%;
   }
 }
