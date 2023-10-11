@@ -136,11 +136,11 @@ h1 {
 #audio-player-and-controls-container {
   max-width: 1300px;
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
+  padding-right: 25px;
+  padding-left: 0px;
   margin-right: auto;
   margin-left: auto;
-  transform: translate(4.8%);
+  transform: translate(3%);
   font-family: Verdana, 'Noto Sans', Manrope, Great Vibes, sans-serif;
 }
 
@@ -159,7 +159,7 @@ h1 {
   background-color: var(--theme-color3);
   border: 1.5px solid var(--color-dark--1);
   border-radius: 10px;
-  transform: translate(-3.5%);
+  transform: translate(-5%);
   width: 85%;
   box-shadow: 1px 0.5px 1px var(--color-dark--4);
 
@@ -771,7 +771,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 
 #center-player-controls {
   flex-basis: 28%;
-  gap: 0.8em;
+  gap: 1.4em;
   justify-content: center;
 }
 
@@ -1175,12 +1175,63 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 */
 
 /* VIGLIS - PLAYALONG */
+
+#recordButton > svg:hover {
+  filter: brightness(90%);
+  transform: scale(1.1);
+  transition: transform 300ms;
+}
+
+.animate-tooltip {
+  animation: tada 1s ease-in-out both;
+}
+
+.tippy-box[data-theme~='warning'] {
+  background-image: linear-gradient(to bottom right, #fb1a1a, #efb332);
+  color: white;
+  font-size: larger;
+}
+
+@keyframes tada {
+  0% {
+    transform: scale(1);
+  }
+  10%,
+  20% {
+    transform: scale(0.9) rotate(-3deg);
+  }
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: scale(1.1) rotate(3deg);
+  }
+  40%,
+  60%,
+  80% {
+    transform: scale(1.1) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
 #metronome-btn {
   position: relative;
 }
 
-/* #metronome-icon {
-} */
+#metronome-icon .st1 {
+  fill: none;
+  stroke: #000000;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-miterlimit: 10;
+}
+
+#metronome-icon:hover .st1 {
+  stroke: var(--color-highlight--3) !important;
+}
 
 .flip-horizontal {
   transform: scaleX(-1);
@@ -1290,6 +1341,10 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 
 /* Specific Styles per Media Query */
 @media (max-width: 882px) {
+  h1 {
+    font-size: 2rem;
+  }
+
   .control-label {
     width: 2.5rem;
   }
@@ -1297,17 +1352,18 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
     font-size: 13px;
     width: 145px;
   }
-  h1 {
-    font-size: 2rem;
+
+  .zoom-control-label {
+    width: 2.2rem;
   }
-  #volume-slider {
-    width: 45%;
+  #center-player-controls {
+    gap: 0.8em;
   }
   #follow-playback-btn {
     width: 40%;
   }
-  .zoom-control-label {
-    width: 2.2rem;
+  #volume-slider {
+    width: 45%;
   }
 }
 
@@ -1319,8 +1375,12 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
     font-size: 12px;
     width: 135px;
   }
+
   .zoom-control-label {
     width: 2.3rem;
+  }
+  #center-player-controls {
+    gap: 1em;
   }
 }
 
@@ -1345,25 +1405,17 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
     font-size: 13px;
     width: 165px;
   }
-  #center-player-controls {
-    gap: 1em;
+  .zoom-control-label {
+    width: 3.8rem;
   }
   #time-ruler-btn {
     font-size: 120%;
-  }
-
-  .zoom-control-label {
-    width: 3.8rem;
   }
 }
 
 @media (min-width: 1200px) {
   .control-label {
     width: 4.8rem;
-  }
-
-  #center-player-controls {
-    gap: 1.4em;
   }
 
   #time-ruler-btn {

@@ -6,6 +6,7 @@ import 'tippy.js/themes/light-border.css';
 import 'tippy.js/themes/material.css';
 import 'tippy.js/themes/translucent.css';
 import 'tippy.js/animations/scale-subtle.css';
+import 'tippy.js/animations/scale-extreme.css';
 
 import 'tippy.js/dist/backdrop.css';
 import 'tippy.js/animations/shift-away.css';
@@ -98,6 +99,13 @@ tippy('.fa-circle-info', {
   maxWidth: '390px',
 });
 
+tippy('#player-settings-btn', {
+  content: 'Player settings menu',
+  delay: [500, 100],
+  theme: 'translucent',
+  placement: 'top',
+});
+
 // - Sidebar (Audio I/O Controls)
 const ImportFromDiskIcon = `
 <svg
@@ -131,14 +139,17 @@ viewBox="0 0 16 16"
 `;
 
 const audioSidebarText = `<span style="font-style: italic;">Open the side panel to access various actions.</span><br><strong>Import from disk</strong> ${ImportFromDiskIcon}Select a file from your computer or effortlessly <span style="font-style: italic; text-decoration: underline;">drag and drop</span> it into the designated space on the left.<br><strong>Import from repository </strong>${ImportFromRepositoryIcon}Load a file from the MusiCoLab remote repository.<br><strong>Export to disk or repository</strong> <i class="fa-solid fa-download fa-sm"></i> Decide if you want to include the backing track audio and/or respective annotation files in your export to your local disk or MusiCoLab repository.`;
-tippy('#audio-sidebar-text', {
+tippy('.audio-sidebar', {
   content: audioSidebarText,
-  delay: [400, 100],
+  // delay: [400, 100],
+  delay: [0, 0],
+  duration: [0, 0], //this is used to disable default animation duration
   placement: 'bottom',
   followCursor: 'horizontal',
   plugins: [followCursor],
   interactive: true,
   maxWidth: '450px',
+  // trigger: 'focus',
   // for some reason some default params don't work on this one so re-apply
   onShow: function (instance) {
     // Get the tooltip element
@@ -318,3 +329,21 @@ export function initDelegateInstance(parentEl, targetEl, props) {
 
   return delegateInstance;
 }
+
+// - Record button warning tooltip
+tippy('#recordButton', {
+  content:
+    'Use <strong>headphones</strong> <i class="fa-solid fa-headphones"></i> while <strong>recording</strong>!',
+  inertia: true,
+  delay: [300, 100],
+  theme: 'warning',
+  offset: [0, -8],
+  onMount(instance) {
+    const tooltipBox = instance.popper.querySelector('.tippy-box');
+    tooltipBox.classList.add('animate-tooltip'); // Add class to apply animation
+  },
+  onHidden(instance) {
+    const tooltipBox = instance.popper.querySelector('.tippy-box');
+    tooltipBox.classList.remove('animate-tooltip'); // Remove class to reset animation
+  },
+});
