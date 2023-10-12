@@ -3,7 +3,7 @@ import { WebsocketProvider } from "y-websocket";
 import { setUserImageUrl, userData } from "./users";
 import { awaranessUpdateHandler, stateChangeHandler } from "./awarenessHandlers";
 import { handleSharedBTEditParamsEvent, handleSharedBTMarkersEvent, handleSharedRecordingDataEvent, handleSharedRecordingResetEvent } from "./sharedTypesHandlers";
-import { animateProgressBar, waveformLoadingBar } from "../../audio-player";
+import { URLParamFileLoaded, animateProgressBar, loadURLParamFileAsBT, waveformLoadingBar } from "../../audio-player";
 
 const wsBaseUrl = import.meta.env.DEV ? "ws://localhost:8080" : "wss://musicolab.hmu.gr:9000";
 
@@ -159,6 +159,20 @@ function setupCollaboration() {
   playerConfig.observe((event) => {
     console.group("playerConfig event");
     console.log(playerConfig.toJSON(), event.keysChanged);
+
+
+    //helpful in case of late user. late enters, playerConfig observer runs for the first time
+    if (!event.transaction.local) {
+      const BTKeyIncluded = 
+        playerConfig.has('backingTrack') ||
+        playerConfig.has('backingTrackRepository') ||
+        playerConfig.has('backingTrackRecording');
+
+      if (!BTKeyIncluded && !URLParamFileLoaded) {
+        loadURLParamFileAsBT();
+      }
+   }
+
     for (let key of event.keysChanged) {
       const value = playerConfig.get(key);
       console.log({ key, value });

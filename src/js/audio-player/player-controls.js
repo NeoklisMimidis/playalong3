@@ -49,6 +49,7 @@ import {
   unmuteBtn,
   volumeSlider,
 } from '../audio-player.js';
+import { defineIfSingleUser } from '../playalong/collab/awarenessHandlers.js';
 
 // Extract selectors IN TOOLTIPS.JS TODO
 
@@ -680,9 +681,11 @@ function finalizeFileStorage(file, action, sfolder = null) {
   ajax.send(fd);
 }
 
-// On progress. ALX
+// On progress
 window.addEventListener('beforeunload', function (event) {
-  // TODO Also add here logic for Collab. If collab & a user is still inside then just return otherwise execute
+  //if in collab mode and i m not the last collab user dont proceed to temporary jams deletion requests...
+  if (Collab && !defineIfSingleUser())
+      return;    
 
   if (filesToDelete.length === 0) return;
   // // Files you want to delete || imported from audio-player.js

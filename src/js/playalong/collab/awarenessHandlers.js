@@ -359,31 +359,39 @@ function actOnBTrackEditInitiated (me, editorData, editTime) {
           }
       ));
     }
+
+    //disabling edit btn until it s reenabled in setTimeout below, so as to avoid bugs...
+    //...created because of prev awareness event being disrupted by current one in collaborators
+    toggleEditBtn.setAttribute('disabled', true);
+
     //entering 'inProgress' reasons:
     //1)user that enters session after edit has began, needs to run edit initiate events
     //2) edit initiate events should not rerun during other awareness updates (eg.chordEdit), so status has to be changed
     setTimeout( 
-      () => window.awareness.setLocalStateField('bTrackEdit', {
+      () => {
+        toggleEditBtn.removeAttribute('disabled');
+
+        window.awareness.setLocalStateField('bTrackEdit', {
               status: 'editInProgress',
-              editTime: null})
+              editTime: null});
+      }
       , 1000);
   }
 }
 
 function actOnBTrackEditCompleted (me, editorData, editTime) {
   bTeditor = null; //TODO. delete if btEditor name not needed
-  
-
 
   if (me) {
     //deactivate edit btn until bTrackEdit status is null, so as to avoid bugs relative to rapid edit btn clicking
     toggleEditBtn.setAttribute('disabled', true);
+
     setTimeout(
       () => {
         toggleEditBtn.removeAttribute('disabled');
         window.awareness.setLocalStateField('bTrackEdit', null)
       }
-    , 200);
+    , 1000);
     return;
   }
 
@@ -425,6 +433,7 @@ function modifyChordFinderUI(collabEditModeOn, editorData, editTime) {
     infoSpan.innerText = `${editorData.name} is editing!`;
     centerToolbar.appendChild(infoSpan);
   } else {
+    console.log('removing span');
     toolbar.removeAttribute('style');
     
     centerToolbar.removeChild(
@@ -606,4 +615,13 @@ function configureDeleteWaveformButtons(reconnectedNames, disconnectedUsers) {
       recButtonsContainer.querySelector('.delete-button')
         .setAttribute('hidden', true);
     })  ;
+}
+
+export function defineIfSingleUser() {
+  const users = window.awareness.getStates();
+
+  if (users.size == 1)
+    return true
+  else
+    return false;
 }

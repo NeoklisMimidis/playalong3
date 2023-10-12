@@ -211,7 +211,7 @@ function loadUrlFile(fn, c, u) {
   );
 }
 
-function setBackingTrackRecording({ id, sharer }) {
+function setBackingTrackRecording({id, sharer, recName}) {
   if (id === undefined || id === null) {
     console.error(
       'tried to set backing track to recording with id %s but it does not exist',
@@ -249,7 +249,10 @@ function setBackingTrackRecording({ id, sharer }) {
     const blob = recordingToBlob(float32Array);
     const BTUrl = URL.createObjectURL(blob);
 
-    btrack = true;
+    //setting relevant global vars (residing in app.js) to be used in loadAudioFile that s called inside loadFilesInOrder call
+    recAsBackingTrack.hasBeenSet = true;
+    recAsBackingTrack.recName = recName;
+
     window.loadAudioFile(BTUrl);
     removeFileURLParam();
   }

@@ -129,7 +129,9 @@ window.bTrackDATA = '';
 
 window.audioExistsInRepo = false;
 
-export let filesToDelete = []; //ALX
+export let filesToDelete = [];
+
+export let URLParamFileLoaded = false;
 
 // - Start of the application ||
 
@@ -179,29 +181,45 @@ analyzeChordsBtn.addEventListener('click', function () {
 
 /* Loading files from repository */
 import audioFileURL1 from '../demo_files/test.mp3';
+import { defineIfSingleUser } from './playalong/collab/awarenessHandlers.js';
 const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url)
   .href;
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('f');
 
-if (window.location.hostname === 'localhost') {
-  // A) Localhost (preload audio):
-  // resetAudioPlayer();
-  // loadFilesInOrder(audioFileURL1);
-  loadFilesInOrder(audioFileURL1, annotationFile1);
-} else if (
-  window.location.hostname === 'musicolab.hmu.gr' &&
-  urlFileName !== null
-) {
-  // B) MusiCoLab server:
-  const audioFileURL = createURLFromRepository();
-  const annotationFileUrl = createURLJamsFromRepository(urlFileName);
 
-  loadFilesInOrder(audioFileURL, annotationFileUrl);
-} else {
-  resetAudioPlayer();
+export function loadURLParamFileAsBT () {
+  console.log('loading not shared audio file')
+
+  if (window.location.hostname === 'localhost') {
+    // A) Localhost (preload audio):
+    // resetAudioPlayer();
+    // loadFilesInOrder(audioFileURL1);
+    loadFilesInOrder(audioFileURL1, annotationFile1);
+  } else if (
+    window.location.hostname === 'musicolab.hmu.gr' &&
+    urlFileName !== null
+  ) {
+    // B) MusiCoLab server:
+    const audioFileURL = createURLFromRepository();
+    const annotationFileUrl = createURLJamsFromRepository(urlFileName);
+  
+    loadFilesInOrder(audioFileURL, annotationFileUrl);
+  } else {
+    resetAudioPlayer();
+  }
+
+  URLParamFileLoaded = true;
 }
+
+//setTimeout needed because window.awareness used in defineIfSingleUser is set in setup.js, which hasn t yet been executed
+setTimeout(
+  () => {
+    if ( !Collab || (Collab && defineIfSingleUser()) )
+  loadURLParamFileAsBT();
+  }
+  , 1000);
 
 wavesurfer.on('loading', function (percent) {
   // console.log('loading', percent);
@@ -257,8 +275,8 @@ function sendAudioAndFetchAnalysis() {
    * @returns {number} The estimated analysis time in seconds.
    */
   function estimateAnalysisTime(audioDuration) {
-    const slope = 0.1743; // Actual slope is 0.1543
-    const intercept = 8.113; // Actual bias is 6.113
+    const slope = 0.1543;
+    const intercept = 2.113; // Actual bias is 6.113 but let also utilize that progress bar stops when almost complete
 
     return slope * audioDuration + intercept;
   }
@@ -395,11 +413,11 @@ function doChordBeatAnalysis(
         }
       }
 
-      if (currentProgress < 98.5) {
+      if (currentProgress < 99) {
         // const resolution = analysisTime * 10;
         // resolution: is used to control the granularity of the progress bar's update for the analysis portion
         let resolution =
-          currentProgress > 90 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
+          currentProgress > 94 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
         currentProgress += analysisPortion / resolution; // Increase progress
 
         switch (count) {
@@ -540,10 +558,10 @@ function loadAudioFile(input, res = false) {
       // d) localhost loading file (Use default: test.mp3)
 
       // prettier-ignore
-      if (btrack){
-        // a)     
-        fileName = generateRecordingFilename();      
-
+      if (recAsBackingTrack.hasBeenSet){
+        // a)
+        fileName = recAsBackingTrack.recName;
+        
         bTrackDATA = audioDataToWavFile(wavesurfer.backend.buffer, fileName);
         bTrackURL = URL.createObjectURL(bTrackDATA);
         audioExistsInRepo = false
@@ -610,8 +628,11 @@ function loadAudioFile(input, res = false) {
       audioFileName.textContent = audioFileNamePreface.textContent;
 
       activateAudioPlayerControls();
+      
+      //restoring variables used in setting rec as b. track
+      recAsBackingTrack.hasBeenSet = false;
+      recAsBackingTrack.recName = null;
 
-      btrack = false;
       hideUnhideElements(); // this is for playAll, stopAll mix from app.js
     });
     /* TODO. alx. isws volevei. an einai na xrismiopoioithei, kai i loadAudioFIle na trexei kai

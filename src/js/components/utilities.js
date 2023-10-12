@@ -331,6 +331,8 @@ export function generateRecordingFilename() {
 
   return fileName;
 }
+//needed so as function can be used in app.js which is not a module and thus cannot import
+window.generateRecordingFilename = generateRecordingFilename;
 
 /**
  * Formats time in minutes, seconds and deciseconds to display the value on time-ruler-btn while audio is playing

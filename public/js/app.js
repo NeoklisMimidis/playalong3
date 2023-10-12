@@ -17,7 +17,10 @@ initRepositoryTrackList(courseParam, collabParam);
 
 var metronomeEvents = new EventTarget();
 var preCountCanceled = false;
-var btrack = false;
+var recAsBackingTrack = {
+  hasBeenSet: false,
+  recName: null
+};
 
 const baseUrl =
   window.location.hostname === 'localhost'
@@ -343,7 +346,7 @@ function pauseRecording() {
 function stopRecording() {
   // stop metronome & hide pre count modal (& and check if preCountCanceled)
   preCountRecordingModal();
-  //alx pros Neokli: auto xreiazetai na ginetai collably? // neoklis: oxi, apo thn stigmi poy stelnonte ta mute states douleyei automata san collab
+//alx pros Neokli: auto xreiazetai na ginetai collably? // neoklis: oxi, apo thn stigmi poy stelnonte ta mute states douleyei automata san collab
   resetPlaybackVolume();
 
   console.log('stopButton clicked');
@@ -628,7 +631,10 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
       const BTUrl = URL.createObjectURL(blob);
 
       try {
-        btrack = true;
+        //setting relevant global parameters in order to be used in loadAudioFiles
+        recAsBackingTrack.hasBeenSet = true;
+        recAsBackingTrack.recName = window.generateRecordingFilename();
+
         loadAudioFile(BTUrl);
         // Set new key to this collabId and undo others
         window.ydoc.transact(() => {
@@ -636,6 +642,7 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
           window.playerConfig.set('backingTrackRecording', {
             id: collabId,
             sharer: userParam,
+            recName: recAsBackingTrack.recName
           });
           //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
           window.playerConfig.delete('backingTrack');
@@ -1305,7 +1312,10 @@ function createDownloadLink(
   buttonContainer.appendChild(downloadButton);
 
   function backingButtonHandler() {
-    btrack = true;
+    //setting relevant global parameters in order to be used in loadAudioFiles
+    recAsBackingTrack.hasBeenSet = true;
+    recAsBackingTrack.recName = generateRecordingFilename();
+    
     deleteButton.click();
   }
 
@@ -1367,7 +1377,7 @@ function createDownloadLink(
   }
 
   function deleteHandler(event) {
-    if (btrack) {
+    if (recAsBackingTrack.hasBeenSet) {
       loadAudioFile(url);
     }
     deleteWaveForm();
@@ -1410,7 +1420,7 @@ function createDownloadLink(
   }
   deleteButton.dataset.collabId = id;
   deleteButton.addEventListener('click', function (event) {
-    var info_message = btrack
+    var info_message = recAsBackingTrack.hasBeenSet
       ? //TODO. alx. 'for everyone' sta strings apo katw. ara otan kapoios doulevei non collab, tha sindeetai sto course kai tha tropopoiei douleia pou egine collaboratively? kai ara to istoriko sto course tha menei?
         'This track will be moved and replace backing track for everyone. Are you sure?'
       : 'This track will be removed for everyone. Are you sure you want to delete it?';
