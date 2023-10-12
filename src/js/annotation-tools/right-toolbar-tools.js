@@ -27,6 +27,7 @@ import {
   stripHtmlTags,
   renderModalMessage,
   renderModalPrompt,
+  jsonDataToJSONFile,
 } from '../components/utilities.js';
 
 import {
@@ -354,6 +355,15 @@ function saveEditing() {
       // Save to local storage, which is designed to store data in its original format
       localStorage.setItem(fileName, JSON.stringify(jamsFile));
       // option to delete this storage? --button? or in settings menu?
+
+      // Neoklis pros Alex: Balto ama einai na ginetai mono se collab gia na min yparxoyn tzampa requests ston server
+      const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+      const jamsToBeExported = jsonDataToJSONFile(
+        jamsFile,
+        fNameWithoutExt,
+        'jams'
+      );
+      exportTempFolderRepo(jamsToBeExported);
 
       if (!!Collab) {
         const newAnnotationData = _extractModalPromptFields();
@@ -691,65 +701,25 @@ function _mapChordSymbolToText(encodedChord) {
   return mirLabel;
 }
 
-function exportFileToRepository(file, exportLocation) {
-  const content = getAceEditor()?.session.getValue();
-  if (content === undefined || content.length === 0) {
-    console.error('Failed to export empty Kern content');
-    return;
-  }
-
-  const { file: filenameFromURL } = getURLInfo();
-  let scoreName = filenameFromURL;
-  const scoreMeta = sessionStorage.getItem('score-metadata');
-  if (scoreMeta === null) {
-    console.warn(
-      'Could not find metadata for this score. Using URL filename as title.'
-    );
-  } else {
-    scoreName = JSON.parse(scoreMeta).title + '.krn';
-    // scoreName = title.split(' ').join('_') + '.krn';
-  }
-
-  let firstTry = true;
-  let nameFromPrompt = '';
-  while (nameFromPrompt !== null && !nameFromPrompt.endsWith('.krn')) {
-    if (firstTry) {
-      nameFromPrompt = window.prompt(
-        'Enter a name for your private file (must have a .krn extension)',
-        scoreName
-      );
-      firstTry = false;
-    } else {
-      nameFromPrompt = window.prompt(
-        'The name you provided was not correct.\nEnter a new name for your private file (must have a .krn extension)',
-        nameFromPrompt + '.krn'
-      );
-    }
-  }
-
-  if (nameFromPrompt === null) {
-    console.warn(
-      'Prompt was cancelled or a valid file name was not provided. Skipping file exporting'
-    );
-    return;
-  }
-
+function exportTempFolderRepo(file) {
+  // 1) Construct FormData to encapsulate the information to be sent to the server
   let fd = new FormData();
-  fd.append('f', file);
   fd.append('action', 'upload');
-  fd.append('ufolder', exportLocation);
+  fd.append('f', file);
+  fd.append('ufolder', 'jams');
 
   const ajax = new XMLHttpRequest();
   ajax.addEventListener('load', () => {
-    alert(`File has been exported to your ${exportLocation} files!`);
+    console.log(ajax.responseText); // Printing server-side echo response
+    // alert(`File has been exported to temporaly jams folder`);
   });
   ajax.addEventListener('error', () => {
-    alert(`Failed to export file to your ${exportLocation} files`);
+    alert(`Failed to export file to temporally jams folder`);
   });
 
   ajax.open(
     'POST',
-    'https://musicolab.hmu.gr/apprepository/uploadFileResAjax.php',
+    'https://musicolab.hmu.gr/apprepository/finalizeFileStoragePAT.php',
     true
   );
   ajax.send(fd);
