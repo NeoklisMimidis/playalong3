@@ -188,9 +188,8 @@ const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url)
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('f');
 
-
-export function loadURLParamFileAsBT () {
-  console.log('loading not shared audio file')
+export function loadURLParamFileAsBT() {
+  console.log('loading not shared audio file');
 
   if (window.location.hostname === 'localhost') {
     // A) Localhost (preload audio):
@@ -204,7 +203,7 @@ export function loadURLParamFileAsBT () {
     // B) MusiCoLab server:
     const audioFileURL = createURLFromRepository();
     const annotationFileUrl = createURLJamsFromRepository(urlFileName);
-  
+
     loadFilesInOrder(audioFileURL, annotationFileUrl);
   } else {
     resetAudioPlayer();
@@ -214,12 +213,9 @@ export function loadURLParamFileAsBT () {
 }
 
 //setTimeout needed because window.awareness used in defineIfSingleUser is set in setup.js, which hasn t yet been executed
-setTimeout(
-  () => {
-    if ( !Collab || (Collab && defineIfSingleUser()) )
-  loadURLParamFileAsBT();
-  }
-  , 1000);
+setTimeout(() => {
+  if (!Collab || (Collab && defineIfSingleUser())) loadURLParamFileAsBT();
+}, 1000);
 
 wavesurfer.on('loading', function (percent) {
   // console.log('loading', percent);
@@ -275,8 +271,8 @@ function sendAudioAndFetchAnalysis() {
    * @returns {number} The estimated analysis time in seconds.
    */
   function estimateAnalysisTime(audioDuration) {
-    const slope = 0.1543;
-    const intercept = 2.113; // Actual bias is 6.113 but let also utilize that progress bar stops when almost complete
+    const slope = 0.1843; // Actual slope is 0.1543
+    const intercept = 8.113; // Actual bias is 6.113
 
     return slope * audioDuration + intercept;
   }
@@ -413,11 +409,11 @@ function doChordBeatAnalysis(
         }
       }
 
-      if (currentProgress < 99) {
+      if (currentProgress < 98.5) {
         // const resolution = analysisTime * 10;
         // resolution: is used to control the granularity of the progress bar's update for the analysis portion
         let resolution =
-          currentProgress > 94 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
+          currentProgress > 90 ? analysisTime * 22 : analysisTime * 10; // (slower when reaching the end)
         currentProgress += analysisPortion / resolution; // Increase progress
 
         switch (count) {
@@ -628,7 +624,7 @@ function loadAudioFile(input, res = false) {
       audioFileName.textContent = audioFileNamePreface.textContent;
 
       activateAudioPlayerControls();
-      
+
       //restoring variables used in setting rec as b. track
       recAsBackingTrack.hasBeenSet = false;
       recAsBackingTrack.recName = null;
