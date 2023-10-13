@@ -163,8 +163,7 @@ function handleMarkerChordEditing(collabEditedMarker) {
   const newMarker = addMarkerAtTime(
     collabEditedMarker.time,
     collabEditedMarker.metadata.mirLabel,
-    'replaced',
-    false
+    'replaced'
   );
   newMarker.elChordSymbolSpan.classList.add('span-chord-highlight');
   newMarker.elChordSymbolSpan.style.color = MARKER_LABEL_SPAN_COLOR;
@@ -197,12 +196,12 @@ function handleMarkerAddition(collabEditedMarker) {
   addMarkerAtTime(
     collabEditedMarker.time,
     collabEditedMarker.metadata.mirLabel,
-    'new',
-    false
+    'new'
   );
   disableAnnotationListAndDeleteAnnotation();
+  console.log(tooltips);
   tooltips.markersSingleton.disable(); // to be re-enabled in the next function call
-  updateMarkerDisplayWithColorizedRegions();
+  updateMarkerDisplayWithColorizedRegions(true); // true so can the marker label gets none pointer events
 
   wavesurfer.seekAndCenter(collabEditedMarker.time / wavesurfer.getDuration());
 }
@@ -242,11 +241,10 @@ function handleMarkerMoving(collabEditedMarker, key) {
     const newMarker = addMarkerAtTime(
       collabEditedMarker.time,
       markerToBeRemoved.mirLabel,
-      'edited',
-      false
+      'edited'
     );
     tooltips.markersSingleton.disable(); //to be re-enabled in the next function call
-    updateMarkerDisplayWithColorizedRegions();
+    updateMarkerDisplayWithColorizedRegions(true); // true so can the marker label gets none pointer events
 
     //modifying shared marker object, in case marker is added during editing, so as:
     //1.added, moved --> added || added, edited, moved --> added, edited || added, moved, edited --> added, edited
@@ -273,12 +271,12 @@ export function handleMarkerSelection(selectedMarkerTime) {
   const prevSelection = mainWaveform.querySelector(
     '.collaboratively-selected-marker'
   );
-  
+
   if (prevSelection) {
     prevSelection.querySelector('.span-chord-symbol').style.color = '';
     prevSelection.classList.remove('collaboratively-selected-marker');
   }
-    
+
   //centering waveform view at selected marker time
   const progress = selectedMarkerTime / wavesurfer.getDuration();
   wavesurfer.seekAndCenter(progress);

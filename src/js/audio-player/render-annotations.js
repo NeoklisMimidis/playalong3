@@ -513,6 +513,7 @@ function _setStyleOnMarker(marker, prevChord, index) {
     markerLabel.style.marginLeft = '4px';
   }
 
+  //  also note that markers coming from editor collaborator are always disabled, because EDIT_MODE is false for collaborator which does not edit
   wavesurfer.util.style(markerLabel, {
     pointerEvents: toolbarStates.EDIT_MODE ? 'auto' : 'none',
   });
