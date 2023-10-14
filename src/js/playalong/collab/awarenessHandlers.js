@@ -32,6 +32,7 @@ import {
 import { tooltips } from '../../components/tooltips';
 import { setUserImageUrl, renderUserList } from './users';
 import { handleMarkerSelection } from './sharedTypesHandlers';
+import { doc } from 'lib0/dom';
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(window.awareness.getStates().entries());
@@ -498,6 +499,14 @@ function modifyChordFinderUI(collabEditModeOn, editorData, editTime) {
   } else {
     console.log('removing span');
     toolbar.removeAttribute('style');
+
+    const prevSelection = document.querySelector(
+      '.collaboratively-selected-marker'
+    );
+    if (prevSelection) {
+      prevSelection.querySelector('.span-chord-symbol').style.color = '';
+      prevSelection.classList.remove('collaboratively-selected-marker');
+    }
 
     centerToolbar.removeChild(centerToolbar.querySelector('span'));
     [...centerToolbar.children].forEach(child =>

@@ -8,6 +8,11 @@ import {
 import { tooltips } from '../components/tooltips.js';
 
 import {
+  enableEditChordButtonFunction,
+  disableEditChordButtonFunction,
+} from './right-toolbar-tools.js';
+
+import {
   disableAnnotationListAndDeleteAnnotation,
   toolbarStates,
 } from '../annotation-tools.js';
@@ -125,6 +130,8 @@ function editBeat(marker) {
   // disable tooltips to avoid some bugs
   tooltips.markersSingleton.disable();
 
+  enableEditChordButtonFunction(marker);
+
   disableAnnotationListAndDeleteAnnotation();
 
   // add color to edited marker line
@@ -139,7 +146,9 @@ function editBeatTiming(marker) {
   const markerLabel = marker.mirLabel;
   wavesurfer.markers.remove(marker);
 
-  addMarkerAtTime(markerTime, markerLabel, 'edited');
+  const editedMarker = addMarkerAtTime(markerTime, markerLabel, 'edited');
+
+  enableEditChordButtonFunction(editedMarker);
 
   updateMarkerDisplayWithColorizedRegions();
 }
@@ -148,6 +157,8 @@ function removeBeatAndChord(marker) {
   // do nothing on the first marker
   if (marker.time === 0) return;
   console.log('remove??', marker);
+
+  enableEditChordButtonFunction(marker);
 
   // disable tooltips to avoid some bugs
   tooltips.markersSingleton.disable();
@@ -160,6 +171,7 @@ function removeBeatAndChord(marker) {
   renderModalMessage(message)
     .then(() => {
       // User confirmed deletion
+      disableEditChordButtonFunction(); //diselect marker
 
       wavesurfer.markers.remove(marker);
       disableAnnotationListAndDeleteAnnotation();

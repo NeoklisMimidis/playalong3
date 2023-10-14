@@ -78,13 +78,10 @@ export function setupEditChordEvents() {
   // Edit selected chord onPressingEditChordButton (enables button)
   wavesurfer.on('marker-click', selMarker => {
     console.log('click');
-    if (!!Collab) {
-      window.sharedBTEditParams.set('selectedMarker', selMarker.time);
-    }
 
-    enableEditChordButtonFunction(selMarker);
+    enableEditChordButtonFunction(selMarker); // 😩😩
   });
-  wavesurfer.on('seek', disableEditChordButtonFunction);
+  wavesurfer.on('seek', disableEditChordButtonFunction); // 😩😩 This needs to occur and when cancel, edit, save?, switch annotation?
   editChordBtn.addEventListener('click', function () {
     showChordEditor();
 
@@ -331,6 +328,8 @@ function saveEditing() {
       // this needs to be before updateMarkerDisplayWithColorizedRegions so visualizations are rendered correctly
       disableSaveChordsAndCancelEditing();
 
+      disableEditChordButtonFunction(); //diselect marker
+
       console.log(newAnnotation);
       if (choice === 'replace') {
         // Replace existing annotation
@@ -476,10 +475,14 @@ function _extractModalPromptFields() {
 }
 
 // -
-function enableEditChordButtonFunction(selMarker) {
+export function enableEditChordButtonFunction(selMarker) {
   console.log('selected marker:', selMarker);
   console.log(selMarker.el._tippy);
   //  NOTE: marker-click event only trigger on span element click!
+
+  if (!!Collab) {
+    window.sharedBTEditParams.set('selectedMarker', selMarker.time);
+  }
 
   // Color selected marker ONLY
   _setMarkerSpanColor(selMarker, lastSelectedMarker, MARKER_LABEL_SPAN_COLOR);
@@ -491,7 +494,7 @@ function enableEditChordButtonFunction(selMarker) {
   editChordBtn.classList.remove('disabled');
 }
 
-function disableEditChordButtonFunction() {
+export function disableEditChordButtonFunction() {
   editChordBtn.classList.add('disabled');
   if (lastSelectedMarker !== undefined) {
     _setMarkerSpanColor(lastSelectedMarker, lastSelectedMarker, '');

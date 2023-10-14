@@ -151,8 +151,11 @@ function handleMarkerChordEditing(collabEditedMarker) {
   const correspondingMarker = wavesurfer.markers.markers.find(
     m => m.time == collabEditedMarker.time
   );
-  if (correspondingMarker.mirLabel === collabEditedMarker.metadata.mirLabel)
+  if (correspondingMarker.mirLabel === collabEditedMarker.metadata.mirLabel) {
+    correspondingMarker.el.classList.add('collaboratively-selected-marker');
+    updateMarkerDisplayWithColorizedRegions(true); // true so can the marker label gets none pointer events
     return;
+  }
 
   //needed in case chord edit apply event hasn t preceded, i.e. when a user is 'late'
   //not needed in opposite cases, because it s called during chord edit apply event
@@ -219,9 +222,6 @@ function handleMarkerMoving(collabEditedMarker, key) {
       m => m.time === collabEditedMarker.time
     );
 
-    wavesurfer.seekAndCenter(
-      collabEditedMarker.time / wavesurfer.getDuration()
-    );
     disableAnnotationListAndDeleteAnnotation();
 
     markerToBeMarked.collabEditStatus = 'to be moved';
