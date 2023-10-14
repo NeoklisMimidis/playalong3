@@ -1062,6 +1062,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 
 .buttons-inactive {
   pointer-events: none;
+  color: var(--color-highlight--3);
 }
 
 /* ---------------------------- */

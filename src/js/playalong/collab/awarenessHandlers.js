@@ -504,6 +504,10 @@ function modifyChordFinderUI(collabEditModeOn, editorData, editTime) {
       child.removeAttribute('hidden')
     );
   }
+  // close the sidebar if open, and disable it
+  if (audioSidebarText.classList.contains('shown')) {
+    audioSidebarText.click();
+  }
   audioSidebarText.classList.toggle('buttons-inactive');
 }
 
