@@ -478,14 +478,20 @@ function modifyChordFinderUI(collabEditModeOn, editorData, editTime) {
   //toolbars UI
   const centerToolbar = document.getElementById('center-toolbar-controls');
   if (collabEditModeOn) {
-    toolbar.classList.remove('editing-on');
+    // toolbar.classList.remove('editing-on'); // don't remove this class, so all uses share orange color when editing
     toolbar.style.backgroundColor = editorData.color;
 
     [...centerToolbar.children].forEach(child =>
       child.setAttribute('hidden', true)
     );
     const infoSpan = document.createElement('span');
-    infoSpan.innerText = `${editorData.name} is editing!`;
+    infoSpan.id = 'infoSpan';
+
+    // collab info status depending on current state
+    infoSpan.innerText = `${editorData.name} ${
+      toolbarStates.SAVED ? 'will edit!' : 'is editing!'
+    }`;
+
     centerToolbar.appendChild(infoSpan);
   } else {
     console.log('removing span');

@@ -353,6 +353,26 @@ export function updateMarkerDisplayWithColorizedRegions(editModeStyle = false) {
     removeButton: true,
   });
 
+  // collab info status depending on current state
+  if (!!Collab) {
+    // Select the element
+    const infoSpan = document.querySelector('#infoSpan');
+    if (!infoSpan) return;
+
+    // Get the current text content
+    const currentText = infoSpan.textContent;
+
+    let newText;
+    if (!toolbarStates.SAVED) {
+      newText = currentText.replace(/will edit!/g, 'is editing!');
+    } else {
+      newText = currentText.replace(/is editing!/g, 'will edit!');
+    }
+
+    // Update the element's text content
+    infoSpan.textContent = newText;
+  }
+
   console.log('Chord regions have been successfully colorized! ✌️');
 }
 
