@@ -438,14 +438,16 @@ function actOnBTrackEditInitiated(me, editorData, editTime) {
 function actOnBTrackEditCompleted(me, editorData, editTime) {
   bTeditor = null; //TODO. delete if btEditor name not needed
 
-  if (me) {
-    //deactivate edit btn until bTrackEdit status is null, so as to avoid bugs relative to rapid edit btn clicking
-    toggleEditBtn.setAttribute('disabled', true);
+  //deactivate edit btn until bTrackEdit status is null, so as to avoid bugs relative to rapid edit btn clicking
+  // 2 bug cases:  a) Same user Enables - Disables fast Edit toggle b) 1user disables edit and 2user immediately enables Edit
+  toggleEditBtn.setAttribute('disabled', true);
 
-    setTimeout(() => {
-      toggleEditBtn.removeAttribute('disabled');
-      window.awareness.setLocalStateField('bTrackEdit', null);
-    }, 1000);
+  setTimeout(() => {
+    toggleEditBtn.removeAttribute('disabled');
+    window.awareness.setLocalStateField('bTrackEdit', null);
+  }, 1000);
+
+  if (me) {
     return;
   }
 
