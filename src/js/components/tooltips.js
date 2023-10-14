@@ -43,7 +43,7 @@ tippy('#left-toolbar-controls', {
   delay: [800, 100],
   theme: 'translucent',
   placement: 'left-end',
-  maxWidth: '400px',
+  maxWidth: '330px',
   interactive: true,
 });
 

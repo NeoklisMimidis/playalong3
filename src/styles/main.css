@@ -269,10 +269,10 @@ h1 {
   justify-content: center;
 }
 
-#audio-file-name,
+/* #audio-file-name,
 #audio-file-name-preface {
   white-space: nowrap;
-}
+} */
 
 #info-question {
   flex: 0.05;
