@@ -75,7 +75,7 @@ if (userParam) {
   Jitsi_User_Name = userParam;
 }
 
-var Jitsi_Course_Name = courseParam ?? fileParam
+var Jitsi_Course_Name = courseParam ?? fileParam;
 
 var roomNameInput = document.querySelector('#meet-room');
 roomNameInput.value = Jitsi_Course_Name;
@@ -89,7 +89,6 @@ if (!Collab)
   document
     .querySelector('.users-online-container')
     .setAttribute('hidden', true);
-
 
 var wavesurfers = []; // Array to hold all wavesurfers instances from recordings
 var recordedBlobs = []; // Array to hold all the recorded blobs

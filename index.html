@@ -1167,7 +1167,7 @@
                 <div id="export-container">
                   <div id="export-musicolab">
                     <div class="input-list">
-                      <select id='export-selections' class="no-border">
+                      <select id="export-selections" class="no-border">
                         <option value="public">public</option>
                         <option value="private">private</option>
                         <option value="course">course</option>
@@ -1402,6 +1402,37 @@
     <script src="/js/jitsi.js"></script>
 
     <script src="/js/metronome-settings.js" defer></script>
+
+    <!-- RING BUFFER - AUDIO WORKLET RECORDING -->
+    <p>
+      <button disabled id="startstop">Start</button>
+      <button disabled id="playRecordedData">Play recorded sound</button>
+    </p>
+
+    <p style="text-align: center; margin: 20px">
+      <canvas
+        id="waveformMB"
+        width="600"
+        height="100"
+        style="
+          border: 2px solid #4a4a4a;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+          border-radius: 8px;
+          background-color: #f0f0f0;
+        "
+      ></canvas>
+    </p>
+
+    <script src="/audioworklet-to-worker/lib/utils/waveformDrawer.js"></script>
+    <script>
+      var exports = {};
+    </script>
+
+    <script src="/audioworklet-to-worker/lib/utils/URLfromFiles.js"></script>
+
+    <script src="/audioworklet-to-worker/lib/ringbuffer/index.js"></script>
+    <script src="/audioworklet-to-worker/js/script.js"></script>
+
     <!-- END -->
   </body>
 </html>
