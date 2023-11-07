@@ -29,10 +29,8 @@ import {
   selectedAnnotationData,
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
-import { tooltips } from '../../components/tooltips';
 import { setUserImageUrl, renderUserList } from './users';
-import { handleMarkerSelection } from './sharedTypesHandlers';
-import { doc } from 'lib0/dom';
+import { handleChordSelection, handleMarkerSelection } from './sharedTypesHandlers';
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(window.awareness.getStates().entries());
@@ -188,7 +186,7 @@ function actOnCancelSaveEditStateUpdate(awStates, myClientId) {
 function handleSaveEditing(choice, me, editorName, newAnnotationData) {
   if (me) {
     if (choice === 'replace') {
-      //delete every shared parameter except annotaionSel since it hasn t changed
+      //delete every shared parameter except annotationSel since it hasn t changed
       window.sharedBTEditParams.forEach((v, k, thisMap) => {
         if (k !== 'annotationSel') thisMap.delete(k);
       });
@@ -289,7 +287,8 @@ function actOnChordEditInProgress(initialSelection) {
     const currentSelection =
       window.sharedBTEditParams.get('chordSel') ?? initialSelection;
     actOnChordEditStarted(false, currentSelection);
-  }, 2500);
+    handleChordSelection(currentSelection);
+  }, 7000);
 }
 
 function actOnChordEditStarted(me, selection) {
@@ -384,11 +383,13 @@ function actOnBTrackEditStateUpdate(awStates, myClientId) {
                 );
                 const selectedMarkerTime =
                   window.sharedBTEditParams.get('selectedMarker');
-                handleMarkerSelection(selectedMarkerTime);
-              }, 2000)
-            : //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
-              null;
-        }
+                if (selectedMarkerTime)
+                  handleMarkerSelection(selectedMarkerTime);
+              }
+              ,7000)
+          //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
+          : null; 
+      }
         break;
     }
   });
@@ -439,18 +440,24 @@ function actOnBTrackEditInitiated(me, editorData, editTime) {
 function actOnBTrackEditCompleted(me, editorData, editTime) {
   bTeditor = null; //TODO. delete if btEditor name not needed
 
-  //deactivate edit btn until bTrackEdit status is null, so as to avoid bugs relative to rapid edit btn clicking
+  //deactivate edit btn !for all users! until bTrackEdit status is null, so as to avoid bugs relative to rapid edit btn clicking
   // 2 bug cases:  a) Same user Enables - Disables fast Edit toggle b) 1user disables edit and 2user immediately enables Edit
-  setTimeout(
-    () => toggleEditBtn.removeAttribute('disabled'),
-    1000);
+  toggleEditBtn.setAttribute('disabled', true);
 
   if (me) {
-    setTimeout( 
-      () => window.awareness.setLocalStateField('bTrackEdit', null),
-      1000);
+    setTimeout(() => {
+      toggleEditBtn.removeAttribute('disabled');
+      window.awareness.setLocalStateField('bTrackEdit', null);
+    }, 1000);
     return;
+  } else {
+    setTimeout(
+      () => toggleEditBtn.removeAttribute('disabled'),
+      1000);
   }
+
+  //reactivating edit button !for all users! after bTrackEdit has been set to null
+
 
   toolbarStates.COLLAB_EDIT_MODE = false;
 
@@ -621,7 +628,7 @@ function formatUserList() {
     .map(entry => {
       const data = entry.match(
         /user=(?<name>.+?) id=(?<id>\d+) status=(?<status>\w+)/
-      ).groups;
+      )?.groups;
       return data;
     });
   connectedUsers.forEach(user => (user.imageSrc = setUserImageUrl(user.id)));
@@ -631,7 +638,7 @@ function formatUserList() {
     .map(entry => {
       const data = entry.match(
         /user=(?<name>.+?) id=(?<id>\d+) status=(?<status>\w+)/
-      ).groups;
+      )?.groups;
       return data;
     });
   disconnectedUsers.forEach(user => (user.imageSrc = setUserImageUrl(user.id)));

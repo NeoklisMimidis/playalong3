@@ -95,12 +95,15 @@ export function handleSharedBTEditParamsEvent(value, key) {
       handleChordSelection(value);
       break;
     case 'selectedMarker':
-      handleMarkerSelection(value);
+      value
+       ? handleMarkerSelection(value)
+       : null;
       break;
   }
 }
 
 export function handleSharedBTMarkersEvent(collabEditedMarker, key) {
+
   switch (collabEditedMarker.status) {
     //final values
     case 'edited':
@@ -288,7 +291,7 @@ export function handleMarkerSelection(selectedMarkerTime) {
   markerSelected.elChordSymbolSpan.style.color = MARKER_LABEL_SPAN_COLOR;
 }
 
-function handleChordSelection(selection) {
+export function handleChordSelection(selection) {
   //in cases where user enters in the middle of chord edit during BT edit session, return
   //Chord selection is set to occur just after chord started events (awarenessHandlers.js --> )
   if (!toolbarStates.COLLAB_EDIT_MODE) return;

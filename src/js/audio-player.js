@@ -123,6 +123,8 @@ window.AUDIO_PLAYER_CONTROLS = AUDIO_PLAYER_CONTROLS;
 window.backingTrackVolumeFactor = 1;
 
 window.loadAudioFile = loadAudioFile;
+window.loadFilesInOrder = loadFilesInOrder; //needed for use in backing-track.js
+window.createURLJamsFromRepository = createURLJamsFromRepository; //needed for use in backing-track.js
 
 window.bTrackURL = '';
 window.bTrackDATA = '';
@@ -214,8 +216,18 @@ export function loadURLParamFileAsBT() {
 
 //setTimeout needed because window.awareness used in defineIfSingleUser is set in setup.js, which hasn t yet been executed
 setTimeout(() => {
-  if (!Collab || (Collab && defineIfSingleUser())) loadURLParamFileAsBT();
-}, 1000);
+  let sharedBT = false;
+  if (Collab) {
+    sharedBT =
+      window.playerConfig.has('backingTrack') ||
+      window.playerConfig.has('backingTrackRepository') ||
+      window.playerConfig.has('backingTrackRecording');
+  }
+  //creates minor double loading same audiotrack bug. case: during session (in which no bt has been set)...
+  //... all users are disconnected. in first user that reconnects loadURLParam will be activated twice: here and in playerConfig observer
+  if (!Collab || (Collab && defineIfSingleUser() && !sharedBT))
+    loadURLParamFileAsBT();
+}, 2000);
 
 wavesurfer.on('loading', function (percent) {
   // console.log('loading', percent);
@@ -755,10 +767,11 @@ function activateAudioPlayerControls() {
 
   muteBtn.classList.add('d-none');
   unmuteBtn.classList.remove('d-none');
+  wavesurfer.setMute(false);
 
   // Right controls
   volumeSlider.value = 1;
-  wavesurfer.setVolume(1 * backingTrackVolumeFactor);
+  wavesurfer.setVolume(volumeSlider.value * backingTrackVolumeFactor);
 
   // Audio I/O
   exportToDiskOrRepositoryBtn.classList.remove('disabled');

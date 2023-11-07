@@ -242,7 +242,8 @@ export function fileSelectHandlers(
       const file = e.target.files[0];
       console.log(file);
       triggerAction(file);
-      if (!!Collab) shareBackingTrack(file);
+      if (!!Collab)
+        shareBackingTrack(file);
     });
     input.click();
   };

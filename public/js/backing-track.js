@@ -143,7 +143,9 @@ function setBackingTrackFileRemote(fileInfo) {
   };
   reader.readAsArrayBuffer(file);
   */
-  loadAudioFile(file);
+
+  const annotationFile = createURLJamsFromRepository(file.name, true);
+  loadFilesInOrder(file, annotationFile);
 }
 
 async function setBackingTrackRepositoryRemote(fileInfo) {
@@ -197,8 +199,8 @@ async function setBackingTrackRepositoryRemote(fileInfo) {
   }
 
   // window.backingTrack.loadBlob(blob);
+  updateURLParams({ f: fileName, type: repositoryType }); //needed to be called before loadAudioFile. f parameter is used in wavesurfer 'once ready' event inside loadAudioFile
   loadAudioFile(blob, res); // use loadAudioFile instead of simnply loadBlob to avoid various bugs
-  setFileURLParam(fileName);
 }
 
 // Load a file from url
@@ -253,7 +255,8 @@ function setBackingTrackRecording({id, sharer, recName}) {
     recAsBackingTrack.hasBeenSet = true;
     recAsBackingTrack.recName = recName;
 
-    window.loadAudioFile(BTUrl);
-    removeFileURLParam();
+
+    const annotationFile = createURLJamsFromRepository(recName, true);
+    loadFilesInOrder(BTUrl, annotationFile);
   }
 }

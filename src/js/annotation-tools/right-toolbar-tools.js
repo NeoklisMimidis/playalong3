@@ -355,16 +355,16 @@ function saveEditing() {
       localStorage.setItem(fileName, JSON.stringify(jamsFile));
       // option to delete this storage? --button? or in settings menu?
 
-      // Neoklis pros Alex: Balto ama einai na ginetai mono se collab gia na min yparxoyn tzampa requests ston server
-      const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-      const jamsToBeExported = jsonDataToJSONFile(
-        jamsFile,
-        fNameWithoutExt,
-        'jams'
-      );
-      exportTempFolderRepo(jamsToBeExported);
-
       if (!!Collab) {
+        // Neoklis pros Alex: Balto ama einai na ginetai mono se collab gia na min yparxoyn tzampa requests ston server
+        const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        const jamsToBeExported = jsonDataToJSONFile(
+          jamsFile,
+          fNameWithoutExt,
+          'jams'
+        );
+        exportTempFolderRepo(jamsToBeExported);
+
         const newAnnotationData = _extractModalPromptFields();
         const action =
           choice === 'replace'

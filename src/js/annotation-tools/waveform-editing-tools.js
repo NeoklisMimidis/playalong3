@@ -176,6 +176,12 @@ function removeBeatAndChord(marker) {
       wavesurfer.markers.remove(marker);
       disableAnnotationListAndDeleteAnnotation();
 
+      //bug fix. collably selected marker was set to deleted marker during marker right-click event.
+      //now marker has been deleted, resetting collably selected marker to none
+      if (!!Collab) {
+        window.sharedBTEditParams.set('selectedMarker', null);
+      }
+
       updateMarkerDisplayWithColorizedRegions();
 
       //collably transmitting marker deletion event

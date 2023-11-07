@@ -17,6 +17,7 @@ import {
   loadURLParamFileAsBT,
   waveformLoadingBar,
 } from '../../audio-player';
+import { bTMarkersReady } from '../../audio-player/render-annotations';
 
 const wsBaseUrl = import.meta.env.DEV
   ? 'ws://localhost:8080'
@@ -27,9 +28,9 @@ function setupCollaboration() {
   const ydoc = new Y.Doc();
 
   const file = urlParams.get('f') ?? 'musicolab_default';
-  const course = urlParams.get('course') ?? 'musicolab_default';
+  const course = urlParams.get('course');
   // const room = `${file}::${course}`;
-  const room = course;
+  const room = course ?? file;
 
   const websocketProvider = new WebsocketProvider(wsBaseUrl, room, ydoc, {
     params: { pathname: window.location.pathname },
@@ -263,13 +264,26 @@ function setupCollaboration() {
   const sharedBTMarkers = ydoc.getMap('bTMarkers');
   sharedBTMarkers.observe(e => {
     if (e.transaction.local) return;
-    e.changes.keys.forEach((value, key) => {
-      if (value.action === 'delete') return;
-      const marker = e.target.get(key);
-      !(marker.status === 'unedited')
-        ? handleSharedBTMarkersEvent(marker, key)
-        : null;
-    });
+    //in case of late (i.e. after or during BT edit) user that hasn t yet (loaded BT --> got JAMS file -->) rendered markers...
+    //...set shared markers handling to occur in 6 seconds
+    if (!bTMarkersReady) {
+      setTimeout(() => {
+        e.changes.keys.forEach((value, key) => {
+          const marker = e.target.get(key);
+          !(marker.status === 'unedited')
+            ? handleSharedBTMarkersEvent(marker, key)
+            : null;
+        });
+      }, 6000);
+    } else {
+      e.changes.keys.forEach((value, key) => {
+        if (value.action === 'delete') return;
+        const marker = e.target.get(key);
+        !(marker.status === 'unedited')
+          ? handleSharedBTMarkersEvent(marker, key)
+          : null;
+      });
+    }
   });
 
   const sharedBTEditParams = ydoc.getMap('bTEdit');

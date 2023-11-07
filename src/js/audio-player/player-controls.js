@@ -198,9 +198,20 @@ export function zoomOut(e) {
     return;
   }
 
+  // disable cursor bcs it creates various bugs: a) timeline bugs b) losing focus
+  wavesurfer.cursor.hideCursor();
+
   wavesurfer.zoom(Math.round(wavesurfer.params.minPxPerSec / 2));
 
   zoomInBtn.classList.remove('disabled');
+  const currProgress = wavesurfer.getCurrentTime() / wavesurfer.getDuration();
+  wavesurfer.drawer.recenter(currProgress); // don't use seekAndCenter to avoid one bug with Edit Chord
+  console.log(currProgress);
+
+  // delay to avoid bugs
+  setTimeout(function () {
+    wavesurfer.cursor.showCursor();
+  }, 300);
 
   // If after zooming out the minPxPerSec is at or below the minimum, disable the zoomOut button
   if (wavesurfer.params.minPxPerSec <= 50) {
@@ -684,8 +695,7 @@ function finalizeFileStorage(file, action, sfolder = null) {
 // On progress
 window.addEventListener('beforeunload', function (event) {
   //if in collab mode and i m not the last collab user dont proceed to temporary jams deletion requests...
-  if (Collab && !defineIfSingleUser())
-      return;    
+  if (Collab && !defineIfSingleUser()) return;
 
   if (filesToDelete.length === 0) return;
   // // Files you want to delete || imported from audio-player.js

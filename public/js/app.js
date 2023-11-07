@@ -19,7 +19,7 @@ var metronomeEvents = new EventTarget();
 var preCountCanceled = false;
 var recAsBackingTrack = {
   hasBeenSet: false,
-  recName: null
+  recName: null,
 };
 
 const baseUrl =
@@ -74,20 +74,22 @@ var Jitsi_User_Name = 'test-user';
 if (userParam) {
   Jitsi_User_Name = userParam;
 }
-var Jitsi_Course_Name = 'test-room';
-if (courseParam) {
-  Jitsi_Course_Name = courseParam;
-}
+
+var Jitsi_Course_Name = courseParam ?? fileParam
+
 var roomNameInput = document.querySelector('#meet-room');
 roomNameInput.value = Jitsi_Course_Name;
+
 var Collab = false;
-if (collabParam === 'true' && courseParam !== null) {
+if (collabParam === 'true') {
   Collab = true;
 }
+
 if (!Collab)
   document
     .querySelector('.users-online-container')
     .setAttribute('hidden', true);
+
 
 var wavesurfers = []; // Array to hold all wavesurfers instances from recordings
 var recordedBlobs = []; // Array to hold all the recorded blobs
@@ -95,13 +97,18 @@ var selectedBlobs = []; // Array to hold all blobs to be mixed
 var recordedBuffers = []; // Array to hold all PCM audio recordings
 var selectedBuffers = []; // Array to hold all PCM audio recordings to be mixed
 var noRecordings = 0; // Holds how many are the audio recordings
-var sampleRate = 44100; // this will hold the sample rate used for recordings --> see some lines below
+// var sampleRate = 44100; // this will hold the sample rate used for recordings --> see some lines below
 
 // shim for AudioContext when it's not avb.
 //var AudioContext = window.AudioContext || window.webkitAudioContext;
-var audioContext = new AudioContext({
-  sampleRate: sampleRate,
-});
+/*
+  Note on Audio Sample Rate in Browsers:
+  
+  Web browsers typically use the audio sample rate of the local operating system's 
+  audio interface for both audio playback and recording. 
+*/
+var audioContext = new AudioContext();
+var sampleRate = audioContext.sampleRate;
 
 var recordButton = document.getElementById('recordButton');
 var stopButton = document.getElementById('stopButton');
@@ -231,7 +238,7 @@ function startRecording() {
         */
     rec = new Recorder(input, { numChannels: 1 });
     sampleRate = rec.context.sampleRate;
-    //console.log("sampleRate = ",sampleRate,"Hz");
+    console.log('sampleRate = ', sampleRate, 'Hz');
     //start the recording process
 
     rec.record();
@@ -346,7 +353,7 @@ function pauseRecording() {
 function stopRecording() {
   // stop metronome & hide pre count modal (& and check if preCountCanceled)
   preCountRecordingModal();
-//alx pros Neokli: auto xreiazetai na ginetai collably? // neoklis: oxi, apo thn stigmi poy stelnonte ta mute states douleyei automata san collab
+  //alx pros Neokli: auto xreiazetai na ginetai collably? // neoklis: oxi, apo thn stigmi poy stelnonte ta mute states douleyei automata san collab
   resetPlaybackVolume();
 
   console.log('stopButton clicked');
@@ -373,10 +380,13 @@ function stopRecording() {
   //disable the stop button, enable the record too allow for new recordings
   stopButton.hidden = true;
   stopButton.setAttribute('title', '');
+
   recordButton.disabled = false;
   recordButton.setAttribute('title', 'Start recording');
+
   pauseButton.hidden = true;
   pauseButton.setAttribute('title', '');
+
   recordButton.classList.remove('flash');
   pauseButton.classList.remove('flash');
 
@@ -428,6 +438,9 @@ function stopRecording() {
     //...and disable the playback speed bar
     document.getElementById('speedSlider').disabled = false;
   }
+
+  // a small time out
+  setTimeout(() => hideUnhideElements(), 250);
 
   // DON'T execute the rest of the code if recording was canceled while pre count was up
   if (preCountCanceled) {
@@ -486,9 +499,6 @@ function stopRecording() {
       return;
     }
   });
-
-  // a small time out
-  setTimeout(() => hideUnhideElements(false), 250);
 }
 // end recording section ///////////////////////////////////////////////////////
 
@@ -642,7 +652,7 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
           window.playerConfig.set('backingTrackRecording', {
             id: collabId,
             sharer: userParam,
-            recName: recAsBackingTrack.recName
+            recName: recAsBackingTrack.recName,
           });
           //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
           window.playerConfig.delete('backingTrack');
@@ -945,7 +955,7 @@ function fillRecordingTemplate(
     console.log('deleting recording #' + deleteIndex, 'was clicked');
     recordedBuffers[deleteIndex - 1][0] = [0];
     console.log('recordedBuffers', recordedBuffers);
-    wavesurfers.splice(deleteIndex - 1, 1);
+    deleteWavesurfer(number);
     console.log('wavesurfers', wavesurfers);
     scrollContainer.parentNode.removeChild(scrollContainer);
     timelineContainer.parentNode.removeChild(timelineContainer);
@@ -1315,7 +1325,7 @@ function createDownloadLink(
     //setting relevant global parameters in order to be used in loadAudioFiles
     recAsBackingTrack.hasBeenSet = true;
     recAsBackingTrack.recName = generateRecordingFilename();
-    
+
     deleteButton.click();
   }
 
@@ -1352,16 +1362,7 @@ function createDownloadLink(
     recordedBuffers[deleteIndex - 1][0] = [0];
     console.log('recordedBuffers', recordedBuffers);
 
-    // BUG: wavesurfers deletion logic is not correct! needs fixing || TODO || can lead to bugs e.g. in setPlaybackVolume()
-    // console.log(`🚀: - deleteWaveForm bef- wavesurfers:`, wavesurfers);
-    // console.log(`🚀: - deleteWaveForm - deleteIndex:`, deleteIndex);
-    const deletedElements = wavesurfers.splice(deleteIndex - 1, 1);
-    // if (deletedElements.length === 0) {
-    //   alert('No element was deleted!');
-    // }
-    // console.log(`🚀: - deleteWaveForm aft- wavesurfers:`, wavesurfers);
-    // console.log(`🚀: - deleteWaveForm - deleteIndex:`, deleteIndex);
-
+    deleteWavesurfer(number);
     console.log('wavesurfers', wavesurfers);
 
     scrollContainer.parentNode.removeChild(scrollContainer);
@@ -1452,6 +1453,30 @@ function createDownloadLink(
 
   // increase the count variable
   count++;
+}
+
+/**
+ * Function to delete correct wavesurfer instance
+ *
+ * @param {*} buttonId
+ */
+function deleteWavesurfer(buttonId) {
+  const index = wavesurfers.findIndex(w => {
+    return w.container.id === 'waveform' + buttonId;
+  });
+
+  if (index !== -1) {
+    wavesurfers[index].destroy(); // to clean up memory
+
+    // Remove the element from the array
+    wavesurfers.splice(index, 1);
+
+    console.log(
+      `Deleted the WaveSurfer with container id: waveform${buttonId}`
+    );
+  } else {
+    console.log(`No WaveSurfer found with container id: waveform${buttonId}`);
+  }
 }
 
 function combineSelected() {
@@ -2079,13 +2104,13 @@ function resetStopAllButton() {
   // console.log('At least one source of audio is still playing:', audioIsPLaying);
 }
 
-function hideUnhideElements(recording) {
+function hideUnhideElements(isRecording = false) {
   const muteButtons = document.querySelectorAll('.mute-button');
   let count = muteButtons.length;
 
   if (backingTrack.isReady) count++;
 
-  const isHidden = recording || count < 2;
+  const isHidden = isRecording || count < 2; // during recording, always hide!
 
   stopAllButton.hidden = isHidden;
   playPauseAllButton.hidden = isHidden;

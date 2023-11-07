@@ -31,6 +31,9 @@ import {
 export let jamsFile;
 let averageTempoWithoutSpeedFactor = 0;
 
+//used in sharedBTMarkers observer (setup.js)
+export let bTMarkersReady = false;
+
 // -
 
 export function loadJAMS(input) {
@@ -79,8 +82,9 @@ export function loadJAMS(input) {
     resetToolbar();
 
     console.log('Loading JAMS has been successfully completed! ✌️');
+    bTMarkersReady = true;
 
-    // Save to local storage, which is designed to store data in its original format.ALX
+    // Save to local storage, which is designed to store data in its original format
     localStorage.setItem(fileName, JSON.stringify(jamsFile));
 
     return annotatedChordsAtBeatsData;
