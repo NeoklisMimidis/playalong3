@@ -52,12 +52,7 @@ var wavesurfer_mic = WaveSurfer.create({
 
 var firstWaveform = true;
 var volume = 1;
-var gumStream; //stream from getUserMedia()
-var rec; //Recorder.js object
-var input; //MediaStreamAudioSourceNode we'll be recording
-const constraints = {
-  audio: { echoCancellation: false },
-};
+var exports = {};
 
 var count = 1;
 var speedMatrix = [];
@@ -120,27 +115,6 @@ var combineSelectedButton = document.getElementById('combineselectedButton');
 
 var waveform_micContainer = document.getElementById('waveform_mic');
 
-//add events to some buttons
-recordButton.addEventListener('click', () => {
-  if (!!Collab && otherUserRecording) {
-    const notifText = "You can't record while someone else is recording.";
-    const notifContext = 'danger';
-    notify(notifText, notifContext);
-
-    return;
-  }
-  startRecording();
-  !!Collab
-    ? window.awareness.setLocalStateField('record', {
-        status: 'start',
-        recUserData: { id: idParam, name: userParam },
-      })
-    : null;
-});
-stopButton.addEventListener('click', () => {
-  stopRecording();
-});
-pauseButton.addEventListener('click', pauseRecording);
 playPauseAllButton.addEventListener('click', playpauseAll);
 stopAllButton.addEventListener('click', stopAll);
 combineSelectedButton.addEventListener('click', combineSelected);
@@ -172,6 +146,7 @@ function setPlaybackSpeed(s) {
   }
 }
 
+// metronome section ///////////////////////////////////////////////////////
 const speedValueElem = document.getElementById('speedValue');
 const speedSliderElem = document.getElementById('speedSlider');
 
@@ -198,308 +173,7 @@ speedSliderElem?.addEventListener('change', () => {
   speedValueElem.animate(speedValueKeyFrames, speedValueTiming);
 });
 
-// recording section ///////////////////////////////////////////////////////
-function startRecording() {
-  //console.log("recordButton clicked");
-  document.getElementById('speedSlider').disabled = true;
-  hideUnhideElements(true);
-
-  recordButton.disabled = true;
-  recordButton.setAttribute('title', '');
-
-  stopButton.removeAttribute('hidden');
-  stopButton.setAttribute('title', 'Stop recording');
-
-  /*
-        We're using the standard promise based getUserMedia()
-        https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-    */
-  let start = performance.now();
-  navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-    //console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
-
-    /*
-            create an audio context after getUserMedia is called
-            sampleRate might change after getUserMedia is called, like it does on macOS when recording through AirPods
-            the sampleRate defaults to the one set in your OS for your playback device
-
-        */
-    audioContext = new AudioContext({
-      sampleRate: sampleRate,
-    });
-
-    /* use the stream */
-    input = audioContext.createMediaStreamSource(stream);
-
-    /*
-            Create the Recorder object and configure to record mono sound (1 channel)
-            Recording 2 channels will double the file size
-        */
-    rec = new Recorder(input, { numChannels: 1 });
-    sampleRate = rec.context.sampleRate;
-    console.log('sampleRate = ', sampleRate, 'Hz');
-    //start the recording process
-
-    rec.record();
-    //console.log("Recording started");
-    let end = performance.now();
-    rec.stop();
-
-    //update the format
-    // document.getElementById('formats').innerHTML =
-    //   'Format: 1 channel pcm @ ' + audioContext.sampleRate / 1000 + 'kHz';
-
-    /* assign to gumStream for later use */
-    gumStream = stream;
-
-    // display microphone (pink) container
-    waveform_micContainer.removeAttribute('hidden');
-
-    let latency = end - start;
-    console.log(`Latency (getUserMedia init): ${latency} ms`);
-
-    preCountRecordingModal().then(() => {
-      // execute the rest of the code IF pre count finished successfully
-      start = performance.now();
-      rec.record();
-      end = performance.now();
-
-      // recording started so animation starts
-      recordButton.classList.add('flash');
-      //show microphone animation
-      wavesurfer_mic.microphone.start();
-      playAll();
-
-      pauseButton.disabled = false;
-      pauseButton.removeAttribute('hidden');
-      pauseButton.setAttribute('title', 'Pause recording');
-
-      latency = end - start;
-      console.log(`Latency (rec.stop to rec.record): ${latency} ms`);
-    });
-  });
-  //}).catch(function(err) {
-  //enable the record button if getUserMedia() fails
-  //	recordButton.disabled = false;
-  //	stopButton.disabled = false;
-  //	pauseButton.disabled = true;
-  //});
-}
-
-function pauseRecording() {
-  //console.log("pauseButton clicked rec.recording=",rec.recording );
-  var pauseButtons = document.querySelectorAll('.pause-button');
-  var playButtons = document.querySelectorAll('.play-button');
-  var playPauseButtons = document.querySelectorAll('.play-pause-button');
-  //console.log("click all pause buttons if recording is paused");
-  //console.log("and all play buttons if recording is resumed");
-  //console.log("pauseButtons.length = ",pauseButtons.length);
-
-  AUDIO_PLAYER_CONTROLS.playPauseBtn.click();
-
-  if (rec.recording) {
-    resetPlaybackVolume();
-    //pause recording
-    rec.stop();
-    wavesurfer_mic.microphone.pause();
-    wavesurfer_mic.pause();
-    //waveform_micContainer.setAttribute('hidden','true');
-    if (document.querySelector('#countOn').checked)
-      parent.metronome.setPlayStop(false);
-    pauseButton.disabled = false;
-    pauseButton.setAttribute('title', 'Resume recording');
-    pauseButton.classList.add('flash');
-    recordButton.disabled = true;
-    recordButton.classList.remove('flash');
-
-    for (var i = 0; i < pauseButtons.length; i++) {
-      //console.log(i);
-      pauseButtons[i].click();
-      playPauseButtons[i].innerHTML =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-      //playPauseButtons[i].innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z" /></svg>';
-      playPauseButtons[i].setAttribute('title', 'Play');
-      //playPauseButtons[i].setAttribute("title","Pause");
-    }
-  } else {
-    setPlaybackVolume();
-    //resume recording
-    //console.log("Resuming recording...");
-    //waveform_micContainer.removeAttribute('hidden');
-    rec.record();
-    wavesurfer_mic.microphone.start();
-    if (document.querySelector('#countOn').checked)
-      parent.metronome.setPlayStop(true);
-
-    pauseButton.disabled = false;
-    pauseButton.setAttribute('title', 'Pause recording');
-    pauseButton.classList.remove('flash');
-    recordButton.classList.add('flash');
-
-    for (var i = 0; i < pauseButtons.length; i++) {
-      //console.log(i);
-      playButtons[i].click();
-      //playPauseButtons[i].innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-      playPauseButtons[i].innerHTML =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"	class="bi bi-pause-fill" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z" /></svg>';
-      //playPauseButtons[i].setAttribute("title","Play");
-      playPauseButtons[i].setAttribute('title', 'Pause');
-      recordButton.disabled = true;
-    }
-  }
-}
-
-function stopRecording() {
-  // stop metronome & hide pre count modal (& and check if preCountCanceled)
-  preCountRecordingModal();
-  //alx pros Neokli: auto xreiazetai na ginetai collably? // neoklis: oxi, apo thn stigmi poy stelnonte ta mute states douleyei automata san collab
-  resetPlaybackVolume();
-
-  console.log('stopButton clicked');
-  document.getElementById('speedSlider').disabled = false;
-  var stopButtons = document.querySelectorAll('.stop-button');
-  var playButtons = document.querySelectorAll('.play-button');
-  var playPauseButtons = document.querySelectorAll('.play-pause-button');
-  //console.log("click all stop buttons")
-  //console.log("stopButtons.length = ",stopButtons.length);
-  for (var i = 0; i < stopButtons.length; i++) {
-    //console.log(i);
-    stopButtons[i].click();
-    playButtons[i].innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-    playPauseButtons[i].innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-    //playPauseButtons[i].innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z" /></svg>';
-    playPauseButtons[i].setAttribute('title', 'Play');
-    //playPauseButtons[i].setAttribute("title","Pause");
-  }
-
-  AUDIO_PLAYER_CONTROLS.stopBtn.click();
-
-  //disable the stop button, enable the record too allow for new recordings
-  stopButton.hidden = true;
-  stopButton.setAttribute('title', '');
-
-  recordButton.disabled = false;
-  recordButton.setAttribute('title', 'Start recording');
-
-  pauseButton.hidden = true;
-  pauseButton.setAttribute('title', '');
-
-  recordButton.classList.remove('flash');
-  pauseButton.classList.remove('flash');
-
-  playPauseAllButton.innerHTML =
-    '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-  playPauseAllButton.title = 'Play all';
-
-  //reset button just in case the recording is stopped while paused
-  pauseButton.innerHTML =
-    '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-pause-fill" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z" /></svg>';
-
-  //tell the recorder to stop the recording
-  rec.stop();
-
-  //stop microphone animation
-  wavesurfer_mic.microphone.stop();
-  wavesurfer_mic.microphone.pause(); // this is necessary to prevent the visualization of the next recording while the pre-count modal is still active
-
-  waveform_micContainer.setAttribute('hidden', 'true');
-
-  //stop microphone access
-  gumStream.getAudioTracks()[0].stop();
-
-  stopAllButton.disabled = true;
-  console.log('disabled StopALl button');
-  stopAllButton.setAttribute('title', '');
-
-  function actOnInvalidRecord() {
-    !!Collab
-      ? window.awareness.setLocalStateField('record', {
-          status: 'stop',
-          recUserData: { id: idParam, name: userParam },
-          isValid: false,
-        })
-      : null;
-
-    if (count == 1) {
-      //if no other recording --> rehide not needed buttons...
-      const initialButtons = [
-        'recordButton',
-        'start-close-call-btn',
-        'metronome-btn',
-      ];
-
-      [...document.getElementById('controls').children]
-        .filter(e => e.tagName === 'BUTTON' && !initialButtons.includes(e.id))
-        .forEach(e => e.setAttribute('hidden', true));
-    }
-    //...and disable the playback speed bar
-    document.getElementById('speedSlider').disabled = false;
-  }
-
-  // a small time out
-  setTimeout(() => hideUnhideElements(), 250);
-
-  // DON'T execute the rest of the code if recording was canceled while pre count was up
-  if (preCountCanceled) {
-    actOnInvalidRecord();
-    return;
-  }
-
-  // console.log('Number of recordings = ', noRecordings);
-
-  //get the raw PCM audio data as an array of float32 numbers
-  rec.getBuffer(function (buffer) {
-    const data = Array.from(buffer[0]);
-    //discriminating cases depending on whether there was a recording larger than 0.5s or not
-    if (data.length > sampleRate) {
-      //case 'rec>1s': save and possibly share recording
-      noRecordings++;
-      recordedBuffers.push(buffer); //push the buffer to an array
-      //console.log("recordedBuffers = ", recordedBuffers);
-
-      !!Collab
-        ? window.awareness.setLocalStateField('record', {
-            status: 'stop',
-            recUserData: { id: idParam, name: userParam },
-            isValid: true,
-          })
-        : null;
-
-      if (!!Collab && window.sharedRecordedBlobs != null) {
-        const obj = {
-          id: generateID(),
-          speed: speed01,
-          set_pitch: 1 / speed01,
-          userName: userParam,
-          userId: idParam,
-          sampleRate,
-          count,
-        };
-        addSharedBuffer(data, obj);
-      }
-
-      if (!Collab) {
-        rec.exportWAV(createDownloadLink);
-      }
-
-      rec.exportWAV(function (blob) {
-        recordedBlobs.push(blob);
-        //console.log("recordedBlobs", recordedBlobs);
-      });
-      console.log('recordedBlobs', recordedBlobs);
-      console.log('recordedBuffers = ', recordedBuffers);
-      //recordedBuffers.forEach(buffer => {
-      //	console.log("length",buffer.byteLength);
-      //});
-    } else {
-      actOnInvalidRecord();
-      return;
-    }
-  });
-}
-// end recording section ///////////////////////////////////////////////////////
+// end metronome section ///////////////////////////////////////////////////////
 
 function addSharedBuffer(data, config) {
   const conf = {
@@ -1040,7 +714,10 @@ function fillRecordingTemplate(
   count++;
 }
 
-function createDownloadLink(
+/**
+ * Create recording track: wavesurfer, and related controls
+ */
+function createRecordingTrack(
   blob,
   id,
   recUserData,
@@ -2014,78 +1691,6 @@ function setPlaybackVolume() {
   // */
 }
 
-// debug event fo playback volume
-document.getElementById('musicolab-logo').addEventListener('click', e => {
-  console.log('------------');
-  console.log(
-    'backing tracking volume =',
-    backingTrack.backend.gainNode.gain.value
-  );
-
-  for (let w = 0; w < wavesurfers.length; w++) {
-    console.log(
-      'recording volume [' + w + '] =',
-      wavesurfers[w].backend.gainNode.gain.value
-    );
-  }
-});
-
-function preCountRecordingModal() {
-  return new Promise((resolve, reject) => {
-    // EXTRA: display warning modal about headphones before pre count? (optional) TODO
-
-    const currentMeasure = parent.metronome.bar + 1;
-    const preCountModalEl = document.getElementById('preCountModal');
-    // User's selected in Metronome settings pre count measures
-    const preCountMeasures = document.getElementById('precount').selectedIndex;
-
-    if (preCountMeasures === 0) resolve(); // no pre count
-
-    if (currentMeasure === 0) {
-      if (preCountMeasures != 0) {
-        console.log('Pre count measures exist');
-        // show pre count modal
-        preCountModalEl.classList.remove('d-none');
-
-        parent.metronome.setPlayStop(true);
-      } else if (window.continuous_play && preCountMeasures === 0) {
-        console.log('NO Pre count measures, but continuous play enabled');
-        parent.metronome.setPlayStop(true);
-      }
-    } else {
-      // check if pre count was canceled with measures information
-      preCountCanceled = currentMeasure <= preCountMeasures ? true : false;
-
-      const preCountModalEl = document.getElementById('preCountModal');
-      preCountModalEl.classList.add('d-none');
-      createModalPreCount();
-
-      //stop metronome
-      parent.metronome.setPlayStop(false);
-      parent.metronome.bar = -1;
-    }
-
-    function onPreCountMeasuresComplete() {
-      console.log(
-        'Pre count measures complete, resolving preCountRecordingModal'
-      );
-      // Remove listener to prevent re-trigger within the same cycle.
-
-      metronomeEvents.removeEventListener(
-        'preCountMeasuresComplete',
-        onPreCountMeasuresComplete
-      );
-      resolve();
-    }
-
-    // Listen for the custom event
-    metronomeEvents.addEventListener(
-      'preCountMeasuresComplete',
-      onPreCountMeasuresComplete
-    );
-  });
-}
-
 function resetStopAllButton() {
   let audioIsPLaying = false;
   for (let w = 0; w < wavesurfers.length; w++) {
@@ -2124,3 +1729,19 @@ function hideUnhideElements(isRecording = false) {
       : 'none is the backing track!'
   }`;
 }
+
+// debug event fo playback volume
+document.getElementById('musicolab-logo').addEventListener('click', e => {
+  console.log('------------');
+  console.log(
+    'backing tracking volume =',
+    backingTrack.backend.gainNode.gain.value
+  );
+
+  for (let w = 0; w < wavesurfers.length; w++) {
+    console.log(
+      'recording volume [' + w + '] =',
+      wavesurfers[w].backend.gainNode.gain.value
+    );
+  }
+});

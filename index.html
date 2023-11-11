@@ -1383,19 +1383,23 @@
     </div>
 
     <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
-    <!--<script src="js/metro.js"></script>-->
 
     <!--public scripts follow-->
     <script src="/js/soundtouch.js"></script>
-    <script src="/js/recorder.js"></script>
+    <!-- <script src="/js/recorder.js"></script> -->
     <script src="/js/wavesurfer.js"></script>
     <script src="/js/wavesurfer.cursor.js"></script>
     <script src="/js/wavesurfer.microphone.min.js"></script>
     <script src="/js/wavesurfer.timeline.js"></script>
+
     <script src="/js/file-load-repository.js"></script>
     <!-- application script -->
     <script src="/js/app.js"></script>
     <script src="/js/backing-track.js"></script>
+
+    <script src="/js/audioworklet-to-worker/utils/URLfromFiles.js"></script>
+    <script src="/js/audioworklet-to-worker/ringbuffer/index.js"></script>
+    <script src="/js/recording.js"></script>
     <!-- <script src='https://meet.jit.si/external_api.js'></script> -->
     <!-- <script src="https://jitsi-musicolab.hmu.gr:8443/external_api.js"></script> -->
     <script src="/vendor/jitsi/external_api.js"></script>
@@ -1405,33 +1409,8 @@
 
     <!-- RING BUFFER - AUDIO WORKLET RECORDING -->
     <p>
-      <button disabled id="startstop">Start</button>
-      <button disabled id="playRecordedData">Play recorded sound</button>
+      <button disabled id="setupRec">Setup Recording</button>
     </p>
-
-    <p style="text-align: center; margin: 20px">
-      <canvas
-        id="waveformMB"
-        width="600"
-        height="100"
-        style="
-          border: 2px solid #4a4a4a;
-          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-          border-radius: 8px;
-          background-color: #f0f0f0;
-        "
-      ></canvas>
-    </p>
-
-    <script src="/audioworklet-to-worker/lib/utils/waveformDrawer.js"></script>
-    <script>
-      var exports = {};
-    </script>
-
-    <script src="/audioworklet-to-worker/lib/utils/URLfromFiles.js"></script>
-
-    <script src="/audioworklet-to-worker/lib/ringbuffer/index.js"></script>
-    <script src="/audioworklet-to-worker/js/script.js"></script>
 
     <!-- END -->
   </body>
