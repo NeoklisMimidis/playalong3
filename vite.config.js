@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/apprepository/playalong3/',
+  base: './',
   build: {
     sourcemap: true,
   },
