@@ -14,8 +14,7 @@
   "devDependencies": {
     "buffer": "^5.7.1",
     "process": "^0.11.10",
-    "vite": "^4.3.9",
-    "vite-plugin-cross-origin-isolation": "^0.1.6"
+    "vite": "^4.3.9"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.0",
@@ -27,7 +26,6 @@
     "lib0": "^0.2.78",
     "lit-html": "^2.7.4",
     "nexusui": "^2.1.6",
-    "recorderjs": "github:mattdiamond/Recorderjs",
     "tippy.js": "^6.3.7",
     "wavesurfer.js": "^6.6.3",
     "y-protocols": "^1.0.5",
