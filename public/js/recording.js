@@ -360,6 +360,7 @@ function actOnInvalidRecord() {
       'recordButton',
       'start-close-call-btn',
       'metronome-btn',
+      'calibrate-btn'
     ];
 
     [...document.getElementById('controls').children]

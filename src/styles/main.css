@@ -1234,6 +1234,10 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   stroke: var(--color-highlight--3) !important;
 }
 
+#calibrate-icon:hover path{
+  fill: var(--color-highlight--3)
+}
+
 .flip-horizontal {
   transform: scaleX(-1);
 }
@@ -1339,6 +1343,36 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
 .dot-played {
   opacity: 1 !important;
 }
+
+/* Calibration tools */
+#calibration-canvas {
+  border: 1px solid black;
+  display: inline;
+}
+
+#calibration-input {
+  padding: 0px;
+  margin-top: 0px;
+  margin-bottom: 384px;
+  height: 384px;
+  width: 15px;
+  -webkit-appearance: slider-vertical;
+  display: inline;
+}
+
+/* #wrapperr {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+} */
+
+.calibration-wrapper {
+  justify-content: center;
+  flex-direction: row;
+  display: flex;
+  max-width: 95%;
+}
+
 
 /* Specific Styles per Media Query */
 @media (max-width: 882px) {
