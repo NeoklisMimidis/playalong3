@@ -15,8 +15,6 @@ const uidParam = urlParams.get('uid');
 
 initRepositoryTrackList(courseParam, collabParam);
 
-var metronomeEvents = new EventTarget();
-var preCountCanceled = false;
 var recAsBackingTrack = {
   hasBeenSet: false,
   recName: null,

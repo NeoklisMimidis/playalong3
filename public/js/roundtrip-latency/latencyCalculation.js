@@ -1,5 +1,7 @@
 const calibrateBtn = document.getElementById('calibration-btn');
-const closeCalibrationModalBtn = document.getElementById('close-calibration-modal-btn');
+const closeCalibrationModalBtn = document.getElementById(
+  'close-calibration-modal-btn'
+);
 const recalibrateBtn = document.getElementById('recalibration-btn');
 
 let calibrating = false;
@@ -35,19 +37,19 @@ let recordAudioContext;
 //     var buf = new Float32Array(analyser.frequencyBinCount);
 //     var cvs_step = w / buf.length;
 //     var initialSetup = false;
-  
+
 //     var inputProcessing = document.location.search.indexOf("input-processing") != -1;
 //     // var debugCanvas = document.location.search.indexOf("debug") != -1;
-  
+
 //     console.log("Input processing: ", inputProcessing);
 //     // // console.log("Debug canvas", debugCanvas);
-  
+
 //     // if (!debugCanvas) {
 //     //   canvas_debug.remove();
 //     // }
-  
+
 //     threshold = $("#calibration-input")[0].value;
-  
+
 //     function draw() {
 //       ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
 //       ctx.fillRect(0, 0, w, h);
@@ -75,11 +77,11 @@ let recordAudioContext;
 //       }
 //       requestAnimationFrame(draw);
 //     }
-  
+
 //     if (calibrationStopped) {
 //       requestAnimationFrame(draw);
 //     }
-  
+
 //     function stop() {
 //       ac.suspend();
 
@@ -92,7 +94,6 @@ let recordAudioContext;
 
 //       calibrationStopped = true;
 //     }
-
 
 //     async function start () {
 //       $("#stopCalibration")[0].disabled = false;
@@ -112,7 +113,7 @@ let recordAudioContext;
 //           const url = await URLFromFiles(['js/roundtrip-latency/measureProcessor.js']);
 //           await ac.audioWorklet.addModule(url);
 //           var constraints = inputProcessing ? { audio : {
-//             // disabling this because we're intentionally trying to echo 
+//             // disabling this because we're intentionally trying to echo
 //             echoCancellation: false,
 //             noiseSupression: true,
 //             autoGainControl: true
@@ -122,16 +123,15 @@ let recordAudioContext;
 //             autoGainControl: false
 //           }};
 //           let stream = await navigator.mediaDevices.getUserMedia(constraints);
-  
+
 //           var mic_source = ac.createMediaStreamSource(stream);
 //           var worklet_node = new AudioWorkletNode(ac, 'measure-processor', {outputChannelCount: [1]});
 //           worklet_node.channelCount = 1;
 //           mic_source.connect(analyser);
 //           mic_source.connect(worklet_node).connect(ac.destination);
-  
+
 //           worklet_node.port.postMessage({threshold: $("#calibration-input")[0].value });
-  
-  
+
 //           worklet_node.port.onmessage = function(e) {
 //             // if (debugCanvas) {
 //             //   var c2 = canvas_debug.getContext("2d");
@@ -140,9 +140,9 @@ let recordAudioContext;
 //             //   var between_peaks = e.data.array;
 //             //   var len = e.data.array.length;
 //             //   var wstep = w2 / len;
-  
+
 //             //   c2.clearRect(0, 0, w2, h2);
-  
+
 //             //   c2.fillStyle = "#000";
 //             //   var x = 0;
 //             //   for (var i = 0; i < len; i++) {
@@ -151,7 +151,7 @@ let recordAudioContext;
 //             //   }
 //             //   c2.fillStyle = "#f00";
 //             //   c2.fillRect(w2 - wstep * e.data.offset, 0, wstep, h);
-  
+
 //             //   c2.fillRect(w2 - wstep * e.data.delay_frames - wstep * e.data.offset, h2 *
 //             //       0.75, w2 - wstep * e.data.delay_frames, 4);
 //             // }
@@ -159,7 +159,7 @@ let recordAudioContext;
 //             $("#roundtripLatency")[0].innerText = (e.data.latency * 1000) + "ms"
 //             $("#outputLatency")[0].innerText = (ac.outputLatency * 1000)+ "ms"
 //           }
-  
+
 //           $("#calibration-input")[0].oninput = (e) => {
 //             threshold = e.target.value;
 //             worklet_node.port.postMessage({threshold: e.target.value});
@@ -182,26 +182,23 @@ let recordAudioContext;
 recalibrateBtn.addEventListener('click', () => {
   $('#calibration-modal').modal({
     backdrop: 'static',
-    keyboard: false
-  })
-})
+    keyboard: false,
+  });
+});
 
 calibrateBtn.addEventListener('click', async () => {
-  calibrating
-    ? await stopCalibrate()
-    : await startCalibrate();
-})
+  calibrating ? await stopCalibrate() : await startCalibrate();
+  await setupRecording();
+});
 
 closeCalibrationModalBtn.addEventListener('click', async () => {
-  calibrating
-   ? await stopCalibrate()
-   : null;
-  
-  $('#calibration-modal').modal('hide');  
-})
+  calibrating ? await stopCalibrate() : null;
+  await setupRecording();
+  $('#calibration-modal').modal('hide');
+});
 
-async function startCalibrate () {
-  await setupWorklet();
+async function startCalibrate() {
+  await setupCalibrationWorklet();
   await recordAudioContext.resume();
 
   calibrating = true;
@@ -209,7 +206,7 @@ async function startCalibrate () {
   calibrateBtn.innerText = 'Stop Calibration';
 }
 
-async function stopCalibrate () {
+async function stopCalibrate() {
   await recordAudioContext.close();
 
   calibrating = false;
@@ -217,44 +214,56 @@ async function stopCalibrate () {
   calibrateBtn.innerText = 'Start Calibration';
 }
 
-async function setupWorklet () {
-  recordAudioContext = new AudioContext({latencyHint: 0.00001});
+async function setupCalibrationWorklet() {
+  recordAudioContext = new AudioContext({ latencyHint: 0.00001 });
   await recordAudioContext.suspend();
 
-  const MeasureProcessorUrl = await URLFromFiles(['js/roundtrip-latency/measureProcessor.js']);
+  const MeasureProcessorUrl = await URLFromFiles([
+    'js/roundtrip-latency/measureProcessor.js',
+  ]);
   await recordAudioContext.audioWorklet.addModule(MeasureProcessorUrl);
 
-  const constraints = { audio: {
-    echoCancellation: false,
-    noiseSupression: false,
-    autoGainControl: false
-    }
+  const constraints = {
+    audio: {
+      echoCancellation: false,
+      noiseSupression: false,
+      autoGainControl: false,
+    },
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   const mic = recordAudioContext.createMediaStreamSource(stream);
 
-  const workletNode = new AudioWorkletNode(recordAudioContext, 'measure-processor', {outputChannelCount: [1]});
+  const workletNode = new AudioWorkletNode(
+    recordAudioContext,
+    'measure-processor',
+    { outputChannelCount: [1] }
+  );
 
   workletNode.channelCount = 1;
-  workletNode.port.postMessage({threshold: 0.20 });
+  workletNode.port.postMessage({ threshold: 0.2 });
 
-  workletNode.port.onmessage = (e) => {
+  workletNode.port.onmessage = e => {
     const roundtripLatency = e.data.latency * 1000;
 
-    const outputLatency = recordAudioContext.outputLatency * 1000;
-    const inputLatency = roundtripLatency - outputLatency;
+    // const outputLatency = recordAudioContext.outputLatency * 1000;
+    // const inputLatency = roundtripLatency - outputLatency;
 
-    document.getElementById("latency-compensation").innerText = inputLatency;
-    localStorage.setItem("latency-compensation", inputLatency.toFixed(2).toString());
-  }
+    document.getElementById('latency-compensation').innerText =
+      roundtripLatency; // use roundtrip NOT inputLatency;
+    localStorage.setItem(
+      'latency-compensation',
+      roundtripLatency.toFixed(2).toString()
+    );
+  };
 
   mic.connect(workletNode).connect(recordAudioContext.destination);
 }
 
 function getLocalStorages() {
-  if (localStorage.getItem("latency-compensation") !== null) {
-      const latencyCompensation = localStorage.getItem("latency-compensation");
+  if (localStorage.getItem('latency-compensation') !== null) {
+    const latencyCompensation = localStorage.getItem('latency-compensation');
 
-      document.getElementById("latency-compensation").innerText = latencyCompensation;
+    document.getElementById('latency-compensation').innerText =
+      latencyCompensation;
   }
 }

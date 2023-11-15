@@ -4,6 +4,13 @@ var ac = new AudioContext();
 var exports = {};
 var monitor = false; // turn recording monitor on or off
 
+var metronomeEvents = new EventTarget();
+var preCountCanceled = false;
+// 'resolvePreCount' is a function reference used to resolve the promise created in preCountRecordingModal. It is used to avoid a bug when early stopping the pre-count of a recording and then trying to record again
+let resolvePreCount;
+
+var isSetupRecording = false; //
+
 URLFromFiles([
   'js/audioworklet-to-worker/recorder-worklet.js',
   'js/audioworklet-to-worker/ringbuffer/index.js',
@@ -13,7 +20,7 @@ URLFromFiles([
   } else {
     ac.audioWorklet.addModule(e).then(() => {
       // 1)
-      recordButton.addEventListener('click', () => {
+      recordButton.addEventListener('click', async () => {
         if (!!Collab && otherUserRecording) {
           const notifText = "You can't record while someone else is recording.";
           const notifContext = 'danger';
@@ -22,7 +29,7 @@ URLFromFiles([
           return;
         }
 
-        startRecording();
+        await startRecording();
         !!Collab
           ? window.awareness.setLocalStateField('record', {
               status: 'start',
@@ -34,25 +41,26 @@ URLFromFiles([
       pauseButton.addEventListener('click', pauseRecording);
       // 3)
       stopButton.addEventListener('click', stopRecording);
-
-      // Init getUserMedia & setup Worker & Recording
-      setupRec.disabled = false;
-
-      setupRec.onclick = async function () {
-        // One second of stereo Float32 PCM ought to be plentiful.
-        var sab = RingBuffer.getStorageForCapacity(
-          ac.sampleRate * noChannels,
-          Float32Array
-        );
-
-        await setupWorker(sab, ac.sampleRate);
-        await setupRecording(ac, sab);
-      };
     });
   }
 });
 
 // - Setting recording & Worklet functions
+async function setupRecording() {
+  // // Init getUserMedia & setup Worker & Recording
+  if (isSetupRecording) return;
+  // One second of stereo Float32 PCM ought to be plentiful.
+  const sab = RingBuffer.getStorageForCapacity(
+    ac.sampleRate * noChannels,
+    Float32Array
+  );
+
+  await setupWorker(sab, ac.sampleRate);
+  await setupWorklet(ac, sab);
+
+  isSetupRecording = true;
+}
+
 async function setupWorker(sab, sampleRate) {
   await URLFromFiles([
     'js/audioworklet-to-worker/wav-writer.js',
@@ -131,7 +139,7 @@ async function setupWorker(sab, sampleRate) {
   });
 }
 
-async function setupRecording(ac, sab) {
+async function setupWorklet(ac, sab) {
   ac.resume();
   recorderWorklet = new AudioWorkletNode(ac, 'recorder-worklet', {
     processorOptions: sab,
@@ -158,7 +166,7 @@ async function setupRecording(ac, sab) {
 }
 
 // - Recording callbacks
-function startRecording() {
+async function startRecording() {
   document.getElementById('speedSlider').disabled = true;
   hideUnhideElements(true);
 
@@ -178,27 +186,33 @@ function startRecording() {
   if (monitor) mic.connect(ac.destination); // monitor on
 
   // ac.resume().then(() => {
-  preCountRecordingModal().then(() => {
-    // execute the rest of the code IF pre count finished successfully
-    worker.postMessage({
-      command: 'startWorker',
-    });
+  // aaa = preCountRecordingModal().then(() => {
+  await preCountRecordingModal();
 
-    recorderWorklet?.port.postMessage({
-      startRecording: true,
-    });
-    recorderWorklet.recording = true;
-
-    // recording started so animation starts
-    recordButton.classList.add('flash');
-    //show microphone animation
-    wavesurfer_mic.microphone.start();
-    playAll();
-
-    pauseButton.disabled = false;
-    pauseButton.removeAttribute('hidden');
-    pauseButton.setAttribute('title', 'Pause recording');
+  // if (aaa) return;
+  // aaa = true;
+  // .then(() => {
+  // execute the rest of the code IF pre count finished successfully
+  worker.postMessage({
+    command: 'startWorker',
   });
+
+  recorderWorklet?.port.postMessage({
+    startRecording: true,
+  });
+  recorderWorklet.recording = true;
+
+  // recording started so animation starts
+  recordButton.classList.add('flash');
+  //show microphone animation
+  wavesurfer_mic.microphone.start();
+  playAll();
+
+  pauseButton.disabled = false;
+  pauseButton.removeAttribute('hidden');
+  pauseButton.setAttribute('title', 'Pause recording');
+
+  // });
 }
 
 function pauseRecording() {
@@ -268,7 +282,8 @@ function pauseRecording() {
 
 function stopRecording() {
   // stop metronome & hide pre count modal (& and check if preCountCanceled)
-  preCountRecordingModal(); //TODO move preCountRecordingModal here!
+  preCountRecordingModal();
+  // onPreCountMeasuresComplete();
 
   resetPlaybackVolume();
 
@@ -360,7 +375,7 @@ function actOnInvalidRecord() {
       'recordButton',
       'start-close-call-btn',
       'metronome-btn',
-      'calibrate-btn'
+      'calibrate-btn', // FIXME?
     ];
 
     [...document.getElementById('controls').children]
@@ -376,7 +391,12 @@ function onSuccessfulRecording(audioBuffer) {
   if (audioBuffer.numberOfChannels === 2) {
     monoBuffer = convertStereoToMono(audioBuffer);
   }
-  const buffer = [monoBuffer.getChannelData(0)];
+  const latencyCompensation = localStorage.getItem('latency-compensation');
+  const latencySamples = Math.ceil(
+    +latencyCompensation * 0.001 * ac.sampleRate
+  );
+  const buffer = [monoBuffer.getChannelData(0).slice(latencySamples)];
+
   const data = Array.from(buffer[0]);
   let blob = recordingToBlob(data);
 
@@ -422,14 +442,28 @@ function onSuccessfulRecording(audioBuffer) {
 // - Pre count
 function preCountRecordingModal() {
   return new Promise((resolve, reject) => {
-    // EXTRA: display warning modal about headphones before pre count? (optional) TODO
-
     const currentMeasure = parent.metronome.bar + 1;
     const preCountModalEl = document.getElementById('preCountModal');
-    // User's selected in Metronome settings pre count measures
     const preCountMeasures = document.getElementById('precount').selectedIndex;
 
-    if (preCountMeasures === 0) resolve(); // no pre count
+    // Assign the resolve function to the external variable
+    resolvePreCount = resolve;
+
+    function onPreCountMeasuresComplete() {
+      console.log(
+        'Pre count measures complete, resolving preCountRecordingModal'
+      );
+      metronomeEvents.removeEventListener(
+        'preCountMeasuresComplete',
+        onPreCountMeasuresComplete
+      );
+      resolvePreCount();
+    }
+
+    if (preCountMeasures === 0) {
+      resolve();
+      return;
+    }
 
     if (currentMeasure === 0) {
       if (preCountMeasures != 0) {
@@ -448,27 +482,17 @@ function preCountRecordingModal() {
 
       const preCountModalEl = document.getElementById('preCountModal');
       preCountModalEl.classList.add('d-none');
-      createModalPreCount();
+      createModalPreCount(); // reset pre-count modal
 
       //stop metronome
       parent.metronome.setPlayStop(false);
       parent.metronome.bar = -1;
+
+      // Resolve & Return
+      onPreCountMeasuresComplete();
+      return;
     }
 
-    function onPreCountMeasuresComplete() {
-      console.log(
-        'Pre count measures complete, resolving preCountRecordingModal'
-      );
-      // Remove listener to prevent re-trigger within the same cycle.
-
-      metronomeEvents.removeEventListener(
-        'preCountMeasuresComplete',
-        onPreCountMeasuresComplete
-      );
-      resolve();
-    }
-
-    // Listen for the custom event
     metronomeEvents.addEventListener(
       'preCountMeasuresComplete',
       onPreCountMeasuresComplete
