@@ -10,6 +10,7 @@ import {
   handleSharedBTMarkersEvent,
   handleSharedRecordingDataEvent,
   handleSharedRecordingResetEvent,
+  handleBTFile,
 } from './sharedTypesHandlers';
 import {
   URLParamFileLoaded,
@@ -296,6 +297,17 @@ function setupCollaboration() {
       : null;
   });
 
+  const sharedBTFile = ydoc.getMap('bTFile');
+  sharedBTFile.observe(e => {
+    !e.transaction.local
+      ? e.changes.keys.forEach((value, key) => {
+          // console.log(value, key);
+
+          handleBTFile(key);
+        })
+      : null;
+  });
+
   // ydoc.on('update', (_update, _origin, _doc, tr) => {
   //   // Look for buffers that are no longer used and free them
   //   for (let [key, _] of tr.changed) {
@@ -319,6 +331,7 @@ function setupCollaboration() {
   window.playerConfig = playerConfig;
   window.sharedBTEditParams = sharedBTEditParams;
   window.sharedBTMarkers = sharedBTMarkers;
+  window.sharedBTFile = sharedBTFile;
   window.Y = Y;
 
   window.debugSharedRecordings = function (mode = 'table') {

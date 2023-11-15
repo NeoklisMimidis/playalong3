@@ -1162,7 +1162,7 @@
                 <label><strong>Export to:</strong></label>
 
                 <div id="export-container">
-                  <div id="export-musicolab">
+                  <div disable id="export-musicolab">
                     <div class="input-list">
                       <select id="export-selections" class="no-border">
                         <option value="public">public</option>
@@ -1175,6 +1175,13 @@
                       type="button"
                       class="btn btn-primary export-musicolab"
                     >
+                      <span
+                        class="spinner-border spinner-border-sm d-none"
+                        role="status"
+                        aria-hidden="true"
+                        disabled
+                        id="export-musicolab-spinner"
+                      ></span>
                       MusiCoLab
                     </button>
                   </div>

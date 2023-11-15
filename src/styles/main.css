@@ -864,7 +864,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
 }
 
 #exportToDiskRepository .modal-content {
-  width: 290px;
+  width: 324px;
 }
 
 #exportToDiskRepository .modal-body {
@@ -895,6 +895,7 @@ Furthermore, Wavesurfer generates two parallel canvas elements to display two di
   justify-content: space-between;
   align-items: center;
   flex-basis: 70%;
+  gap: 5px;
 }
 
 #export-container #export-disk {
@@ -1234,8 +1235,8 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   stroke: var(--color-highlight--3) !important;
 }
 
-#calibrate-icon:hover path{
-  fill: var(--color-highlight--3)
+#calibrate-icon:hover path {
+  fill: var(--color-highlight--3);
 }
 
 .flip-horizontal {
@@ -1372,7 +1373,6 @@ It's important to remember that styling scrollbar using the ::-webkit-scrollbar 
   display: flex;
   max-width: 95%;
 }
-
 
 /* Specific Styles per Media Query */
 @media (max-width: 882px) {

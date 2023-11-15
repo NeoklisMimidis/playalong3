@@ -95,15 +95,12 @@ export function handleSharedBTEditParamsEvent(value, key) {
       handleChordSelection(value);
       break;
     case 'selectedMarker':
-      value
-       ? handleMarkerSelection(value)
-       : null;
+      value ? handleMarkerSelection(value) : null;
       break;
   }
 }
 
 export function handleSharedBTMarkersEvent(collabEditedMarker, key) {
-
   switch (collabEditedMarker.status) {
     //final values
     case 'edited':
@@ -325,4 +322,22 @@ function handleAnnotationSelection(selection) {
   const notifText = `${selection.selector} has changed the annotation.`;
   const notifContext = 'info';
   notify(notifText, notifContext);
+}
+
+export function handleBTFile(key) {
+  switch (key) {
+    case 'audioExistsInRepo':
+      audioExistsInRepo = sharedBTFile.get('audioExistsInRepo');
+      // case of changing URL params from export to repo
+      if (audioExistsInRepo === 'public' || audioExistsInRepo !== 'course') {
+        updateURLParams({ type: audioExistsInRepo });
+      }
+      break;
+    case 'bTrackDATA':
+      bTrackDATA = sharedBTFile.get('bTrackDATA');
+      break;
+    case 'bTrackURL':
+      bTrackURL = sharedBTFile.get('bTrackURL');
+      break;
+  }
 }

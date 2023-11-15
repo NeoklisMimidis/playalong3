@@ -195,8 +195,8 @@ export function loadURLParamFileAsBT() {
 
   if (window.location.hostname === 'localhost') {
     // A) Localhost (preload audio):
-    resetAudioPlayer();
-    // loadFilesInOrder(audioFileURL1);
+    // resetAudioPlayer();
+    loadFilesInOrder(audioFileURL1);
     // loadFilesInOrder(audioFileURL1, annotationFile1);
   } else if (
     window.location.hostname === 'musicolab.hmu.gr' &&
@@ -375,6 +375,8 @@ function doChordBeatAnalysis(
       const jsonString = ajax.responseText.substring(jsonStart, jsonEnd);
       const serverResponse = JSON.parse(jsonString);
       if (serverResponse.filename.length === 2) audioExistsInRepo = 'jams'; // gimich check if audio was uploaded successfully
+
+      if (!!Collab) sharedBTFile.set('audioExistsInRepo', audioExistsInRepo);
 
       filesToDelete.push(...serverResponse.filename);
       console.log('filesToDelete:', filesToDelete);
@@ -626,6 +628,8 @@ function loadAudioFile(input, res = false) {
         bTrackURL = fileUrl;
         audioExistsInRepo = false  
       }
+
+      if (!!Collab) sharedBTFile.set('audioExistsInRepo', audioExistsInRepo);
 
       console.log(`backing track URL : ${bTrackURL}`);
       console.log(`backing track DATA :  ${bTrackDATA}`);

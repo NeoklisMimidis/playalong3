@@ -521,6 +521,8 @@ function setupExportToDiskOrRepository() {
       '#export-musicolab select'
     );
 
+    const loadingSpinner = document.getElementById('export-musicolab-spinner');
+    if (!loadingSpinner.classList.contains('d-none')) return;
     // userParam global from app.js!
     if (userParam) {
       exportMusicolabBtn.disabled = false;
@@ -565,7 +567,7 @@ function setupExportToDiskOrRepository() {
     if (e.target.classList.contains('export-musicolab')) {
       console.log('Export to musicolab button clicked!');
 
-      // Neoklis --> alex this status variable needs to be shared collab, when 'import from course' will be achievable
+      toggleExportControls(true);
 
       if (includeBtrack) {
         if (audioExistsInRepo) {
@@ -616,6 +618,7 @@ function finalizeFileStorage(file, action, sfolder = null) {
   const currentRepoLocation = sfolder;
   if (currentRepoLocation) {
     if (currentRepoLocation === exportLocation) {
+      toggleExportControls(false);
       alert(`File already in ${currentRepoLocation}!`);
       return;
     } else {
@@ -652,14 +655,34 @@ function finalizeFileStorage(file, action, sfolder = null) {
           const urlParams = new URLSearchParams(window.location.search);
           const type = urlParams.get('type');
 
-          // If NOT already loaded a file from repo, which means type is not set, then updateURLParams
-          if (!type) {
-            audioExistsInRepo = exportLocation; // this is only for audio!!
-            updateURLParams({ type: exportLocation }); // this is only for audio!!
+          toggleExportControls(false);
 
-            bTrackDATA = window.location.href;
-            bTrackURL = window.location.href;
-            // const audioFileURL = createURLFromRepository();
+          // If NOT already loaded a file from repo, which means type is not set, and not private case
+          // (this logic helps to for loading immediately a file with the appropriate url)
+          if (!type) {
+            if (!!Collab && exportLocation === 'private') {
+              // Early quit if Collab & private
+              alert(
+                `File has been successfully processed and exported to your ${exportLocation} files.`
+              );
+              return;
+            } else {
+              // The following code will be skipped if the above condition is true.
+              audioExistsInRepo = exportLocation;
+              updateURLParams({ type: exportLocation });
+
+              bTrackDATA = window.location.href;
+              bTrackURL = window.location.href;
+
+              // Update collaborator location of file if exported to 'private' or 'course'
+              if (!!Collab) {
+                sharedBTFile.set('audioExistsInRepo', audioExistsInRepo);
+                sharedBTFile.set('bTrackDATA', bTrackDATA);
+                sharedBTFile.set('bTrackURL', bTrackURL);
+              } else {
+                sharedBTFile.set(null);
+              }
+            }
           }
         }
 
@@ -690,6 +713,18 @@ function finalizeFileStorage(file, action, sfolder = null) {
     true
   );
   ajax.send(fd);
+}
+
+function toggleExportControls(isDisabled) {
+  const exportMusicolabBtn = document.querySelector('#export-musicolab button');
+  const selectionControls = document.getElementById('export-selections');
+  const loadingSpinner = document.getElementById('export-musicolab-spinner');
+
+  exportMusicolabBtn.disabled = isDisabled;
+  selectionControls.disabled = isDisabled;
+  isDisabled
+    ? loadingSpinner.classList.remove('d-none')
+    : loadingSpinner.classList.add('d-none');
 }
 
 // On progress
