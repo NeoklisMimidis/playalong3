@@ -200,8 +200,6 @@ closeCalibrationModalBtn.addEventListener('click', async () => {
   $('#calibration-modal').modal('hide');  
 })
 
-closeCalibrationModalBtn.setAttribute('hidden', true);
-
 async function startCalibrate () {
   await setupWorklet();
   await recordAudioContext.resume();
@@ -217,7 +215,6 @@ async function stopCalibrate () {
   calibrating = false;
 
   calibrateBtn.innerText = 'Start Calibration';
-  closeCalibrationModalBtn.removeAttribute('hidden');
 }
 
 async function setupWorklet () {
