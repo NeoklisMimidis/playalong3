@@ -242,8 +242,7 @@ export function fileSelectHandlers(
       const file = e.target.files[0];
       console.log(file);
       triggerAction(file);
-      if (!!Collab)
-        shareBackingTrack(file);
+      if (!!Collab) shareBackingTrack(file);
     });
     input.click();
   };
@@ -318,22 +317,6 @@ export function jsonDataToJSONFile(
 
   return file;
 }
-
-export function generateRecordingFilename() {
-  let date = new Date();
-  let dayStr = ('0' + date.getDate()).slice(-2); // gets the day as a two-digit string
-  let monthStr = ('0' + (date.getMonth() + 1)).slice(-2); // gets the month as a two-digit string
-  let yearStr = date.getFullYear().toString().slice(-2); // gets the last two digits of the year
-  let hourStr = ('0' + date.getHours()).slice(-2); // gets the hour as a two-digit string
-  let minStr = ('0' + date.getMinutes()).slice(-2); // gets the minute as a two-digit string
-  let secStr = ('0' + date.getSeconds()).slice(-2); // gets the second as a two-digit string
-
-  let fileName = `rec_${dayStr}${monthStr}${yearStr}_${hourStr}:${minStr}:${secStr}.wav`;
-
-  return fileName;
-}
-//needed so as function can be used in app.js which is not a module and thus cannot import
-window.generateRecordingFilename = generateRecordingFilename;
 
 /**
  * Formats time in minutes, seconds and deciseconds to display the value on time-ruler-btn while audio is playing

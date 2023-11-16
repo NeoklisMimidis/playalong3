@@ -499,3 +499,47 @@ function preCountRecordingModal() {
     );
   });
 }
+
+async function generateRecordingFilename(fileExtension = '.wav') {
+  let date = new Date();
+  let dayStr = ('0' + date.getDate()).slice(-2); // gets the day as a two-digit string
+  let monthStr = ('0' + (date.getMonth() + 1)).slice(-2); // gets the month as a two-digit string
+  let yearStr = date.getFullYear().toString().slice(-2); // gets the last two digits of the year
+  let hourStr = ('0' + date.getHours()).slice(-2); // gets the hour as a two-digit string
+  let minStr = ('0' + date.getMinutes()).slice(-2); // gets the minute as a two-digit string
+  let secStr = ('0' + date.getSeconds()).slice(-2); // gets the second as a two-digit string
+
+  let fileName = `rec_${dayStr}${monthStr}${yearStr}_${hourStr}:${minStr}:${secStr}`;
+
+  return await setRecordingFileName(fileName, fileExtension);
+}
+
+function setRecordingFileName(generatedRecFilename, fileExtension) {
+  return new Promise((resolve, reject) => {
+    const recNameModal = document.querySelector('#modal_recname');
+    const recNameModalInput = recNameModal.querySelector('#setRecnameInput');
+    const recNameModalBtn = recNameModal.querySelector('#setRecnameBtn');
+    const recNameExtension = recNameModal.querySelector('#recnameExtension');
+
+    // Set filename and extension, placeholders, default values
+    recNameExtension.value = fileExtension;
+    recNameModalInput.value = generatedRecFilename;
+    recNameModalInput.placeholder = recNameModalInput.value;
+
+    // Display modal
+    recNameModal.style.display = 'block';
+
+    // Assign events
+    recNameModalBtn.removeEventListener('click', getFileName);
+    recNameModalBtn.addEventListener('click', getFileName);
+
+    function getFileName() {
+      let inputValue =
+        recNameModalInput.value || generatedRecFilename || 'recordingName';
+      let recFilename = inputValue + fileExtension;
+      console.log('New filename set: ' + recFilename);
+      recNameModal.style.display = 'none';
+      resolve(recFilename);
+    }
+  });
+}
