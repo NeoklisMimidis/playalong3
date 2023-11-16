@@ -1315,32 +1315,20 @@
                 You need to do some calibration!
               </h5>
             </div>
-            <div class="modal-body">
-              <div id="explanations">
-                Approach a Microphone near speakers, lower volume first, then
-                press the button above. Gradually increase the volume until a
-                latency value is displayed. Then stop. The latency compensation
-                will be saved, no need to recalibrate on this device unless you
-                change the hardware configuration.
-                <p>
-                  Latency Compensation:
-                  <span id="latency-compensation">...</span>
-                </p>
+            <div class="modal-body ">
+              <div id=explanations>
+                  Approach a Microphone near speakers, <strong>lower volume first</strong>, then press 'Start Calibration'.
+                  <strong>Gradually increase the volume</strong> until a latency value is displayed. Then stop.
+                  The latency compensation will be saved, no need to recalibrate on this device unless you change
+                  the hardware configuration.
+                <p class="mt-3">Latency Compensation: <span id="latency-compensation">...</span>ms</p>
               </div>
               <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  id="close-calibration-modal-btn"
-                >
-                  Skip
+                <button type="button" class="btn btn-danger" id="close-calibration-modal-btn">
+                  Close
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  id="calibration-btn"
-                >
-                  Start Calibrate
+                <button type="button" class="btn btn-primary" id="calibration-btn">
+                  Start Calibration
                 </button>
               </div>
             </div>
@@ -1466,14 +1454,12 @@
     <!-- LATENCY COMPENSATION  -->
     <script src="/js/roundtrip-latency/latencyCalculation.js"></script>
     <script>
-      // if (!localStorage.getItem('latency-compensation')) {
       $(function () {
         $('#calibration-modal').modal({
           backdrop: 'static',
           keyboard: false,
         });
       });
-      // }
     </script>
     <!-- END -->
   </body>

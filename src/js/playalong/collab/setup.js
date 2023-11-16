@@ -98,7 +98,7 @@ function setupCollaboration() {
             if (!event.transaction.local) {
               window.recordedBuffers.push([f32Array]);
             }
-            window.createDownloadLink(
+            window.createRecordingTrack(
               blob,
               insert.id,
               recUserData,

@@ -375,7 +375,7 @@ function actOnInvalidRecord() {
       'recordButton',
       'start-close-call-btn',
       'metronome-btn',
-      'calibrate-btn', // FIXME?
+      'recalibration-btn',
     ];
 
     [...document.getElementById('controls').children]
