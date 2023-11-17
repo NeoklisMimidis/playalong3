@@ -56,6 +56,7 @@ joinCallButton.addEventListener('click', function (e) {
     parentNode: document.querySelector('#jitsi-meeting-container'),
     configOverwrite: {
       startWithAudioMuted: false,
+      // startWithVideoMuted: true,
       disableAP: true,
       disableAEC: false,
       disableNS: true,
@@ -76,7 +77,7 @@ joinCallButton.addEventListener('click', function (e) {
     },
   };
 
-  api = new JitsiMeetExternalAPI(domain, options);
+  api = new exports.JitsiMeetExternalAPI(domain, options);
 
   startJitsiMeetBtn.classList.add('call-started');
   icon.style.fill = 'red';
@@ -140,7 +141,7 @@ joinCallButton_video_only.addEventListener('click', function (e) {
     },
   };
 
-  api = new JitsiMeetExternalAPI(domain, options);
+  api = new exports.JitsiMeetExternalAPI(domain, options);
 
   startJitsiMeetBtn.classList.add('call-started');
   icon.style.fill = 'red';
