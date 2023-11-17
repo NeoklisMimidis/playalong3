@@ -48,6 +48,8 @@ export function setupAddBeatAndChordEvent() {
  */
 export function setupEditBeatTimingEvents() {
   wavesurfer.on('marker-drag', function (marker, e) {
+    editBeat(marker, e);
+    
     //collably transmitting marker drag event
     if (!wavesurfer.isPlaying() && !!Collab) {
       window.sharedBTMarkers.forEach((m, k, thisMap) => {
@@ -72,7 +74,6 @@ export function setupEditBeatTimingEvents() {
       });
     }
 
-    editBeat(marker, e);
   }); // used for styling
 
   wavesurfer.on('marker-drop', marker => {

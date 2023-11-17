@@ -46,8 +46,8 @@ export function stateChangeHandler(changes) {
 }
 
 export function awaranessUpdateHandler(added, removed) {
-  console.log('update');
-  reEnableDisabledDeletBtn();
+  //runs every time (i.e. every 30s)
+  enableDeleteAndBackingButton();
 
   if (!added.length && !removed.length)
     return;
@@ -59,31 +59,7 @@ export function awaranessUpdateHandler(added, removed) {
   updateWaveformAwareness(connectedUsers);
   renderUserList([...connectedUsers, ...disconnectedUsers]);
 }
-function reEnableDisabledDeletBtn () {
-  if (!window.sharedUserReception)
-    return;
-  const thisMapValuesArray = Array.from(window.sharedUserReception.values());
-  console.log(thisMapValuesArray);
-  if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
-    return;
- 
-  let [recorder, recId] = [...window.sharedUserReception.entries()]
-    .find(([k, v]) => typeof(v) === 'string')
-  
-    
 
-  const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
-  const disabledBackingBtn = document.querySelector(`button.backing-btn[data-collab-id="${recId}"]`)
-  console.log({recorder, recId, disabledDeleteBtn, disabledBackingBtn})
-  
-  disabledBackingBtn.removeAttribute('disabled');
-
-  if (userParam !== recorder)
-    return;
-
-  disabledDeleteBtn.removeAttribute('disabled');
-  window.sharedUserReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
-}
 function actOnBTAnalysisStateUpdate(awStates, myClientId) {
   const BTAnalysisStateUpdates = awStates
     .filter(([, state]) => state.BTAnalysis)
@@ -312,7 +288,7 @@ function actOnChordEditInProgress(initialSelection) {
   if (toolbarStates.IS_MODAL_TABLE_ACTIVE) return;
   //if user enters in the middle of chord session, therefore in the middle of edit session as well,
   //set timeout, so as chord started events occur after edit initiated events
-  //note: in cases of 'late' users, edit initiated events occur 2 seconds after user connection
+  //note: in cases of 'late' users, edit initiated events occur 7 seconds after user connection
 
   setTimeout(() => {
     const currentSelection =
@@ -343,10 +319,13 @@ function actOnChordEditStarted(me, selection) {
 
 function actOnChordEditCompleted(me, editState) {
   if (me) {
+    //chord editor user schedules chordEdit state nullification...
     setTimeout(
       () => window.awareness.setLocalStateField('chordEdit', null),
       200
     );
+    //...and clears shared chord selection
+    window.sharedBTEditParams.delete('chordSel');
     return;
   } else {
     chordEditor
@@ -438,8 +417,7 @@ function actOnBTrackEditInitiated(me, editorData, editTime) {
     const notifContext = 'info';
     notify(notifText, notifContext);
   } else {
-    //setting the shared markers map if not already existing, i.e. when there has been no previous edit
-    //or when cancel/save editing has preceded and shared markers object is reset
+    //setting the shared markers map if not already existing, i.e. when there has been no previous edit or annotation change
     if (!window.sharedBTMarkers.size) {
       wavesurfer.markers.markers.forEach((marker, index) =>
         window.sharedBTMarkers.set(`${index}`, {
@@ -741,7 +719,7 @@ export function defineIfSingleUser() {
 function populateSharedRecTransmissionList(connected) {
   const connectedNames = connected.map( u => u.name );
   const usersInRecTransmissionList = Array.from(
-    window.sharedUserReception.keys()
+    window.sharedRecReception.keys()
   );
 
   const {
@@ -756,8 +734,34 @@ function populateSharedRecTransmissionList(connected) {
   
   //users added
   if (addedUsers.length)
-    addedUsers.forEach( u => window.sharedUserReception.set(u, false) )
+    addedUsers.forEach( u => window.sharedRecReception.set(u, false) )
   //users removed
   if (removedUsers.length)
-    removedUsers.forEach( u => window.sharedUserReception.delete(u) )
+    removedUsers.forEach( u => window.sharedRecReception.delete(u) )
+}
+
+function enableDeleteAndBackingButton () {
+  //case where setup.js is loaded and when awarenessUpdateHandler gets assigned to...
+  //...awareness on-update event, it runs for the first time, before sharedRecReception is created
+  if (!window.sharedRecReception)
+    return;
+  const thisMapValuesArray = Array.from(window.sharedRecReception.values());
+  if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
+    return;
+ 
+  let [recorder, recId] = [...window.sharedRecReception.entries()]
+    .find(([k, v]) => typeof(v) === 'string')    
+
+  const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
+  const disabledBackingBtn = document.querySelector(`button.backing-btn[data-collab-id="${recId}"]`)
+  console.log({recorder, recId, disabledDeleteBtn, disabledBackingBtn})
+  
+  disabledBackingBtn.removeAttribute('disabled');
+
+  if (userParam !== recorder)
+    return;
+
+  //recorder user only
+  disabledDeleteBtn.removeAttribute('disabled');
+  window.sharedRecReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
 }

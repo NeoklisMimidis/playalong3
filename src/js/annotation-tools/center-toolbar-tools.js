@@ -25,16 +25,19 @@ import {
   // Right controls & related Edit Mode Controls(Editing)
   audioFileName,
 } from '../annotation-tools.js';
+import { clearSharedMarkersInfo } from '../playalong/collab/sharedTypesHandlers.js';
 
 // - 'Annotation list' and 'Edit' mode toggle switch
 /**
  *  [Annotation drop down list & Delete] Change displayed annotation or delete selected
  */
+
 export function setupAnnotationListEvents() {
   // On annotationList change, Clear previous & render the new selected annotation
   annotationList.addEventListener('change', function (event) {
     // DESTROY previous tooltips (new ones are created with renderAnnotations)
     tooltips.markersSingleton.destroy();
+    console.log(event.isTrusted);
 
     // clear previous markers and regions
     wavesurfer.clearMarkers();
@@ -49,13 +52,18 @@ export function setupAnnotationListEvents() {
       wavesurfer.getCurrentTime() / wavesurfer.getDuration()
     );
 
-    //collably changing the annotation selected
-    !!Collab && event.isTrusted
-      ? window.sharedBTEditParams.set('annotationSel', {
-          value: this.value,
-          selector: userParam,
-        })
-      : null;
+    //if event fired by js code, i.e. handleAnnotationSelection...
+    //...in sharedTypesHandlers.js (runs in collaborators when annotation changes), isTrusted is false
+    //so only user that clicks change, and not collaborators, runs the following
+    if (Collab && event.isTrusted){
+      //collably changing the annotation selected
+      window.sharedBTEditParams.set('annotationSel', {
+        value: this.value,
+        selector: userParam,
+      });
+      //restore shared markers and clear shared marker selection
+      clearSharedMarkersInfo();
+    }
   });
 
   deleteAnnotationBtn.addEventListener('click', () => {
@@ -101,7 +109,14 @@ function deleteAnnotation() {
       annotationList.remove(annotationList.selectedIndex);
       // Render the annotation (by default first drop-down list option)
       renderAnnotations(selectedAnnotationData(jamsFile));
-    })
+
+      if (Collab) {
+        //collably deleting annotation...
+
+        //restore shared markers and clear shared marker selection
+        clearSharedMarkersInfo();
+      }
+          })
     .catch(() => {
       // User canceled
     });

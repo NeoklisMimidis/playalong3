@@ -288,10 +288,10 @@ function setupCollaboration() {
   });
 
   const sharedBTEditParams = ydoc.getMap('bTEdit');
-  sharedBTEditParams.observe(e => {
+  sharedBTEditParams.observe((e, t) => {
     !e.transaction.local
       ? e.changes.keys.forEach((value, key) => {
-          //console.log (value, key);
+          console.log (value, key, t);
           handleSharedBTEditParamsEvent(e.target.get(key), key);
         })
       : null;
@@ -308,28 +308,7 @@ function setupCollaboration() {
       : null;
   });
 
-  const sharedUserReception = ydoc.getMap('recTransmitted');
-  // sharedUserReception.observe(e => {
-  //   // const thisMapValuesArray = Array.from(sharedUserReception.values());
-  //   // console.log(thisMapValuesArray);
-  //   // if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
-  //   //   return;
-   
-  //   // let [recorder, recId] = [...sharedUserReception.entries()]
-  //   //   .find(([k, v]) => typeof(v) === 'string')
-
-  //   // console.log({recorder, recId});
-
-    
-  //   // if ( !(userParam === recorder) )
-  //   //   return;
-
-  //   // const disabledDeleteBtn = document.querySelector(`button[data-collab-id="${recId}"]`)
-  //   // disabledDeleteBtn.removeAttribute('disabled');
-
-  //   // sharedUserReception.forEach
-  // })
-
+  const sharedRecReception = ydoc.getMap('recTransmitted');
 
   // ydoc.on('update', (_update, _origin, _doc, tr) => {
   //   // Look for buffers that are no longer used and free them
@@ -355,7 +334,7 @@ function setupCollaboration() {
   window.sharedBTEditParams = sharedBTEditParams;
   window.sharedBTMarkers = sharedBTMarkers;
   window.sharedBTFile = sharedBTFile;
-  window.sharedUserReception = sharedUserReception;
+  window.sharedRecReception = sharedRecReception;
   // window.sharedRecTransmissionParams = sharedRecTransmissionParams
   window.Y = Y;
 

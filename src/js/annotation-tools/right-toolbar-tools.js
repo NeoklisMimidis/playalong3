@@ -50,6 +50,7 @@ import {
   applyBtn,
   cancelBtn,
 } from '../annotation-tools.js';
+import { clearSharedMarkersInfo } from '../playalong/collab/sharedTypesHandlers.js';
 
 /* UI variables/states */
 
@@ -374,6 +375,11 @@ function saveEditing() {
           action,
           newAnnotationData,
         });
+
+        //1. restoring shared markers object as modified jams has been saved in server temporary folder and late...
+        //...gets markers' modifications from there
+        //2.clearing shared marker selection
+        clearSharedMarkersInfo();
       }
     })
     .catch(() => {
@@ -395,9 +401,15 @@ function cancelEditingChords() {
       renderAnnotations(selectedAnnotationData(jamsFile));
 
       if (!!Collab) {
+        
         window.awareness.setLocalStateField('cancelSaveEdit', {
           action: 'canceled',
         });
+
+        //edit canceled -->
+        //1. restoring shared markers object
+        //2. clearing shared markers selection
+        clearSharedMarkersInfo();
       }
     })
     .catch(() => {

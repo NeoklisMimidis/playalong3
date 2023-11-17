@@ -54,17 +54,10 @@ export function handleSharedRecordingDataEvent(event) {
     //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it.
     
     if (event.transaction.local) {
-      window.sharedUserReception.set(userParam, parentMap.get('id'));
+      window.sharedRecReception.set(userParam, parentMap.get('id'));
     } else {
-      window.sharedUserReception.set(userParam, true);
+      window.sharedRecReception.set(userParam, true);
     }
-
-    // window.ydoc?.transact( () => {
-    //   window.sharedRecTransmissionParams.set( 'recId', parentMap.get('id') );
-    //   window.sharedRecTransmissionParams.set( 'recorder', parentMap.get('userName') );
-
-    //   window.sharedUserReception.set(userParam, true);
-    // })
 
     console.log('done');
   }
@@ -109,7 +102,7 @@ export function handleSharedBTEditParamsEvent(value, key) {
       handleAnnotationSelection(value);
       break;
     case 'chordSel':
-      handleChordSelection(value);
+      value ? handleChordSelection(value) : null;
       break;
     case 'selectedMarker':
       value ? handleMarkerSelection(value) : null;
@@ -118,6 +111,7 @@ export function handleSharedBTEditParamsEvent(value, key) {
 }
 
 export function handleSharedBTMarkersEvent(collabEditedMarker, key) {
+  console.log({collabEditedMarker, key});
   switch (collabEditedMarker.status) {
     //final values
     case 'edited':
@@ -357,4 +351,19 @@ export function handleBTFile(key) {
       bTrackURL = sharedBTFile.get('bTrackURL');
       break;
   }
+}
+
+export function clearSharedMarkersInfo () {
+  window.ydoc.transact(() => {
+    //delete selected marker
+    window.sharedBTEditParams.delete('selectedMarker');
+    //restore shared markers object
+    wavesurfer.markers.markers.forEach((marker, index) =>
+      window.sharedBTMarkers.set(`${index}`, {
+        time: marker.time,
+        status: 'unedited',
+        metadata: {},
+      })
+    );
+  });
 }
