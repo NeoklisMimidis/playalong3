@@ -1315,19 +1315,33 @@
                 You need to do some calibration!
               </h5>
             </div>
-            <div class="modal-body ">
-              <div id=explanations>
-                  Approach a Microphone near speakers, <strong>lower volume first</strong>, then press 'Start Calibration'.
-                  <strong>Gradually increase the volume</strong> until a latency value is displayed. Then stop.
-                  The latency compensation will be saved, no need to recalibrate on this device unless you change
-                  the hardware configuration.
-                <p class="mt-3">Latency Compensation: <span id="latency-compensation">...</span>ms</p>
+            <div class="modal-body">
+              <div id="explanations">
+                Approach a Microphone near speakers,
+                <strong>lower volume first</strong>, then press 'Start
+                Calibration'.
+                <strong>Gradually increase the volume</strong> until a latency
+                value is displayed. Then stop. The latency compensation will be
+                saved, no need to recalibrate on this device unless you change
+                the hardware configuration.
+                <p class="mt-3">
+                  Latency Compensation:
+                  <span id="latency-compensation">...</span>ms
+                </p>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="close-calibration-modal-btn">
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  id="close-calibration-modal-btn"
+                >
                   Close
                 </button>
-                <button type="button" class="btn btn-primary" id="calibration-btn">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="calibration-btn"
+                >
                   Start Calibration
                 </button>
               </div>
@@ -1424,6 +1438,19 @@
       <div class="dropdown-menu" id="users-online"></div>
     </div>
 
+    <!-- Recording Modal setFilename -->
+    <div id="modal_recname">
+      <div id="modal_recname-content">
+        <!-- <span id="closeRecname">&times;</span> -->
+        <p>Enter a Name for Your Recording to Use as a Backing Track:</p>
+        <div>
+          <input type="text" id="setRecnameInput" />
+          <span id="recnameExtension">.wav</span>
+        </div>
+
+        <button id="setRecnameBtn">Set Filename</button>
+      </div>
+    </div>
     <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
 
     <!--public scripts follow-->

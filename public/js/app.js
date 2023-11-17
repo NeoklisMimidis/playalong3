@@ -230,12 +230,7 @@ function addBlobUrlToDownload(url, count) {
   if (downloadButton) {
     downloadButton.disabled = false;
     downloadButton.addEventListener('click', function () {
-      // create a temporary link element to trigger the download
-      var tempLink = document.createElement('a');
-      var unique_filename = new Date().toISOString();
-      tempLink.download = unique_filename + '.wav';
-      tempLink.href = url;
-      tempLink.click();
+      downloadAudioFromURL(url);
     });
   }
 }
@@ -279,66 +274,70 @@ function createRecordingTemplate(recUserData) {
 }
 
 function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
-  if (
-    !window.confirm(
-      'This track will be moved and replace backing track for everyone. Are you sure?'
-    )
-  ) {
-    return;
-  }
-  //find the recording in the shared object based on its collabId
-  const collabId = scrollContainer.dataset.collabId;
-  if (!collabId) {
-    console.error(
-      'could not find collabId for scrollContainer of id: ' + scrollContainer.id
-    );
-    return;
-  }
+  generateRecordingFilename().then(recFileName => {
+    recAsBackingTrack.recName = recFileName;
 
-  let index = -1;
-  for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
-    if (window.sharedRecordedBlobs.get(i)?.get('id') === collabId) {
-      index = i;
-      break;
+    if (
+      !window.confirm(
+        'This track will be moved and replace backing track for everyone. Are you sure?'
+      )
+    ) {
+      return;
     }
-  }
+    //find the recording in the shared object based on its collabId
+    const collabId = scrollContainer.dataset.collabId;
+    if (!collabId) {
+      console.error(
+        'could not find collabId for scrollContainer of id: ' +
+          scrollContainer.id
+      );
+      return;
+    }
 
-  if (index !== -1) {
-    // Load this track on backingTrack wavesurfer (window.backingTrack)
-    const data = window.sharedRecordedBlobs.get(index).get('data');
-    if (data?.length > 1) {
-      const src = Float32Array.from(data);
-      const blob = recordingToBlob(src);
-      const BTUrl = URL.createObjectURL(blob);
-
-      try {
-        //setting relevant global parameters in order to be used in loadAudioFiles
-        recAsBackingTrack.hasBeenSet = true;
-        recAsBackingTrack.recName = window.generateRecordingFilename();
-
-        loadAudioFile(BTUrl);
-        // Set new key to this collabId and undo others
-        window.ydoc.transact(() => {
-          //fire events that set this rec as BT in collaborators
-          window.playerConfig.set('backingTrackRecording', {
-            id: collabId,
-            sharer: userParam,
-            recName: recAsBackingTrack.recName,
-          });
-          //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
-          window.playerConfig.delete('backingTrack');
-          window.playerConfig.delete('backingTrackRepository');
-          //fire events that delete the recording used as backing track in collaborators
-          window.deletedSharedRecordedBlobIds.push([collabId]);
-        });
-        //delete recording used as backing track
-        deleteWaveForm();
-        removeFileURLParam();
-      } catch (err) {
-        console.error('Failed to load blob as backing track', { blob, err });
+    let index = -1;
+    for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
+      if (window.sharedRecordedBlobs.get(i)?.get('id') === collabId) {
+        index = i;
+        break;
       }
     }
-  }
+
+    if (index !== -1) {
+      // Load this track on backingTrack wavesurfer (window.backingTrack)
+      const data = window.sharedRecordedBlobs.get(index).get('data');
+      if (data?.length > 1) {
+        const src = Float32Array.from(data);
+        const blob = recordingToBlob(src);
+        const BTUrl = URL.createObjectURL(blob);
+
+        try {
+          //setting relevant global parameters in order to be used in loadAudioFiles
+          recAsBackingTrack.hasBeenSet = true;
+
+          loadAudioFile(BTUrl);
+          // Set new key to this collabId and undo others
+          window.ydoc.transact(() => {
+            //fire events that set this rec as BT in collaborators
+            window.playerConfig.set('backingTrackRecording', {
+              id: collabId,
+              sharer: userParam,
+              recName: recAsBackingTrack.recName,
+            });
+            //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
+            window.playerConfig.delete('backingTrack');
+            window.playerConfig.delete('backingTrackRepository');
+            //fire events that delete the recording used as backing track in collaborators
+            window.deletedSharedRecordedBlobIds.push([collabId]);
+          });
+          //delete recording used as backing track
+          deleteWaveForm();
+          removeFileURLParam();
+        } catch (err) {
+          console.error('Failed to load blob as backing track', { blob, err });
+        }
+      }
+    }
+  });
 }
 
 function fillRecordingTemplate(
@@ -990,21 +989,19 @@ function createRecordingTrack(
   downloadButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button';
   downloadButton.setAttribute('title', 'Download');
   downloadButton.addEventListener('click', function () {
-    // create a temporary link element to trigger the download
-    var tempLink = document.createElement('a');
-    var unique_filename = new Date().toISOString();
-    tempLink.download = unique_filename + '.wav';
-    tempLink.href = url;
-    tempLink.click();
+    downloadAudioFromURL(url);
   });
   buttonContainer.appendChild(downloadButton);
 
   function backingButtonHandler() {
-    //setting relevant global parameters in order to be used in loadAudioFiles
-    recAsBackingTrack.hasBeenSet = true;
-    recAsBackingTrack.recName = generateRecordingFilename();
+    generateRecordingFilename().then(recFileName => {
+      console.log(recFileName);
+      recAsBackingTrack.recName = recFileName;
 
-    deleteButton.click();
+      //setting relevant global parameters in order to be used in loadAudioFiles
+      recAsBackingTrack.hasBeenSet = true;
+      deleteButton.click();
+    });
   }
 
   function backingButtonHandlerCollab() {
@@ -1453,6 +1450,10 @@ function dataToWave(Float32BitSampleArray) {
   var mixBlob = recordingToBlob(Float32BitSampleArray);
   //console.log("vmixBlob=",mixBlob);
   const url = URL.createObjectURL(mixBlob); // Create a link to download the file
+  downloadAudioFromURL(url);
+}
+
+function downloadAudioFromURL(url) {
   var tempLink = document.createElement('a');
   var unique_filename = new Date().toISOString();
   tempLink.download = unique_filename + '.wav';
