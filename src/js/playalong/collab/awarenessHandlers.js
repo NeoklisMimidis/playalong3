@@ -31,6 +31,7 @@ import {
 } from '../../audio-player/render-annotations';
 import { setUserImageUrl, renderUserList } from './users';
 import { handleChordSelection, handleMarkerSelection } from './sharedTypesHandlers';
+import { compareArrays } from '../../components/utilities';
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(window.awareness.getStates().entries());
@@ -44,15 +45,45 @@ export function stateChangeHandler(changes) {
   actOnCancelSaveEditStateUpdate(awStates, myClientId);
 }
 
-export function awaranessUpdateHandler() {
-  const { connectedUsers, disconnectedUsers, reconnectedUserNames } =
-    formatUserList();
+export function awaranessUpdateHandler(added, removed) {
+  console.log('update');
+  reEnableDisabledDeletBtn();
 
+  if (!added.length && !removed.length)
+    return;
+
+  const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
+
+  populateSharedRecTransmissionList(connectedUsers);
   configureDeleteWaveformButtons(reconnectedUserNames, disconnectedUsers);
   updateWaveformAwareness(connectedUsers);
   renderUserList([...connectedUsers, ...disconnectedUsers]);
 }
+function reEnableDisabledDeletBtn () {
+  if (!window.sharedUserReception)
+    return;
+  const thisMapValuesArray = Array.from(window.sharedUserReception.values());
+  console.log(thisMapValuesArray);
+  if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
+    return;
+ 
+  let [recorder, recId] = [...window.sharedUserReception.entries()]
+    .find(([k, v]) => typeof(v) === 'string')
+  
+    
 
+  const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
+  const disabledBackingBtn = document.querySelector(`button.backing-btn[data-collab-id="${recId}"]`)
+  console.log({recorder, recId, disabledDeleteBtn, disabledBackingBtn})
+  
+  disabledBackingBtn.removeAttribute('disabled');
+
+  if (userParam !== recorder)
+    return;
+
+  disabledDeleteBtn.removeAttribute('disabled');
+  window.sharedUserReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
+}
 function actOnBTAnalysisStateUpdate(awStates, myClientId) {
   const BTAnalysisStateUpdates = awStates
     .filter(([, state]) => state.BTAnalysis)
@@ -668,6 +699,9 @@ function updateWaveformAwareness(connected) {
   });
 }
 function configureDeleteWaveformButtons(reconnectedNames, disconnectedUsers) {
+  //make delete button of n recording visible to recorder.
+
+  // if ()
   //make delete buttons of recordings by disconnected users visible for everyone
   const disconnectedNames = disconnectedUsers.map(u => u.name);
   const recordingsByDisconnected = [
@@ -702,4 +736,28 @@ export function defineIfSingleUser() {
 
   if (users.size == 1) return true;
   else return false;
+}
+
+function populateSharedRecTransmissionList(connected) {
+  const connectedNames = connected.map( u => u.name );
+  const usersInRecTransmissionList = Array.from(
+    window.sharedUserReception.keys()
+  );
+
+  const {
+    areEqual,
+    excessElmnts: addedUsers,
+    notIncElmnts: removedUsers
+  } = compareArrays(connectedNames, usersInRecTransmissionList);
+
+  //if no change in user list return
+  if (areEqual)
+    return;
+  
+  //users added
+  if (addedUsers.length)
+    addedUsers.forEach( u => window.sharedUserReception.set(u, false) )
+  //users removed
+  if (removedUsers.length)
+    removedUsers.forEach( u => window.sharedUserReception.delete(u) )
 }

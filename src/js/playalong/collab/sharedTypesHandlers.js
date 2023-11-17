@@ -50,6 +50,23 @@ export function handleSharedRecordingDataEvent(event) {
     if (!event.transaction.local) {
       window.recordedBuffers.push([f32Array]);
     }
+
+    //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it.
+    
+    if (event.transaction.local) {
+      window.sharedUserReception.set(userParam, parentMap.get('id'));
+    } else {
+      window.sharedUserReception.set(userParam, true);
+    }
+
+    // window.ydoc?.transact( () => {
+    //   window.sharedRecTransmissionParams.set( 'recId', parentMap.get('id') );
+    //   window.sharedRecTransmissionParams.set( 'recorder', parentMap.get('userName') );
+
+    //   window.sharedUserReception.set(userParam, true);
+    // })
+
+    console.log('done');
   }
 
   // this is needed to show or hide: playAll, stopAll, mix&download, playback speed

@@ -444,3 +444,17 @@ export function checkFileType() {
 
   return exportLocation;
 }
+
+export function compareArrays (a, b) {
+  const sameLengths = (a.length === b.length);
+  const sameElmnts = a.every( e => b.includes(e) );
+
+  let excessElmnts = a.filter(e => !b.includes(e));
+  let notIncElmnts = b.filter(e => !a.includes(e));
+
+  return {
+    areEqual: sameLengths && sameElmnts,
+    excessElmnts,
+    notIncElmnts
+  }
+}

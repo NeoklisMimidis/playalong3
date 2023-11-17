@@ -600,14 +600,17 @@ function fillRecordingTemplate(
   var backingButton = document.createElement('button');
   backingButton.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M151.6 42.4C145.5 35.8 137 32 128 32s-17.5 3.8-23.6 10.4l-88 96c-11.9 13-11.1 33.3 2 45.2s33.3 11.1 45.2-2L96 146.3V448c0 17.7 14.3 32 32 32s32-14.3 32-32V146.3l32.4 35.4c11.9 13 32.2 13.9 45.2 2s13.9-32.2 2-45.2l-88-96zM320 480h32c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32z"/></svg>';
-  backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button';
+  backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button backing-btn';
   backingButton.setAttribute('title', 'Use as backing track');
+  backingButton.dataset.collabId = id;
+  backingButton.disabled = true;
 
   function backingButtonHandler() {
     useAsBackingTrackCollab(scrollContainer, deleteWaveForm);
   }
 
   backingButton.addEventListener('click', backingButtonHandler);
+
   buttonContainer.appendChild(backingButton);
 
   function deleteWaveForm() {
@@ -670,6 +673,7 @@ function fillRecordingTemplate(
 
   //create delete buttons
   var deleteButton = document.createElement('button');
+  deleteButton.setAttribute('disabled', true);
   deleteButton.innerHTML =
     '<svg viewBox="0 0 24 24" fill="none" width="25" height="25" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M10 11V16M14 11V16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>';
   deleteButton.className = 'wavesurfer-button btn btn-lg delete-button';

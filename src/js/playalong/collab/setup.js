@@ -63,7 +63,7 @@ function setupCollaboration() {
   window.awareness = websocketProvider.awareness;
   window.permanentUserData = permanentUserData;
 
-  websocketProvider.awareness.on('update', awaranessUpdateHandler);
+  websocketProvider.awareness.on('update', ({added, removed}) => awaranessUpdateHandler(added, removed));
   websocketProvider.awareness.on('change', stateChangeHandler);
   websocketProvider.awareness.setLocalStateField('user', userData);
 
@@ -84,7 +84,7 @@ function setupCollaboration() {
           };
           if (
             //case:late collaborator, i.e. user that was not present when recording was initially shared. rec template constructed
-            //with createDownloadLink
+            //with createRecordingTrack
             //TODO: alx. sometimes late collaborator is mistakenly referred to else events. that causes error. Update: that happens...
             //...because when the late user is connected, the observer is called sometimes with ratio of downloaded/total<1...
             //FillRecordingTemplate is then called but normally returns without completeing any action
@@ -107,7 +107,7 @@ function setupCollaboration() {
             );
           } else {
             //case: recorder and collaborators. recording template constructed with fillRecordingTemplate.
-            //in this case map.data doesn t exist, because observer was triggered by map solely aparted by recording metadata
+            //in this case map.data doesn t exist, because observer was triggered by map solely aparted by recording metadata.
             //events needed for transmission of recording data are triggered by sharedRecordingBlobs deep observer
             window.fillRecordingTemplate(
               insert.id,
@@ -308,6 +308,29 @@ function setupCollaboration() {
       : null;
   });
 
+  const sharedUserReception = ydoc.getMap('recTransmitted');
+  // sharedUserReception.observe(e => {
+  //   // const thisMapValuesArray = Array.from(sharedUserReception.values());
+  //   // console.log(thisMapValuesArray);
+  //   // if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
+  //   //   return;
+   
+  //   // let [recorder, recId] = [...sharedUserReception.entries()]
+  //   //   .find(([k, v]) => typeof(v) === 'string')
+
+  //   // console.log({recorder, recId});
+
+    
+  //   // if ( !(userParam === recorder) )
+  //   //   return;
+
+  //   // const disabledDeleteBtn = document.querySelector(`button[data-collab-id="${recId}"]`)
+  //   // disabledDeleteBtn.removeAttribute('disabled');
+
+  //   // sharedUserReception.forEach
+  // })
+
+
   // ydoc.on('update', (_update, _origin, _doc, tr) => {
   //   // Look for buffers that are no longer used and free them
   //   for (let [key, _] of tr.changed) {
@@ -332,6 +355,8 @@ function setupCollaboration() {
   window.sharedBTEditParams = sharedBTEditParams;
   window.sharedBTMarkers = sharedBTMarkers;
   window.sharedBTFile = sharedBTFile;
+  window.sharedUserReception = sharedUserReception;
+  // window.sharedRecTransmissionParams = sharedRecTransmissionParams
   window.Y = Y;
 
   window.debugSharedRecordings = function (mode = 'table') {
