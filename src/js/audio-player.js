@@ -181,10 +181,11 @@ analyzeChordsBtn.addEventListener('click', function () {
 });
 
 /* Loading files from repository */
-import audioFileURL1 from '../demo_files/test.mp3';
 import { defineIfSingleUser } from './playalong/collab/awarenessHandlers.js';
+import audioFileURL1 from '../demo_files/test.mp3';
 const annotationFile1 = new URL('../demo_files/test.jams', import.meta.url)
   .href;
+import audioFileURL2 from '../demo_files/bendir1.mp3';
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlFileName = urlParams.get('f');
@@ -195,7 +196,8 @@ export function loadURLParamFileAsBT() {
   if (window.location.hostname === 'localhost') {
     // A) Localhost (preload audio):
     // resetAudioPlayer();
-    loadFilesInOrder(audioFileURL1);
+    // loadFilesInOrder(audioFileURL1);
+    loadFilesInOrder(audioFileURL2);
     // loadFilesInOrder(audioFileURL1, annotationFile1);
   } else if (
     window.location.hostname === 'musicolab.hmu.gr' &&
