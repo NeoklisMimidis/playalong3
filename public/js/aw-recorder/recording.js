@@ -1,6 +1,6 @@
-var noChannels = 1; // no input recording || Choose 1 for mono, 2 for stereo
-var ac = new AudioContext(); // FIXME?>?
-var monitor = false; // turn recording monitor on or off
+var noChannels = 1; // no input recording || Choose 1 for mono, 2 for stereo TODO record mono
+var ac = new AudioContext({ latencyHint: 0.00001 }); // FIXME?>?
+let monitor = false; // turn recording monitor on or off
 
 /**
  * 'resolvePreCount' is a function reference used to resolve the promise created in preCountRecordingModal. It is used to avoid a bug when early stopping the pre-count of a recording and then trying to record again
@@ -10,10 +10,8 @@ var metronomeEvents = new EventTarget();
 var preCountCanceled = false;
 
 // AUDIO WORKLET PROCESSOR NODE
+let initializedRecording = false;
 var recordingNode;
-
-// - Setting recording & Worklet functions
-
 // This enum states the current recording state.
 const RecorderStates = {
   UNINITIALIZED: 0,
@@ -23,22 +21,31 @@ const RecorderStates = {
 };
 
 let recordingState = RecorderStates.UNINITIALIZED;
+let audioResources;
 
+// - Setting recording & Worklet functions
 // Wait for user interaction to initialize audio, as per
 // specification.
-var audioResources;
 recordButton.addEventListener('click', async () => {
-  audioResources = await initializeAudio();
+  audioResources = await setupRecordingWorklet();
+  await ac.resume();
+
+  // Finally, start recording
+  startRecording();
 });
 
 //////
 /**
  * Define overall audio chain and initializes all functionality.
  */
-async function initializeAudio() {
-  // const ac = new AudioContext();
-  if (ac.state === 'suspended') {
-    await ac.resume();
+async function setupRecordingWorklet() {
+  if (initializedRecording === false) {
+    const RecordingProcessorUrl = await URLFromFiles([
+      'js/aw-recorder/recordingProcessor.js',
+    ]);
+    await ac.audioWorklet.addModule(RecordingProcessorUrl);
+
+    initializedRecording = true;
   }
 
   const micStream = await navigator.mediaDevices.getUserMedia({
@@ -60,14 +67,13 @@ async function initializeAudio() {
     maxFrameCount: ac.sampleRate * 600, // Adjust as needed || 10 minutes
   };
 
-  recordingNode = await setupRecordingWorkletNode(ac, recordingProperties);
+  recordingNode = new AudioWorkletNode(ac, 'recording-processor', {
+    processorOptions: recordingProperties,
+  });
 
   // We can pass this port across the app and let components handle
   // their relevant messages.
-  const recordingCallback = handleRecording(
-    recordingNode.port,
-    recordingProperties
-  );
+  const recordingCallback = handleRecording(recordingProperties);
 
   recordingNode.port.onmessage = event => {
     recordingCallback(event);
@@ -75,57 +81,16 @@ async function initializeAudio() {
 
   micSourceNode.connect(recordingNode);
 
-  // Finally, start recording
-  startRecording();
-
   return { ac, micStream, micSourceNode, recordingNode };
-}
-
-function terminateAudio({ ac, micStream, micSourceNode, recordingNode }) {
-  if (micSourceNode && recordingNode) {
-    micSourceNode.disconnect(recordingNode);
-    recordingNode.disconnect();
-  }
-  // TODO: Actually, AudioWorkletNode (recordingNode) isn't completely removed (Confirm in dev tools)
-  // To actually remove you have to use an iframe: https://stackoverflow.com/questions/70053404/remove-a-worklet-after-use
-
-  if (micStream) {
-    micStream.getTracks().forEach(track => track.stop());
-    micStream = null;
-  }
-
-  if (ac) {
-    ac.suspend();
-    // ac.close();
-  }
-}
-
-/**
- * Create and set up a WorkletNode to record audio from a microphone.
- * @param {object} ac
- * @param {object} recordingProperties
- * @return {AudioWorkletNode} Recording node related components for
- * the app.
- */
-async function setupRecordingWorkletNode(ac, recordingProperties) {
-  await ac.audioWorklet.addModule('/js/aw-recorder/recording-processor.js');
-
-  const WorkletRecordingNode = new AudioWorkletNode(ac, 'recording-processor', {
-    processorOptions: recordingProperties,
-  });
-
-  return WorkletRecordingNode;
 }
 
 /**
  * Set events and define callbacks for recording start/stop events.
- * @param {MessagePort} processorPort Processor port to send recording
- * state events to.
  * @param {object} recordingProperties Microphone channel count, for
  * accurate recording length calculations.
  * @return {function} Callback for recording-related events.
  */
-function handleRecording(processorPort, recordingProperties) {
+function handleRecording(recordingProperties) {
   let recordingLength = 0;
 
   // If the max length is reached, we can no longer record. FIXME remove maxLength?
@@ -148,7 +113,8 @@ function handleRecording(processorPort, recordingProperties) {
       onSuccessfulRecording(recordingBuffer);
     }
   };
-  // Remove existing event listeners from the previous audio worklet
+
+  // Remove existing event listeners from the previous audioWorkletNode
   pauseButton.removeEventListener('click', pauseRecording);
   stopButton.removeEventListener('click', stopRecording);
 
@@ -159,7 +125,25 @@ function handleRecording(processorPort, recordingProperties) {
   return recordingEventCallback;
 }
 
+function terminateAudio({ ac, micStream, micSourceNode, recordingNode }) {
+  if (micSourceNode && recordingNode) {
+    micSourceNode.disconnect(recordingNode);
+    recordingNode.disconnect();
+  }
+
+  if (micStream) {
+    micStream.getTracks().forEach(track => track.stop());
+    micStream = null;
+  }
+
+  if (ac) {
+    ac.suspend();
+  }
+}
+
+// -
 // - Recording callbacks
+// -
 async function startRecording() {
   // Collaboration check
   if (!!Collab && otherUserRecording) {

@@ -121,4 +121,8 @@ class RecordingProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('recording-processor', RecordingProcessor);
+try {
+  registerProcessor('recording-processor', RecordingProcessor);
+} catch (error) {
+  console.warn(error);
+}
