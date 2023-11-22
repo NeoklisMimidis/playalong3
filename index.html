@@ -1481,12 +1481,15 @@
     <!-- LATENCY COMPENSATION  -->
     <script src="/js/roundtrip-latency/latencyCalculation.js"></script>
     <script>
-      // $(function () {
-      //   $('#calibration-modal').modal({
-      //     backdrop: 'static',
-      //     keyboard: false,
-      //   });
-      // });
+      if (!localStorage.getItem('latency-compensation')) {
+        // if (!localStorage.getItem('latency-compensation')) {
+        $(function () {
+          $('#calibration-modal').modal({
+            backdrop: 'static',
+            keyboard: false,
+          });
+        });
+      }
     </script>
     <!-- END -->
   </body>

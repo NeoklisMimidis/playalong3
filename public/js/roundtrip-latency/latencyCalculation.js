@@ -18,12 +18,10 @@ recalibrateBtn.addEventListener('click', () => {
 
 calibrateBtn.addEventListener('click', async () => {
   calibrating ? await stopCalibrate() : await startCalibrate();
-  // await setupRecording(); // TODO REMOVE
 });
 
 closeCalibrationModalBtn.addEventListener('click', async () => {
   calibrating ? await stopCalibrate() : null;
-  // await setupRecording(); // TODO REMOVE
   $('#calibration-modal').modal('hide');
 });
 
