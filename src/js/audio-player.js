@@ -284,8 +284,8 @@ function sendAudioAndFetchAnalysis() {
    * @returns {number} The estimated analysis time in seconds.
    */
   function estimateAnalysisTime(audioDuration) {
-    const slope = 0.1843; // Actual slope is 0.1543
-    const intercept = 8.113; // Actual bias is 6.113
+    const slope = 0.235;
+    const intercept = 8.113;
 
     return slope * audioDuration + intercept;
   }
@@ -369,12 +369,7 @@ function doChordBeatAnalysis(
         }
       }
 
-      // Extracts the JSON portion from the server's response.
-      // This is a workaround for the server returning JSON wrapped in HTML.
-      const jsonStart = ajax.responseText.indexOf('{');
-      const jsonEnd = ajax.responseText.lastIndexOf('}') + 1;
-      const jsonString = ajax.responseText.substring(jsonStart, jsonEnd);
-      const serverResponse = JSON.parse(jsonString);
+      const serverResponse = JSON.parse(ajax.responseText);
       if (serverResponse.filename.length === 2) audioExistsInRepo = 'jams'; // gimich check if audio was uploaded successfully
 
       if (!!Collab) sharedBTFile.set('audioExistsInRepo', audioExistsInRepo);
@@ -392,6 +387,19 @@ function doChordBeatAnalysis(
           jamsURL: 'none',
         });
       }
+
+      const serverResponse = JSON.parse(ajax.responseText);
+      alert(`Error ${ajax.status}: ${serverResponse.error}`);
+
+      function cbError() {
+        document.getElementById(`analysis-loading-bar`).classList.add('d-none');
+        document
+          .getElementById(`preface-annotation`)
+          .classList.remove('d-none');
+      }
+
+      executed = true;
+      animateProgressBar(analysisLoadingBar, 100, 'Error!', cbError);
     }
   };
 

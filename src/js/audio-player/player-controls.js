@@ -679,8 +679,6 @@ function finalizeFileStorage(file, action, sfolder = null) {
                 sharedBTFile.set('audioExistsInRepo', audioExistsInRepo);
                 sharedBTFile.set('bTrackDATA', bTrackDATA);
                 sharedBTFile.set('bTrackURL', bTrackURL);
-              } else {
-                sharedBTFile.set(null);
               }
             }
           }
