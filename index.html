@@ -492,6 +492,7 @@
                       style="width: 35px"
                       class="no-border"
                     >
+                      <option value="1">1</option>
                       <option value="2">2</option>
                       <option value="3">3</option>
                       <option value="4">4</option>
@@ -565,7 +566,6 @@
                         type="radio"
                         id="countOff"
                         name="count-on-off"
-                        checked
                       />
                     </div>
                   </div>
@@ -1482,7 +1482,6 @@
     <script src="/js/roundtrip-latency/latencyCalculation.js"></script>
     <script>
       if (!localStorage.getItem('latency-compensation')) {
-        // if (!localStorage.getItem('latency-compensation')) {
         $(function () {
           $('#calibration-modal').modal({
             backdrop: 'static',

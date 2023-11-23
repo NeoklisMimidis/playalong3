@@ -23,12 +23,14 @@ const defaultTempoVolume = 0.5;
 setVolume(defaultTempoVolume * 100); //takes values from 0-100
 
 // Rhythm
-timeSignatureNumerator.selectedIndex = 0; // 2
-timeSignatureDenominator.selectedIndex = 0; // 4
-resolution.selectedIndex = 0; // 4ths
-setNumerator(2);
-setDenominator(4);
-setResolution(4);
+timeSignatureNumerator.value = 2; // values between 1-7
+timeSignatureDenominator.value = 4; // values: 4 or 8
+resolution.value = 4; // values: 4, 8 or 16 (ths)
+setNumerator(timeSignatureNumerator.value);
+setDenominator(timeSignatureDenominator.value);
+setResolution(resolution.value);
+
+setMetroCont(false); // true or false 'Continuous' option
 
 setupMetronomeMenu();
 
@@ -56,6 +58,11 @@ function setDenominator(v) {
 function setResolution(r) {
   // console.log('resolution changed to: ', r);
   parent.metronome.setResolution(r);
+}
+
+function setMetroCont(continuous) {
+  document.querySelector(continuous ? '#countOn' : '#countOff').checked = true;
+  parent.metronome.setMetroCont(continuous);
 }
 
 // - - - - - -
