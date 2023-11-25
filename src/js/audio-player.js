@@ -195,9 +195,9 @@ export function loadURLParamFileAsBT() {
 
   if (window.location.hostname === 'localhost') {
     // A) Localhost (preload audio):
-    // resetAudioPlayer();
+    resetAudioPlayer();
     // loadFilesInOrder(audioFileURL1);
-    loadFilesInOrder(audioFileURL2);
+    // loadFilesInOrder(audioFileURL2);
     // loadFilesInOrder(audioFileURL1, annotationFile1);
   } else if (
     window.location.hostname === 'musicolab.hmu.gr' &&
@@ -571,7 +571,7 @@ function loadAudioFile(input, res = false) {
       console.log('READY EVENT INSIDE loadAudioFile ✌️✅💪');
 
       // 4 cases:
-      // a) use recording as backing track
+      // a) use recording as backing track // TODO either first or later recording!
       // b) import from handlers -drag or import buttons (use file.name)
       // c) repository link (retrieve name from URL)
       // d) localhost loading file (Use default: test.mp3)

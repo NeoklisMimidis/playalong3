@@ -30,7 +30,10 @@ import {
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
 import { setUserImageUrl, renderUserList } from './users';
-import { handleChordSelection, handleMarkerSelection } from './sharedTypesHandlers';
+import {
+  handleChordSelection,
+  handleMarkerSelection,
+} from './sharedTypesHandlers';
 import { compareArrays } from '../../components/utilities';
 
 export function stateChangeHandler(changes) {
@@ -49,10 +52,10 @@ export function awaranessUpdateHandler(added, removed) {
   //runs every time (i.e. every 30s)
   enableDeleteAndBackingButton();
 
-  if (!added.length && !removed.length)
-    return;
+  if (!added.length && !removed.length) return;
 
-  const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
+  const { connectedUsers, disconnectedUsers, reconnectedUserNames } =
+    formatUserList();
 
   populateSharedRecTransmissionList(connectedUsers);
   configureDeleteWaveformButtons(reconnectedUserNames, disconnectedUsers);
@@ -395,11 +398,10 @@ function actOnBTrackEditStateUpdate(awStates, myClientId) {
                   window.sharedBTEditParams.get('selectedMarker');
                 if (selectedMarkerTime)
                   handleMarkerSelection(selectedMarkerTime);
-              }
-              ,7000)
-          //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
-          : null; 
-      }
+              }, 7000)
+            : //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
+              null;
+        }
         break;
     }
   });
@@ -460,13 +462,10 @@ function actOnBTrackEditCompleted(me, editorData, editTime) {
     }, 1000);
     return;
   } else {
-    setTimeout(
-      () => toggleEditBtn.removeAttribute('disabled'),
-      1000);
+    setTimeout(() => toggleEditBtn.removeAttribute('disabled'), 1000);
   }
 
   //reactivating edit button !for all users! after bTrackEdit has been set to null
-
 
   toolbarStates.COLLAB_EDIT_MODE = false;
 
@@ -717,7 +716,7 @@ export function defineIfSingleUser() {
 }
 
 function populateSharedRecTransmissionList(connected) {
-  const connectedNames = connected.map( u => u.name );
+  const connectedNames = connected.map(u => u.name);
   const usersInRecTransmissionList = Array.from(
     window.sharedRecReception.keys()
   );
@@ -725,43 +724,48 @@ function populateSharedRecTransmissionList(connected) {
   const {
     areEqual,
     excessElmnts: addedUsers,
-    notIncElmnts: removedUsers
+    notIncElmnts: removedUsers,
   } = compareArrays(connectedNames, usersInRecTransmissionList);
 
   //if no change in user list return
-  if (areEqual)
-    return;
-  
+  if (areEqual) return;
+
   //users added
   if (addedUsers.length)
-    addedUsers.forEach( u => window.sharedRecReception.set(u, false) )
+    addedUsers.forEach(u => window.sharedRecReception.set(u, false));
   //users removed
   if (removedUsers.length)
-    removedUsers.forEach( u => window.sharedRecReception.delete(u) )
+    removedUsers.forEach(u => window.sharedRecReception.delete(u));
 }
 
-function enableDeleteAndBackingButton () {
+function enableDeleteAndBackingButton() {
   //case where setup.js is loaded and when awarenessUpdateHandler gets assigned to...
   //...awareness on-update event, it runs for the first time, before sharedRecReception is created
-  if (!window.sharedRecReception)
-    return;
+  if (!window.sharedRecReception) return;
   const thisMapValuesArray = Array.from(window.sharedRecReception.values());
-  if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
+  if (
+    !thisMapValuesArray.length ||
+    thisMapValuesArray.filter(e => e === false).length
+  )
     return;
- 
-  let [recorder, recId] = [...window.sharedRecReception.entries()]
-    .find(([k, v]) => typeof(v) === 'string')    
 
-  const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
-  const disabledBackingBtn = document.querySelector(`button.backing-btn[data-collab-id="${recId}"]`)
-  console.log({recorder, recId, disabledDeleteBtn, disabledBackingBtn})
-  
-  disabledBackingBtn.removeAttribute('disabled');
+  let [recorder, recId] = [...window.sharedRecReception.entries()].find(
+    ([k, v]) => typeof v === 'string'
+  );
 
-  if (userParam !== recorder)
-    return;
+  const disabledDeleteBtn = document.querySelector(
+    `button.delete-button[data-collab-id="${recId}"]`
+  );
+  const disabledBackingBtn = document.querySelector(
+    `button.backing-btn[data-collab-id="${recId}"]`
+  );
+  console.log({ recorder, recId, disabledDeleteBtn, disabledBackingBtn });
+
+  disabledBackingBtn?.removeAttribute('disabled');
+
+  if (userParam !== recorder) return;
 
   //recorder user only
-  disabledDeleteBtn.removeAttribute('disabled');
-  window.sharedRecReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
+  disabledDeleteBtn?.removeAttribute('disabled');
+  window.sharedRecReception.forEach((v, k, thisMap) => thisMap.set(k, false));
 }
