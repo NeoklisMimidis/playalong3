@@ -1,7 +1,6 @@
 import tippy from 'tippy.js';
 import {
   _colorizeTableSelections,
-  editChord,
 } from '../../annotation-tools/right-toolbar-tools';
 import { mainWaveform, wavesurfer } from '../../audio-player';
 import { MARKER_LABEL_SPAN_COLOR } from '../../config';
@@ -19,6 +18,8 @@ import {
   addMarkerAtTime,
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
+import { annotationChangeAfterSaveReceived } from './awarenessHandlers';
+
 
 /**
  * @param event {Y.YArrayEvent}
@@ -98,8 +99,16 @@ export function handleSharedRecordingResetEvent(event) {
 export function handleSharedBTEditParamsEvent(value, key) {
   //console.log({key, value});
   switch (key) {
-    case 'annotationSel':
-      handleAnnotationSelection(value);
+    case 'annotationSel':{
+      if(!value)
+        return;
+      if (value.lateOnly) {
+        !annotationChangeAfterSaveReceived
+          ? setTimeout(()=>handleAnnotationSelection(value), 7000)
+          : null;
+      } else
+        handleAnnotationSelection(value);
+    }
       break;
     case 'chordSel':
       value ? handleChordSelection(value) : null;
@@ -321,9 +330,10 @@ export function handleChordSelection(selection) {
 }
 
 function handleAnnotationSelection(selection) {
-  //if annotation list has not yet been created or if new sel=prev sel dont run
-  if (!annotationList.options.length || annotationList.value == selection.value)
+  //if annotation list has not yet been created or if new sel=prev sel (user that has changed annotation) dont run
+  if (!annotationList.options.length || annotationList.value == selection.value) {
     return;
+  }
 
   //changing the annotation
   annotationList.value = selection.value;

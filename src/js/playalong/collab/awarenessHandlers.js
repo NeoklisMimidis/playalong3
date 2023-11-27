@@ -17,6 +17,7 @@ import {
   analysisLoadingBar,
   animateProgressBar,
   audioSidebarText,
+  fileName,
   toolbar,
   wavesurfer,
 } from '../../audio-player';
@@ -30,11 +31,10 @@ import {
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
 import { setUserImageUrl, renderUserList } from './users';
-import {
-  handleChordSelection,
-  handleMarkerSelection,
-} from './sharedTypesHandlers';
+import {handleChordSelection, handleMarkerSelection } from './sharedTypesHandlers';
 import { compareArrays } from '../../components/utilities';
+
+export let annotationChangeAfterSaveReceived //useful in case of late (enters after save has been clicked and before annotation has been changed)
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(window.awareness.getStates().entries());
@@ -46,21 +46,49 @@ export function stateChangeHandler(changes) {
   actOnBTrackEditStateUpdate(awStates, myClientId);
   actOnChordEditStateUpdate(awStates, myClientId);
   actOnCancelSaveEditStateUpdate(awStates, myClientId);
+  actOnDeleteAnnotationStateUpdate(awStates, myClientId);
 }
 
 export function awaranessUpdateHandler(added, removed) {
-  //runs every time (i.e. every 30s)
+  //runs every time (i.e. automatically every 30s or when state changes-user is added/removed etc...)
+  const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
+
   enableDeleteAndBackingButton();
-
-  if (!added.length && !removed.length) return;
-
-  const { connectedUsers, disconnectedUsers, reconnectedUserNames } =
-    formatUserList();
-
   populateSharedRecTransmissionList(connectedUsers);
   configureDeleteWaveformButtons(reconnectedUserNames, disconnectedUsers);
   updateWaveformAwareness(connectedUsers);
   renderUserList([...connectedUsers, ...disconnectedUsers]);
+}
+
+function actOnDeleteAnnotationStateUpdate(awStates, myClientId) {
+  const deleteAnnotationStateUpdates = awStates
+    .filter(([, state]) => state.deleteAnnotation)
+    .map(([id, state]) => {
+      return {deleterId: id, deleterName: state.deleteAnnotation.deleter, delAnnotation: state.deleteAnnotation.delAnnotation};
+    });
+
+  if (!deleteAnnotationStateUpdates.length) return;
+
+  deleteAnnotationStateUpdates.forEach(state => {
+    const myStateUpdating = (state.deleterId === myClientId);
+
+    if (myStateUpdating) {
+      setTimeout(
+        () => window.awareness.setLocalStateField('deleteAnnotation', null)
+        ,200);
+    } else {
+      wavesurfer.clearMarkers();
+      jamsFile.annotations.splice(annotationList.selectedIndex, 1);
+      annotationList.remove(annotationList.selectedIndex);
+      renderAnnotations(selectedAnnotationData(jamsFile));
+      // Save updated JAMS to local storage
+      localStorage.setItem(fileName, JSON.stringify(jamsFile));
+      //delete annotation notification
+      const notifText = `${state.deleterName} has deleted "${state.delAnnotation}" annotation.`;
+      const notifContext = 'info';
+      notify(notifText, notifContext);
+    }
+  });
 }
 
 function actOnBTAnalysisStateUpdate(awStates, myClientId) {
@@ -98,7 +126,7 @@ function actOnBTAnalysisInProgress(me, progress) {
 function actOnBTAnalysisInitiated(me, analyzerName) {
   if (me) return;
   //notifying about analysis button having been clicked
-  const notifText = `${analyzerName} has has clicked Analyze button. Waiting for the analysis result...`;
+  const notifText = `${analyzerName} has clicked Analyze button. Waiting for the analysis result...`;
   const notifContext = 'info';
   notify(notifText, notifContext);
   //modifying BT toolbar
@@ -194,20 +222,22 @@ function actOnCancelSaveEditStateUpdate(awStates, myClientId) {
 }
 
 function handleSaveEditing(choice, me, editorName, newAnnotationData) {
-  if (me) {
-    if (choice === 'replace') {
-      //delete every shared parameter except annotationSel since it hasn t changed
-      window.sharedBTEditParams.forEach((v, k, thisMap) => {
-        if (k !== 'annotationSel') thisMap.delete(k);
-      });
-    } else if ((choice = 'saveSeparately')) {
-      //delete every shared parameter and set annotationSel to
-      window.sharedBTEditParams.forEach((v, k, thisMap) => thisMap.delete(k));
-      //window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam}) TODO
-    }
-    return;
-  }
+
+  // if (me) {
+  //   if (choice === 'replace') {
+  //     //delete every shared parameter except annotationSel since it hasn t changed
+  //     window.sharedBTEditParams.set('')
+  //     });
+  //   } else if ((choice = 'saveSeparately')) {
+  //     //delete every shared parameter and set annotationSel to
+  //     window.sharedBTEditParams.forEach((v, k, thisMap) => thisMap.delete(k));
+  //     //window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam}) TODO
+  //   }
+  //   return;
+  // }
   //needs to be called before updateMarkerDisplay so as visualizations are rendered correctly
+  if (me)
+    return;
   disableSaveChordsAndCancelEditing();
 
   const newAnnotation = _createNewAnnotation(newAnnotationData);
@@ -217,6 +247,7 @@ function handleSaveEditing(choice, me, editorName, newAnnotationData) {
     jamsFile.annotations[index] = newAnnotation;
     renderAnnotations(selectedAnnotationData(jamsFile));
   } else if (choice === 'saveSeparately') {
+    annotationChangeAfterSaveReceived = true;
     jamsFile.annotations.push(newAnnotation);
     index = annotationList.length;
     updateMarkerDisplayWithColorizedRegions(true);
@@ -298,7 +329,7 @@ function actOnChordEditInProgress(initialSelection) {
       window.sharedBTEditParams.get('chordSel') ?? initialSelection;
     actOnChordEditStarted(false, currentSelection);
     handleChordSelection(currentSelection);
-  }, 7000);
+  }, 9000);
 }
 
 function actOnChordEditStarted(me, selection) {
@@ -398,10 +429,11 @@ function actOnBTrackEditStateUpdate(awStates, myClientId) {
                   window.sharedBTEditParams.get('selectedMarker');
                 if (selectedMarkerTime)
                   handleMarkerSelection(selectedMarkerTime);
-              }, 7000)
+              }
+              , 8000)
             : //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
-              null;
-        }
+              null; 
+      }
         break;
     }
   });
@@ -753,19 +785,15 @@ function enableDeleteAndBackingButton() {
     ([k, v]) => typeof v === 'string'
   );
 
-  const disabledDeleteBtn = document.querySelector(
-    `button.delete-button[data-collab-id="${recId}"]`
-  );
-  const disabledBackingBtn = document.querySelector(
-    `button.backing-btn[data-collab-id="${recId}"]`
-  );
-  console.log({ recorder, recId, disabledDeleteBtn, disabledBackingBtn });
-
-  disabledBackingBtn?.removeAttribute('disabled');
+  const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
+  const disabledBackingBtn = document.querySelector(`button.backing-btn[data-collab-id="${recId}"]`)
+  console.log({recorder, recId, disabledDeleteBtn, disabledBackingBtn})
+  
+  disabledBackingBtn.removeAttribute('disabled');
+  disabledDeleteBtn.removeAttribute('disabled');
 
   if (userParam !== recorder) return;
 
   //recorder user only
-  disabledDeleteBtn?.removeAttribute('disabled');
-  window.sharedRecReception.forEach((v, k, thisMap) => thisMap.set(k, false));
+  window.sharedRecReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
 }

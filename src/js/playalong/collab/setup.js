@@ -27,12 +27,19 @@ const wsBaseUrl = import.meta.env.DEV
 //setting collaboration up section
 function setupCollaboration() {
   const ydoc = new Y.Doc();
-
-  const file = urlParams.get('f') ?? 'musicolab_default';
+  
+  const file = urlParams.get('f')
+  const lesson = urlParams.get('lesson')
   const course = urlParams.get('course');
-  // const room = `${file}::${course}`;
-  const room = course ?? file;
+  
+  let room;
 
+  if (course && lesson) 
+    room = `${lesson}::${course}`;
+  else
+    room = file ?? 'musicolab_default'
+
+ 
   const websocketProvider = new WebsocketProvider(wsBaseUrl, room, ydoc, {
     params: { pathname: window.location.pathname },
   });
@@ -65,7 +72,7 @@ function setupCollaboration() {
 
   websocketProvider.awareness.on('update', ({added, removed}) => awaranessUpdateHandler(added, removed));
   websocketProvider.awareness.on('change', stateChangeHandler);
-  websocketProvider.awareness.setLocalStateField('user', userData);
+
 
   const sharedRecordedBlobs = ydoc.getArray('blobs');
   //sharedRecBlobs (Y.array) has --> ymap recordings have --> metadata (id, name, recid, speed, pitch, sample rate, count) keys
@@ -266,7 +273,7 @@ function setupCollaboration() {
   sharedBTMarkers.observe(e => {
     if (e.transaction.local) return;
     //in case of late (i.e. after or during BT edit) user that hasn t yet (loaded BT --> got JAMS file -->) rendered markers...
-    //...set shared markers handling to occur in 6 seconds
+    //...set shared markers handling to occur in 7.5 seconds
     if (!bTMarkersReady) {
       setTimeout(() => {
         e.changes.keys.forEach((value, key) => {
@@ -275,7 +282,7 @@ function setupCollaboration() {
             ? handleSharedBTMarkersEvent(marker, key)
             : null;
         });
-      }, 6000);
+      }, 7500);
     } else {
       e.changes.keys.forEach((value, key) => {
         if (value.action === 'delete') return;
@@ -346,6 +353,7 @@ function setupCollaboration() {
       console.log(json);
     }
   };
+  websocketProvider.awareness.setLocalStateField('user', userData);
 }
 
 if (!!window.Collab) {

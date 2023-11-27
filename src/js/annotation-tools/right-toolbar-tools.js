@@ -376,6 +376,18 @@ function saveEditing() {
           newAnnotationData,
         });
 
+        //in case of save annotation list index changes
+        //collably transmitting event with late-only param
+        //lateOnly use: collaborators present at the time of save click, change annotationList index when...
+        //... act OnSaveCancelEditStateUpdate (awarenessHandlers.js) runs
+        if (choice === 'save') {
+          window.sharedBTEditParams.set('annotationSel', {
+            value: annotationList.value,
+            selector: userParam,
+            lateOnly: true
+          });
+        }
+
         //1. restoring shared markers object as modified jams has been saved in server temporary folder and late...
         //...gets markers' modifications from there
         //2.clearing shared marker selection
@@ -716,7 +728,7 @@ function _mapChordSymbolToText(encodedChord) {
   return mirLabel;
 }
 
-function exportTempFolderRepo(file) {
+export function exportTempFolderRepo(file) {
   // 1) Construct FormData to encapsulate the information to be sent to the server
   let fd = new FormData();
   fd.append('action', 'upload');
