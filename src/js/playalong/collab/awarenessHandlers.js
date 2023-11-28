@@ -774,10 +774,10 @@ function enableDeleteAndBackingButton() {
   //case where setup.js is loaded and when awarenessUpdateHandler gets assigned to...
   //...awareness on-update event, it runs for the first time, before sharedRecReception is created
   if (!window.sharedRecReception) return;
-  const thisMapValuesArray = Array.from(window.sharedRecReception.values());
+  const SharedRecReceptionValuesArray = Array.from(window.sharedRecReception.values());
   if (
-    !thisMapValuesArray.length ||
-    thisMapValuesArray.filter(e => e === false).length
+    !SharedRecReceptionValuesArray.length ||
+    SharedRecReceptionValuesArray.filter(e => e === false).length
   )
     return;
 

@@ -53,11 +53,12 @@ export function handleSharedRecordingDataEvent(event) {
     progressBar?.parentElement.remove();
     window.addBlobUrlToDownload(url, count);
     
-    //count get augmented HERE (and not in fillRecordingTemplate), because here is it s final use in the collab rec's creation
-    count++
+    //count gets augmented HERE (and not in fillRecordingTemplate), because here is it s final use in the collab rec's creation
+    count++;
 
     if (!event.transaction.local) {
       window.recordedBuffers.push([f32Array]);
+      window.recordedBlobs.push(blob);
     }
 
     //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it    

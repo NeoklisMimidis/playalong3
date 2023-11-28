@@ -104,6 +104,7 @@ function setupCollaboration() {
             const blob = window.recordingToBlob(f32Array, insert.sampleRate);
             if (!event.transaction.local) {
               window.recordedBuffers.push([f32Array]);
+              window.recordedBlobs.push(blob);
             }
             window.createRecordingTrack(
               blob,
