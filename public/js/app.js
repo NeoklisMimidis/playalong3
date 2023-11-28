@@ -50,7 +50,6 @@ var wavesurfer_mic = WaveSurfer.create({
 
 var firstWaveform = true;
 var volume = 1;
-var exports = {};
 
 var count = 1;
 var speedMatrix = [];
@@ -1141,6 +1140,22 @@ function createRecordingTrack(
 
   // increase the count variable
   count++;
+
+    // Load first recording as backing track
+  // A) NO Collab & B) Later Collaborator???
+  wavesurfer.on('ready', function () {
+    if (Collab) {
+      // Case of late collaborator FIXME. Works 1/3 cases
+      // Collaborator connects...
+      // 1) ..while someone records --> BUG
+      // 2) ..after someone has recorded, and is in the stage of load as bTrack WORKS!
+      // 3) ..after someone has recorded and used as backing track BUG
+    } else {
+      if (!backingTrack.isReady) {
+        backingButtonHandler();
+      }
+    }
+  });
 }
 
 /**
