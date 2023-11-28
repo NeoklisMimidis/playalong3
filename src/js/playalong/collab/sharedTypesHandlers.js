@@ -29,7 +29,11 @@ export function handleSharedRecordingDataEvent(event) {
   const parentMap = array.parent;
   const downloadProgress = (array.length / parentMap.get('total')) * 100;
   console.log('current progress', downloadProgress);
-  const count = parentMap.get('count');
+  //Commented out because it creates bug in the following case:...
+  //...user records --> deletes the rec --> late enters with count var having been re-set to 1
+  //  a: late records, passes the count=1 property --> collaborator runs fillRecordingTemplate with count=2 (count hasn t been re-set here) --> count=1 is used here to determine the right wavesurfer --> no wavesurfer with that count 
+  //  b: non-late records, passes the count=2 property --> late collaborator runs fillRecordingTmplate with count=1 (count has been re-set) --> count=2 is used here to determinne the right wavesurfer --> no wavesurfer with that count
+  //const count = parentMap.get('count');
 
   const progressBar = updateProgressBar(
     downloadProgress,
@@ -37,6 +41,7 @@ export function handleSharedRecordingDataEvent(event) {
   );
 
   if (downloadProgress === 100.0) {
+    console.log(count);
     const f32Array = Float32Array.from(array.toArray());
     const blob = window.recordingToBlob(f32Array, parentMap.get('sampleRate'));
     let url = window.URL.createObjectURL(blob);
@@ -47,13 +52,15 @@ export function handleSharedRecordingDataEvent(event) {
 
     progressBar?.parentElement.remove();
     window.addBlobUrlToDownload(url, count);
+    
+    //count get augmented HERE (and not in fillRecordingTemplate), because here is it s final use in the collab rec's creation
+    count++
 
     if (!event.transaction.local) {
       window.recordedBuffers.push([f32Array]);
     }
 
-    //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it.
-    
+    //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it    
     if (event.transaction.local) {
       window.sharedRecReception.set(userParam, parentMap.get('id'));
     } else {

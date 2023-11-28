@@ -421,7 +421,7 @@ function onSuccessfulRecording(audioBuffer) {
         userName: userParam,
         userId: idParam,
         sampleRate,
-        count,
+        //count, :commented out. This property is only used in handleSharedRecordingDataEvent. It s use there creates bug. Refer to the function for details (sharedTypesHandlers.js)
       };
       addSharedBuffer(data, obj);
     }
