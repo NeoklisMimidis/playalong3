@@ -82,7 +82,7 @@ export const toolbarStates = {
   SNAP_ON_BEATS: false,
   CLICK_TRACK: false,
   EDIT_MODE: false,
-  COLLAB_EDIT_MODE: false,
+  COLLAB_EDIT_MODE: false, //part of collab BT edit mechanism optimization! useful in cases someone enters during BT edit
   SAVED: true,
   IS_MODAL_TABLE_ACTIVE: false, // useful to disable some events while modal active
 };

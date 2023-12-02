@@ -41,7 +41,8 @@ export function handleSharedRecordingDataEvent(event) {
   );
 
   if (downloadProgress === 100.0) {
-    console.log(count);
+    console.log(`rec reception is complete. Count variable=${count}`);
+
     const f32Array = Float32Array.from(array.toArray());
     const blob = window.recordingToBlob(f32Array, parentMap.get('sampleRate'));
     let url = window.URL.createObjectURL(blob);
@@ -68,11 +69,10 @@ export function handleSharedRecordingDataEvent(event) {
       window.sharedRecReception.set(userParam, true);
     }
 
-    console.log('done');
-  }
 
-  // this is needed to show or hide: playAll, stopAll, mix&download, playback speed
-  window.hideUnhideElements();
+    // this is needed to show or hide: playAll, stopAll, mix&download, playback speed
+    window.hideUnhideElements();
+  }
 }
 
 /**

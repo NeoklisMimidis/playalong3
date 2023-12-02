@@ -3,6 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import { setUserImageUrl, userData } from './users';
 import {
   awaranessUpdateHandler,
+  lateUser,
   stateChangeHandler,
 } from './awarenessHandlers';
 import {
@@ -70,8 +71,8 @@ function setupCollaboration() {
   window.awareness = websocketProvider.awareness;
   window.permanentUserData = permanentUserData;
 
-  websocketProvider.awareness.on('update', ({added, removed}) => awaranessUpdateHandler(added, removed));
-  websocketProvider.awareness.on('change', stateChangeHandler);
+  websocketProvider.awareness.on('update', (changes) => awaranessUpdateHandler(changes));
+  websocketProvider.awareness.on('change', (changes) => stateChangeHandler(changes));
 
 
   const sharedRecordedBlobs = ydoc.getArray('blobs');
@@ -84,6 +85,7 @@ function setupCollaboration() {
         for (let map of delta.insert) {
           //3 user cases. recorder, collaborators, late collaborators
           let insert = map instanceof Y.Map ? map.toJSON() : map;
+          console.log(insert);
           const recUserData = {
             name: insert.userName,
             id: insert.userId,
@@ -106,6 +108,7 @@ function setupCollaboration() {
               window.recordedBuffers.push([f32Array]);
               window.recordedBlobs.push(blob);
             }
+            console.log(`creating rec no ${count}`);
             window.createRecordingTrack(
               blob,
               insert.id,
@@ -125,6 +128,8 @@ function setupCollaboration() {
             );
           }
         }
+        if(lateUser.entersDuringRec)
+          lateUser.hasReceivedSessionRecs = true;
       }
     }
   });
