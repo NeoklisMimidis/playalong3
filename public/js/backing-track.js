@@ -213,50 +213,20 @@ function loadUrlFile(fn, c, u) {
   );
 }
 
-function setBackingTrackRecording({id, sharer, recName}) {
-  if (id === undefined || id === null) {
-    console.error(
-      'tried to set backing track to recording with id %s but it does not exist',
-      id
-    );
-    return;
-  }
-  //find the recording in the shared object based on its provided id
-  let index = -1;
-  for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
-    if (window.sharedRecordedBlobs.get(i)?.get('id') === id) {
-      index = i;
-      break;
-    }
-  }
-
-  if (index === -1) {
-    console.error('could not find track for id: ' + id);
-    return;
-  }
-
-  const recorderName = window.sharedRecordedBlobs.get(index).get('userName');
+function setBackingTrackRecording({sharer, recordingName, recorderName, dataURL}) {
   const notifText = `${sharer} has set
-   ${
-     recorderName == sharer ? 'their recording' : `recording of ${recorderName}`
-   }
-   as the new backing track.`;
+    ${
+      recorderName == sharer ? 'their recording' : `recording of ${recorderName}`
+    }
+    as the new backing track.`;
   const notifContext = 'info';
   notify(notifText, notifContext);
 
-  const data = window.sharedRecordedBlobs.get(index).get('data');
-  //load it as wavesurfer backing track
-  if (data?.length > 1) {
-    const float32Array = Float32Array.from(data);
-    const blob = recordingToBlob(float32Array);
-    const BTUrl = URL.createObjectURL(blob);
+  //setting relevant global vars (residing in app.js) to be used in loadAudioFile that s called inside loadFilesInOrder call
+  recAsBackingTrack.hasBeenSet = true;
+  recAsBackingTrack.recName = recordingName;
 
-    //setting relevant global vars (residing in app.js) to be used in loadAudioFile that s called inside loadFilesInOrder call
-    recAsBackingTrack.hasBeenSet = true;
-    recAsBackingTrack.recName = recName;
-
-
-    const annotationFile = createURLJamsFromRepository(recName, true);
-    loadFilesInOrder(BTUrl, annotationFile);
-  }
+  //loading BT
+  const annotationFile = createURLJamsFromRepository(recordingName, true);
+  loadFilesInOrder(dataURL, annotationFile);
 }

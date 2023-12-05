@@ -1,5 +1,5 @@
 // Created wavesurfer instance from audio-player.js
-import { wavesurfer } from '../audio-player.js';
+import { fileName, wavesurfer } from '../audio-player.js';
 import { zoomIn, zoomOut } from '../audio-player/player-controls.js';
 import {
   jamsFile,
@@ -12,7 +12,7 @@ import { tooltips } from '../components/tooltips.js';
 
 import { findPrevNextBeatsStartTime } from '../annotation-tools/left-toolbar-tools.js';
 
-import { renderModalMessage, createToggle } from '../components/utilities.js';
+import { renderModalMessage, createToggle, jsonDataToJSONFile } from '../components/utilities.js';
 
 /* Elements */
 import {
@@ -26,6 +26,7 @@ import {
   audioFileName,
 } from '../annotation-tools.js';
 import { clearSharedMarkersInfo } from '../playalong/collab/sharedTypesHandlers.js';
+import { exportTempFolderRepo } from './right-toolbar-tools.js';
 
 // - 'Annotation list' and 'Edit' mode toggle switch
 /**
@@ -98,6 +99,7 @@ export function setupToggleEditEvent() {
 // - Center controls
 function deleteAnnotation() {
   const message = `You are about to delete <span class="text-danger">${annotationList.value}.</span><br><br><span class="text-info">Are you sure?</span> 🤷‍♂️`;
+  const delAnnotation = annotationList.value;
 
   renderModalMessage(message)
     .then(() => {
@@ -109,11 +111,28 @@ function deleteAnnotation() {
       annotationList.remove(annotationList.selectedIndex);
       // Render the annotation (by default first drop-down list option)
       renderAnnotations(selectedAnnotationData(jamsFile));
+      // Save to local storage, which is designed to store data in its original format
+      localStorage.setItem(fileName, JSON.stringify(jamsFile));
 
       if (Collab) {
-        //collably deleting annotation...
-
-        //restore shared markers and clear shared marker selection
+        //collably deleting annotation
+        console.log({userParam, delAnnotation});
+        window.awareness.setLocalStateField('deleteAnnotation', {
+          status: true,
+          deleter: userParam,
+          delAnnotation
+        });
+        //updating server's jam in temp folder, so that late gets the correct version
+        const fNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        const jamsToBeExported = jsonDataToJSONFile(
+          jamsFile,
+          fNameWithoutExt,
+          'jams'
+        );
+        exportTempFolderRepo(jamsToBeExported);
+        //deleting shared annotation selection (late automatically loads the first drop-down selection, no shared selection needed)
+        window.sharedBTEditParams.delete('annotationSel');
+        //restoring shared markers and clearing shared marker selection since annotation has changed
         clearSharedMarkersInfo();
       }
           })

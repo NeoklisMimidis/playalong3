@@ -17,10 +17,10 @@ import {
   analysisLoadingBar,
   animateProgressBar,
   audioSidebarText,
+  fileName,
   toolbar,
   wavesurfer,
 } from '../../audio-player';
-import { zoomIn, zoomOut } from '../../audio-player/player-controls';
 import {
   createAnnotationsList,
   jamsFile,
@@ -30,34 +30,164 @@ import {
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
 import { setUserImageUrl, renderUserList } from './users';
-import { handleChordSelection, handleMarkerSelection } from './sharedTypesHandlers';
+import {handleChordSelection, handleMarkerSelection, recReceptionInProgress } from './sharedTypesHandlers';
 import { compareArrays } from '../../components/utilities';
+import { getLastKey } from 'lib0/indexeddb';
+
+export let annotationChangeAfterSaveReceived //part of collab annotation sharing optimization for 'late 'user! useful in case someone enters after save has been clicked and before annotation has been changed
+//part of collab rec sharing mechanism optimization for 'late' user! useful in cases someone enters during recording
+export let lateUser = {
+  entersDuringRec: true,
+  //hasReceivedSessionRecs: false,
+};
+
+//unfortunately it can t be implemented because when late enters, they run awareness...
+//There, it must be decided whether to run actOnStartRecording immediately or not, according to the existence (or not)
+///of sharedRecordings. This cannot be known at that moment, because awareness always runs first, when sharedRecordedBlobs haven t
+//yet been updated
+// lateUser = new Proxy(lateUser, {
+//   set(target, prop, val) {
+//     console.log({prop, val});
+//     target[prop] = val;
+//     if (target.entersDuringRec && prop == 'hasReceivedSessionRecs' && val == true) {
+//       const recInprogress = [...window.awareness.getStates().entries()]
+//         .find(([id, state]) => state.record?.status == 'inProgress')
+//       console.log(recInprogress);
+//       if (recInprogress) {
+//         const recInProgressData = recInprogress
+//           .map(([id, state]) => state.record.recUserData)[0];
+//         actOnStartRecording(me, recInProgressData);
+//       }
+//     }
+//     return true;
+//   }
+// });
+let awProccessesInProgress = [];
+export let intervalFunction;
+let currentProgressInstancesLength;
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(window.awareness.getStates().entries());
   const myClientId = window.awareness.clientID;
-  console.log({ awStates, myClientId });
+  console.log({ awStates, myClientId, changes });
+
+  //it has to be done for every state update that enters inProgress status
+  if (changes.removed.length) {
+    actOnRemovedTriggerer(changes.removed);
+
+    if (
+      recReceptionInProgress?.status &&
+      changes.removed.includes(recReceptionInProgress.data.clientId)
+    ) {
+      console.log(count);
+
+      currentProgressInstancesLength = recReceptionInProgress.progressInstances.length;
+      intervalFunction = setInterval(actOnRemovedRecSender, 8000);
+    }
+  }
 
   actOnBTAnalysisStateUpdate(awStates, myClientId);
   actOnRecordStateUpdate(awStates, myClientId);
   actOnBTrackEditStateUpdate(awStates, myClientId);
   actOnChordEditStateUpdate(awStates, myClientId);
   actOnCancelSaveEditStateUpdate(awStates, myClientId);
+  actOnDeleteAnnotationStateUpdate(awStates, myClientId);
 }
 
-export function awaranessUpdateHandler(added, removed) {
-  //runs every time (i.e. every 30s)
-  enableDeleteAndBackingButton();
+function actOnRemovedRecSender() {
+  const futureProgressInstancesLength = recReceptionInProgress.progressInstances.length
+  console.log({currentProgressInstancesLength});
 
-  if (!added.length && !removed.length)
+  const recReceptionProgressing = (futureProgressInstancesLength > currentProgressInstancesLength)
+  currentProgressInstancesLength = futureProgressInstancesLength;
+  console.log({currentProgressInstancesLength, futureProgressInstancesLength});
+  if (recReceptionProgressing)
     return;
 
-  const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
+  const {userName: recName, id: recId} = recReceptionInProgress.data;
 
+  const notifText = `${recName} was abruptly disconnected`;
+  const notifContext = 'danger';
+  notify(notifText, notifContext);
+  //? added in case recordState hasn t been nullified and the 'record' case in actOnRemovedTriggerer has run. scrollContainer is removed in actOnStartRecording
+  const scrollContainer = document.getElementById(`scrollContainer${count}`);
+  scrollContainer?.parentElement.remove();
+  //no reason for ?. added for extra safety
+  const buttonsContainer = document.getElementById(`buttons${count}`);
+  buttonsContainer?.remove();
+
+  let index = -1;
+  for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
+    if (window.sharedRecordedBlobs.get(i)?.get('id') === recId) {
+      index = i;
+      break;
+    }
+  }
+  window.sharedRecordedBlobs.get(index).set('data', [0]);
+
+  recReceptionInProgress.status = false;
+  recReceptionInProgress.data = null;
+
+  recReceptionInProgress.progressInstances = [];
+  clearInterval(intervalFunction);
+
+}
+
+function actOnRemovedTriggerer(removedUsers) {
+  awProccessesInProgress
+    .forEach(process => {
+      switch (process.state) {
+        case 'record': {
+          if (removedUsers.includes(process.data.clientId)) {
+            actOnStopRecording(false, null, false);
+          }
+        }
+          break;
+      }
+    });
+}
+
+export function awaranessUpdateHandler(changes) {
+  //runs every time (i.e. automatically every 30s or when state changes-user is added/removed etc...)
+  const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
+  //console.log(changes);
+
+  enableButtonsOfNewRec();
   populateSharedRecTransmissionList(connectedUsers);
   configureDeleteWaveformButtons(reconnectedUserNames, disconnectedUsers);
   updateWaveformAwareness(connectedUsers);
   renderUserList([...connectedUsers, ...disconnectedUsers]);
+}
+
+function actOnDeleteAnnotationStateUpdate(awStates, myClientId) {
+  const deleteAnnotationStateUpdates = awStates
+    .filter(([, state]) => state.deleteAnnotation)
+    .map(([id, state]) => {
+      return {deleterId: id, deleterName: state.deleteAnnotation.deleter, delAnnotation: state.deleteAnnotation.delAnnotation};
+    });
+
+  if (!deleteAnnotationStateUpdates.length) return;
+
+  deleteAnnotationStateUpdates.forEach(state => {
+    const myStateUpdating = (state.deleterId === myClientId);
+
+    if (myStateUpdating) {
+      setTimeout(
+        () => window.awareness.setLocalStateField('deleteAnnotation', null)
+        ,200);
+    } else {
+      wavesurfer.clearMarkers();
+      jamsFile.annotations.splice(annotationList.selectedIndex, 1);
+      annotationList.remove(annotationList.selectedIndex);
+      renderAnnotations(selectedAnnotationData(jamsFile));
+      // Save updated JAMS to local storage
+      localStorage.setItem(fileName, JSON.stringify(jamsFile));
+      //delete annotation notification
+      const notifText = `${state.deleterName} has deleted "${state.delAnnotation}" annotation.`;
+      const notifContext = 'info';
+      notify(notifText, notifContext);
+    }
+  });
 }
 
 function actOnBTAnalysisStateUpdate(awStates, myClientId) {
@@ -95,7 +225,7 @@ function actOnBTAnalysisInProgress(me, progress) {
 function actOnBTAnalysisInitiated(me, analyzerName) {
   if (me) return;
   //notifying about analysis button having been clicked
-  const notifText = `${analyzerName} has has clicked Analyze button. Waiting for the analysis result...`;
+  const notifText = `${analyzerName} has clicked Analyze button. Waiting for the analysis result...`;
   const notifContext = 'info';
   notify(notifText, notifContext);
   //modifying BT toolbar
@@ -191,20 +321,22 @@ function actOnCancelSaveEditStateUpdate(awStates, myClientId) {
 }
 
 function handleSaveEditing(choice, me, editorName, newAnnotationData) {
-  if (me) {
-    if (choice === 'replace') {
-      //delete every shared parameter except annotationSel since it hasn t changed
-      window.sharedBTEditParams.forEach((v, k, thisMap) => {
-        if (k !== 'annotationSel') thisMap.delete(k);
-      });
-    } else if ((choice = 'saveSeparately')) {
-      //delete every shared parameter and set annotationSel to
-      window.sharedBTEditParams.forEach((v, k, thisMap) => thisMap.delete(k));
-      //window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam}) TODO
-    }
-    return;
-  }
+
+  // if (me) {
+  //   if (choice === 'replace') {
+  //     //delete every shared parameter except annotationSel since it hasn t changed
+  //     window.sharedBTEditParams.set('')
+  //     });
+  //   } else if ((choice = 'saveSeparately')) {
+  //     //delete every shared parameter and set annotationSel to
+  //     window.sharedBTEditParams.forEach((v, k, thisMap) => thisMap.delete(k));
+  //     //window.sharedBTEditParams.set('annotationSel', {value: this.value, selector: userParam}) TODO
+  //   }
+  //   return;
+  // }
   //needs to be called before updateMarkerDisplay so as visualizations are rendered correctly
+  if (me)
+    return;
   disableSaveChordsAndCancelEditing();
 
   const newAnnotation = _createNewAnnotation(newAnnotationData);
@@ -214,6 +346,7 @@ function handleSaveEditing(choice, me, editorName, newAnnotationData) {
     jamsFile.annotations[index] = newAnnotation;
     renderAnnotations(selectedAnnotationData(jamsFile));
   } else if (choice === 'saveSeparately') {
+    annotationChangeAfterSaveReceived = true;
     jamsFile.annotations.push(newAnnotation);
     index = annotationList.length;
     updateMarkerDisplayWithColorizedRegions(true);
@@ -273,7 +406,8 @@ function actOnChordEditStateUpdate(awStates, myClientId) {
       case 'completed':
         actOnChordEditCompleted(myStateUpdating, chordEditState);
         break;
-      //cases where user enters later in edit session at a moment when chord editing is in progress
+      //part of collab chord editing mechanism optimization for late user!
+      //useful in cases where user enters while chord editing is in progress
       //status 'inProgress' has been set in editor's actOnChordEditStarted call
       case 'inProgress':
         actOnChordEditInProgress(chordEditState.initialSelection);
@@ -295,7 +429,7 @@ function actOnChordEditInProgress(initialSelection) {
       window.sharedBTEditParams.get('chordSel') ?? initialSelection;
     actOnChordEditStarted(false, currentSelection);
     handleChordSelection(currentSelection);
-  }, 7000);
+  }, 9000);
 }
 
 function actOnChordEditStarted(me, selection) {
@@ -381,9 +515,10 @@ function actOnBTrackEditStateUpdate(awStates, myClientId) {
       case 'editInProgress':
         {
           !myStateUpdating && !toolbarStates.COLLAB_EDIT_MODE
+              //part of collab BT edit mechanism optimization!
             ? //in case user enters session after collab edit has started ('late' user)
               //set:
-              //1.edit initiated events to occur in two seconds so as backing track code has been executed
+              //1.edit initiated events to occur in 8 seconds, probably after backing track and JAMS have been loaded (problematic)
               //2.currently collably selected marker to be selected
               setTimeout(() => {
                 actOnBTrackEditInitiated(
@@ -396,9 +531,9 @@ function actOnBTrackEditStateUpdate(awStates, myClientId) {
                 if (selectedMarkerTime)
                   handleMarkerSelection(selectedMarkerTime);
               }
-              ,7000)
-          //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
-          : null; 
+              , 8000)
+            : //case where 'edit Initiated' has already run, i.e. when user was present from the beginning of edit session
+              null; 
       }
         break;
     }
@@ -460,13 +595,10 @@ function actOnBTrackEditCompleted(me, editorData, editTime) {
     }, 1000);
     return;
   } else {
-    setTimeout(
-      () => toggleEditBtn.removeAttribute('disabled'),
-      1000);
+    setTimeout(() => toggleEditBtn.removeAttribute('disabled'), 1000);
   }
 
   //reactivating edit button !for all users! after bTrackEdit has been set to null
-
 
   toolbarStates.COLLAB_EDIT_MODE = false;
 
@@ -547,6 +679,7 @@ function actOnRecordStateUpdate(awStates, myClientId) {
   recordStateUpdates.forEach(([changeClientId, rState]) => {
     const myStateUpdating = changeClientId === myClientId;
     const recUserData = {
+      clientId: changeClientId,
       name: rState.recUserData.name,
       id: rState.recUserData.id,
       imageSrc: setUserImageUrl(rState.recUserData.id),
@@ -556,17 +689,44 @@ function actOnRecordStateUpdate(awStates, myClientId) {
       case 'start':
         actOnStartRecording(myStateUpdating, recUserData);
         break;
-      case 'stop':
+      case 'stop':{
+        //useful in cases of late that hasn t yet received shared recs and run actOnStartRecording
+        if (lateUser.entersDuringRec) {
+          createRecordingTemplate(recUserData);
+          lateUser.entersDuringRec = 'false';
+        }
         actOnStopRecording(myStateUpdating, recUserData.name, rState.isValid);
+      }
+        break;
+      //part of collab rec sharing mechanism optimization for late user!
+      case 'inProgress':{
+        if (lateUser.entersDuringRec) {
+          otherUserRecording = true;
+
+          recordButton.classList.add('flash');
+
+          awProccessesInProgress.push({state: 'record', data: recUserData});
+
+          const notifText = `You have entered the session while ${recUserData.name} is recording.
+            You can't record at the same time.`;
+          const notifContext = 'info';
+          notify(notifText, notifContext);
+        }
+      }
         break;
     }
   });
 }
 
 function actOnStartRecording(me, recUserData) {
+  //case:late enters during rec. Restoring lateUser object
+  lateUser.entersDuringRec = false;
+
   recordButton.classList.add('flash');
 
   createRecordingTemplate(recUserData);
+
+  awProccessesInProgress.push({state: 'record', data: recUserData});
 
   if (!me) {
     otherUserRecording = true;
@@ -574,47 +734,52 @@ function actOnStartRecording(me, recUserData) {
     const notifText = `${recUserData.name} is recording. You can't record at the same time.`;
     const notifContext = 'info';
     notify(notifText, notifContext);
+  } else {
+    //recorder issues inProgress rec state
+    setTimeout(() =>
+      window.awareness.setLocalStateField('record', {
+        status: 'inProgress',
+        recUserData: { id: idParam, name: userParam },
+      })
+      , 100);
   }
 }
 
 function actOnStopRecording(me, userName, isValid) {
   //removing user image and recording button flashing
   recordButton.classList.remove('flash');
+  //deleting inProgress array entry
+  const indexOfRecInProgress = awProccessesInProgress
+    .findIndex(process => process.state === 'record');
+  indexOfRecInProgress !== -1
+    ? awProccessesInProgress.splice(indexOfRecInProgress, 1)
+    : null;
 
   if (isValid) {
     document
       .getElementById(`scrollContainer${count}`)
       .previousElementSibling.classList.remove('flash');
-
-    if (!me) {
-      //display all buttons needed when rec exists. enable playback speed bar
-      let additionalButtonsToDisplay = [
-        'stopallButton',
-        'combineselectedButton',
-        'playpauseallButton',
-      ];
-      additionalButtonsToDisplay = additionalButtonsToDisplay.map(id =>
-        document.getElementById(id)
-      );
-      additionalButtonsToDisplay.forEach(e =>
-        e.removeAttribute('hidden', false)
-      );
-      additionalButtonsToDisplay[2].innerHTML =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-      document.getElementById('speedSlider').disabled = false;
-    }
   } else {
-    document.getElementById(`scrollContainer${count}`).parentElement.remove();
+    //? added in case actOnStopRecording has been called in actOnRemovedTrigerrer after
+    //handleSharedRecordingData has run its progress=100% code), and count has been already augmented.
+    //in that case recording track s construction is complete and valid, so no need to remove
+    document.getElementById(`scrollContainer${count}`)?.parentElement.remove();
   }
 
   if (me) {
-    setTimeout(() => window.awareness.setLocalStateField('record', null), 100);
+    setTimeout(
+      () => window.awareness.setLocalStateField('record', null)
+      , 100);
   } else {
     otherUserRecording = false;
-
-    const notifText = `${userName} has stopped recording.
-      ${isValid ? 'Recording is valid.' : 'Recording is not valid.'}`;
-    const notifContext = 'info';
+    //for now, actOnStopRecording is called with null userName argument only in case recorder user is disconnected (stateChangeHandler, awarenesssHandlers.js)
+    const notifText = userName
+      ? `${userName} has stopped recording.
+        ${isValid ? 'Recording is valid.' : 'Recording is not valid.'}`
+      : `Recorder was abruptly disconnected.`;
+    const notifContext = !userName
+      ? 'danger'
+      : 'info';
     notify(notifText, notifContext);
   }
 }
@@ -679,7 +844,6 @@ function updateWaveformAwareness(connected) {
 function configureDeleteWaveformButtons(reconnectedNames, disconnectedUsers) {
   //make delete button of n recording visible to recorder.
 
-  // if ()
   //make delete buttons of recordings by disconnected users visible for everyone
   const disconnectedNames = disconnectedUsers.map(u => u.name);
   const recordingsByDisconnected = [
@@ -689,8 +853,9 @@ function configureDeleteWaveformButtons(reconnectedNames, disconnectedUsers) {
     .forEach(imageEl => {
       const recCount = imageEl.nextElementSibling.id.match(/\d+/)[0];
       const recButtonsContainer = document.querySelector(`#buttons${recCount}`);
+      //recButtonsContainer doesn t exist in case recorder user is diconnected in the middle of recording. ? is added to avoid constant bug (and block of the rest of function) every time updateHandler runs 
       recButtonsContainer
-        .querySelector('.delete-button')
+        ?.querySelector('.delete-button')
         .removeAttribute('hidden');
     });
 
@@ -703,8 +868,10 @@ function configureDeleteWaveformButtons(reconnectedNames, disconnectedUsers) {
       if (imageEl.title == userParam) return;
       const recCount = imageEl.nextElementSibling.id.match(/\d+/)[0];
       const recButtonsContainer = document.querySelector(`#buttons${recCount}`);
+      //? added in case recButtonsContainer doesn t exist and error blocks the rest of function.
+      //it happened once but the case cannot be reproduced to be better defined
       recButtonsContainer
-        .querySelector('.delete-button')
+        ?.querySelector('.delete-button')
         .setAttribute('hidden', true);
     });
 }
@@ -717,7 +884,7 @@ export function defineIfSingleUser() {
 }
 
 function populateSharedRecTransmissionList(connected) {
-  const connectedNames = connected.map( u => u.name );
+  const connectedNames = connected.map(u => u.name);
   const usersInRecTransmissionList = Array.from(
     window.sharedRecReception.keys()
   );
@@ -725,43 +892,69 @@ function populateSharedRecTransmissionList(connected) {
   const {
     areEqual,
     excessElmnts: addedUsers,
-    notIncElmnts: removedUsers
+    notIncElmnts: removedUsers,
   } = compareArrays(connectedNames, usersInRecTransmissionList);
 
   //if no change in user list return
-  if (areEqual)
-    return;
-  
+  if (areEqual) return;
+
   //users added
   if (addedUsers.length)
-    addedUsers.forEach( u => window.sharedRecReception.set(u, false) )
+    addedUsers.forEach(u => window.sharedRecReception.set(u, false));
   //users removed
   if (removedUsers.length)
-    removedUsers.forEach( u => window.sharedRecReception.delete(u) )
+    removedUsers.forEach(u => window.sharedRecReception.delete(u));
 }
 
-function enableDeleteAndBackingButton () {
+function enableButtonsOfNewRec() {
   //case where setup.js is loaded and when awarenessUpdateHandler gets assigned to...
   //...awareness on-update event, it runs for the first time, before sharedRecReception is created
-  if (!window.sharedRecReception)
+  if (!window.sharedRecReception) return;
+  const sharedRecReceptionValuesArray = Array.from(window.sharedRecReception.values());
+  //console.log(sharedRecReceptionValuesArray);
+  if (
+    !sharedRecReceptionValuesArray.length ||
+    sharedRecReceptionValuesArray.filter(e => e === false).length
+  ) 
     return;
-  const thisMapValuesArray = Array.from(window.sharedRecReception.values());
-  if (!thisMapValuesArray.length || thisMapValuesArray.filter(e => e === false).length)
+
+  //try...catch useful in case two users share the username (e.g. when a user has opened the app in two tabs)
+  //in this case bug emerged that blocked the rest of the stateUpdateHandler
+  let recorder, recId
+  try {
+    (
+      [recorder, recId] = [...window.sharedRecReception.entries()]
+        .find(([k, v]) => typeof v === 'string')
+    );
+  } catch (e) {
+    console.error(e);
+    //enable last delete and backing btn created after 2 min (problematic)
+    const deleteBtns = document
+      .querySelectorAll('button.delete-button');
+    const backingBtns = document
+      .querySelectorAll('button.backing-btn');
+
+    setTimeout(() => {
+      deleteBtns?.forEach(btn => btn.removeAttribute('disabled'));
+      backingBtns?.forEach(btn => btn.removeAttribute('disabled'));
+      window.sharedRecReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
+    }
+    , 15000);
     return;
- 
-  let [recorder, recId] = [...window.sharedRecReception.entries()]
-    .find(([k, v]) => typeof(v) === 'string')    
+  }
 
   const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
   const disabledBackingBtn = document.querySelector(`button.backing-btn[data-collab-id="${recId}"]`)
-  console.log({recorder, recId, disabledDeleteBtn, disabledBackingBtn})
+  console.log({sharedObj: sharedRecReception.toJSON(), recorder, recId, disabledDeleteBtn, disabledBackingBtn})
   
-  disabledBackingBtn.removeAttribute('disabled');
+  // ? is used in case first rec track gets used as BT before enableDeleteAndBackingButton runs in recUser and sharedRecReception gets reset
+  //in this case, if no ? exists, stateUpdateHandler always stops in this point because of error
+  disabledBackingBtn?.removeAttribute('disabled');
+  disabledDeleteBtn?.removeAttribute('disabled');
 
-  if (userParam !== recorder)
-    return;
+  if (userParam !== recorder) return;
 
-  //recorder user only
-  disabledDeleteBtn.removeAttribute('disabled');
+  //recorder resets sharedRecReception, so that it s ready for the next recording
   window.sharedRecReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
+
 }

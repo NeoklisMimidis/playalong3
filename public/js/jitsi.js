@@ -3,7 +3,6 @@ var startJitsiMeetBtn = document.getElementById('start-close-call-btn');
 var joinCallButton = document.getElementById('join_call');
 var joinCallButton_video_only = document.getElementById('join_call_video_only');
 
-var defaultRoomName = 'test-room';
 const icon = document.querySelector('#start-close-call-btn .bi-telephone-fill');
 let api = null;
 /*
@@ -43,8 +42,7 @@ joinCallButton.addEventListener('click', function (e) {
     api.dispose();
   }
   */
-  // Load the default name of the Jitsi Meet Room
-  defaultRoomName = Jitsi_Room_Name;
+
   const roomNameInput = document.querySelector('#meet-room');
   const roomName = roomNameInput.value;
   // Create a new Jitsi Meet iframe
@@ -121,8 +119,7 @@ joinCallButton_video_only.addEventListener('click', function (e) {
     }
     */
   // Load the default name of the Jitsi Meet Room
-  defaultRoomName = Jitsi_Room_Name;
-  const roomNameInput = document.querySelector('#meet-room');
+  const roomNameInput = document.querySelector(fv);
   const roomName = roomNameInput.value;
   // Create a new Jitsi Meet iframe
   const domain = 'musicolab.hmu.gr:8443';

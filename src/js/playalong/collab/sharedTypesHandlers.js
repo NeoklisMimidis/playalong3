@@ -1,9 +1,8 @@
 import tippy from 'tippy.js';
 import {
   _colorizeTableSelections,
-  editChord,
 } from '../../annotation-tools/right-toolbar-tools';
-import { mainWaveform, wavesurfer } from '../../audio-player';
+import { mainWaveform, timeRulerBtn, wavesurfer } from '../../audio-player';
 import { MARKER_LABEL_SPAN_COLOR } from '../../config';
 import {
   annotationList,
@@ -19,6 +18,13 @@ import {
   addMarkerAtTime,
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
+import { annotationChangeAfterSaveReceived, intervalFunction } from './awarenessHandlers';
+
+export let recReceptionInProgress = {
+  status: false,
+  data: null,
+  progressInstances: []
+};
 
 /**
  * @param event {Y.YArrayEvent}
@@ -26,9 +32,26 @@ import {
 export function handleSharedRecordingDataEvent(event) {
   const array = event.target;
   const parentMap = array.parent;
+  
+  const recInfo = {
+    'clientId': null,
+    'id': null,
+    'userName': null
+  };
+  for (let key of Object.keys(recInfo)) 
+    recInfo[key] = parentMap.get(key);
+
+  recReceptionInProgress.status = true;
+  recReceptionInProgress.data = recInfo;
+
   const downloadProgress = (array.length / parentMap.get('total')) * 100;
   console.log('current progress', downloadProgress);
-  const count = parentMap.get('count');
+  recReceptionInProgress.progressInstances.push(downloadProgress);
+  //Commented out because it creates bug in the following case:...
+  //...user records --> deletes the rec --> late enters with count var having been re-set to 1
+  //  a: late records, passes the count=1 property --> collaborator runs fillRecordingTemplate with count=2 (count hasn t been re-set here) --> count=1 is used here to determine the right wavesurfer --> no wavesurfer with that count 
+  //  b: non-late records, passes the count=2 property --> late collaborator runs fillRecordingTmplate with count=1 (count has been re-set) --> count=2 is used here to determinne the right wavesurfer --> no wavesurfer with that count
+  //const count = parentMap.get('count');
 
   const progressBar = updateProgressBar(
     downloadProgress,
@@ -36,6 +59,14 @@ export function handleSharedRecordingDataEvent(event) {
   );
 
   if (downloadProgress === 100.0) {
+    console.log(`rec reception is complete. Count variable=${count}`);
+
+    recReceptionInProgress.status = false;
+    recReceptionInProgress.data = null;
+
+    recReceptionInProgress.progressInstances = [];
+    clearInterval(intervalFunction);
+
     const f32Array = Float32Array.from(array.toArray());
     const blob = window.recordingToBlob(f32Array, parentMap.get('sampleRate'));
     let url = window.URL.createObjectURL(blob);
@@ -46,24 +77,26 @@ export function handleSharedRecordingDataEvent(event) {
 
     progressBar?.parentElement.remove();
     window.addBlobUrlToDownload(url, count);
+    
+    //count gets augmented HERE (and not in fillRecordingTemplate), because here is it s final use in the collab rec's creation
+    count++;
 
     if (!event.transaction.local) {
       window.recordedBuffers.push([f32Array]);
+      window.recordedBlobs.push(blob);
     }
 
-    //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it.
-    
+    //needed to fix bug relevant to recorder deleting his/her recording while collaborators havent yet received it    
     if (event.transaction.local) {
       window.sharedRecReception.set(userParam, parentMap.get('id'));
     } else {
       window.sharedRecReception.set(userParam, true);
     }
 
-    console.log('done');
-  }
+    // this is needed to show or hide: playAll, stopAll, mix&download, playback speed
+    window.hideUnhideElements();
 
-  // this is needed to show or hide: playAll, stopAll, mix&download, playback speed
-  window.hideUnhideElements();
+  }
 }
 
 /**
@@ -98,8 +131,16 @@ export function handleSharedRecordingResetEvent(event) {
 export function handleSharedBTEditParamsEvent(value, key) {
   //console.log({key, value});
   switch (key) {
-    case 'annotationSel':
-      handleAnnotationSelection(value);
+    case 'annotationSel':{
+      if(!value)
+        return;
+      if (value.lateOnly) {
+        !annotationChangeAfterSaveReceived
+          ? setTimeout(()=>handleAnnotationSelection(value), 7000)
+          : null;
+      } else
+        handleAnnotationSelection(value);
+    }
       break;
     case 'chordSel':
       value ? handleChordSelection(value) : null;
@@ -321,9 +362,10 @@ export function handleChordSelection(selection) {
 }
 
 function handleAnnotationSelection(selection) {
-  //if annotation list has not yet been created or if new sel=prev sel dont run
-  if (!annotationList.options.length || annotationList.value == selection.value)
+  //if annotation list has not yet been created or if new sel=prev sel (user that has changed annotation) dont run
+  if (!annotationList.options.length || annotationList.value == selection.value) {
     return;
+  }
 
   //changing the annotation
   annotationList.value = selection.value;

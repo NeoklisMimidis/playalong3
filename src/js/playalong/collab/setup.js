@@ -3,6 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import { setUserImageUrl, userData } from './users';
 import {
   awaranessUpdateHandler,
+  lateUser,
   stateChangeHandler,
 } from './awarenessHandlers';
 import {
@@ -27,12 +28,19 @@ const wsBaseUrl = import.meta.env.DEV
 //setting collaboration up section
 function setupCollaboration() {
   const ydoc = new Y.Doc();
-
-  const file = urlParams.get('f') ?? 'musicolab_default';
+  
+  const file = urlParams.get('f')
+  const lesson = urlParams.get('lesson')
   const course = urlParams.get('course');
-  // const room = `${file}::${course}`;
-  const room = course ?? file;
+  
+  let room;
 
+  if (course && lesson) 
+    room = `${lesson}::${course}`;
+  else
+    room = file ?? 'musicolab_default'
+
+ 
   const websocketProvider = new WebsocketProvider(wsBaseUrl, room, ydoc, {
     params: { pathname: window.location.pathname },
   });
@@ -63,9 +71,8 @@ function setupCollaboration() {
   window.awareness = websocketProvider.awareness;
   window.permanentUserData = permanentUserData;
 
-  websocketProvider.awareness.on('update', ({added, removed}) => awaranessUpdateHandler(added, removed));
-  websocketProvider.awareness.on('change', stateChangeHandler);
-  websocketProvider.awareness.setLocalStateField('user', userData);
+  websocketProvider.awareness.on('update', (changes) => awaranessUpdateHandler(changes));
+  websocketProvider.awareness.on('change', (changes) => stateChangeHandler(changes));
 
   const sharedRecordedBlobs = ydoc.getArray('blobs');
   //sharedRecBlobs (Y.array) has --> ymap recordings have --> metadata (id, name, recid, speed, pitch, sample rate, count) keys
@@ -77,6 +84,7 @@ function setupCollaboration() {
         for (let map of delta.insert) {
           //3 user cases. recorder, collaborators, late collaborators
           let insert = map instanceof Y.Map ? map.toJSON() : map;
+          console.log(insert);
           const recUserData = {
             name: insert.userName,
             id: insert.userId,
@@ -86,9 +94,10 @@ function setupCollaboration() {
             //case:late collaborator, i.e. user that was not present when recording was initially shared. rec template constructed
             //with createRecordingTrack
             //TODO: alx. sometimes late collaborator is mistakenly referred to else events. that causes error. Update: that happens...
-            //...because when the late user is connected, the observer is called sometimes with ratio of downloaded/total<1...
-            //FillRecordingTemplate is then called but normally returns without completeing any action
-            //In the final call ratio=1, so late user is referred to else and recording template is constructed as it should
+            //  a. because when the late user is connected, the observer is called sometimes with ratio of downloaded/total<1
+            //    FillRecordingTemplate is then called but normally returns without completing any action
+            //    In the final call ratio=1, so late user is referred to else and recording template is constructed as it should
+            //  b. when shared recording has been deleted. In that case length=1 (zeroed entry) and total>1
             map.has('data') &&
             (map.get('data').length / insert.total) * 100 === 100.0
           ) {
@@ -97,7 +106,9 @@ function setupCollaboration() {
             const blob = window.recordingToBlob(f32Array, insert.sampleRate);
             if (!event.transaction.local) {
               window.recordedBuffers.push([f32Array]);
+              window.recordedBlobs.push(blob);
             }
+            console.log(`creating rec no ${count}`);
             window.createRecordingTrack(
               blob,
               insert.id,
@@ -117,6 +128,8 @@ function setupCollaboration() {
             );
           }
         }
+        // if(lateUser.entersDuringRec)
+        //   lateUser.hasReceivedSessionRecs = true;
       }
     }
   });
@@ -266,7 +279,7 @@ function setupCollaboration() {
   sharedBTMarkers.observe(e => {
     if (e.transaction.local) return;
     //in case of late (i.e. after or during BT edit) user that hasn t yet (loaded BT --> got JAMS file -->) rendered markers...
-    //...set shared markers handling to occur in 6 seconds
+    //...set shared markers handling to occur in 7.5 seconds
     if (!bTMarkersReady) {
       setTimeout(() => {
         e.changes.keys.forEach((value, key) => {
@@ -275,7 +288,7 @@ function setupCollaboration() {
             ? handleSharedBTMarkersEvent(marker, key)
             : null;
         });
-      }, 6000);
+      }, 7500);
     } else {
       e.changes.keys.forEach((value, key) => {
         if (value.action === 'delete') return;
@@ -346,6 +359,7 @@ function setupCollaboration() {
       console.log(json);
     }
   };
+  websocketProvider.awareness.setLocalStateField('user', userData);
 }
 
 if (!!window.Collab) {

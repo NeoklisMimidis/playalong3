@@ -12,6 +12,7 @@ const collabParam = urlParams.get('collab');
 const idParam = urlParams.get('id');
 var privParam = urlParams.get('priv');
 const uidParam = urlParams.get('uid');
+const lessonParam = urlParams.get('lesson');
 
 initRepositoryTrackList(courseParam, collabParam);
 
@@ -61,16 +62,19 @@ window.tempo = 90;
 speedMatrix[0] = 1;
 
 // Jitsi room parameters
-var Jitsi_Room_Name = 'test-room';
 var Jitsi_User_Name = 'test-user';
 if (userParam) {
   Jitsi_User_Name = userParam;
 }
 
-var Jitsi_Course_Name = courseParam ?? fileParam;
+var JitsiRoomName
+if (courseParam && lessonParam) 
+  JitsiRoomName = `${lessonParam}-${courseParam}`;
+else
+  JitsiRoomName = fileParam ?? 'musicolab_default'
 
 var roomNameInput = document.querySelector('#meet-room');
-roomNameInput.value = Jitsi_Course_Name;
+roomNameInput.value = JitsiRoomName;
 
 var Collab = false;
 if (collabParam === 'true') {
@@ -272,7 +276,7 @@ function createRecordingTemplate(recUserData) {
   outmostContainer.appendChild(scrollContainer); // append the container to the body
 }
 
-function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
+function useAsBackingTrackCollab(scrollContainer, deleteWaveform, recorderName) {
   generateRecordingFilename().then(recFileName => {
     recAsBackingTrack.recName = recFileName;
 
@@ -306,34 +310,42 @@ function useAsBackingTrackCollab(scrollContainer, deleteWaveForm) {
       const data = window.sharedRecordedBlobs.get(index).get('data');
       if (data?.length > 1) {
         const src = Float32Array.from(data);
-        const blob = recordingToBlob(src);
-        const BTUrl = URL.createObjectURL(blob);
+        const recBlob = recordingToBlob(src);
 
-        try {
-          //setting relevant global parameters in order to be used in loadAudioFiles
-          recAsBackingTrack.hasBeenSet = true;
+        let reader = new FileReader();
+        reader.readAsDataURL(recBlob);
 
-          loadAudioFile(BTUrl);
-          // Set new key to this collabId and undo others
-          window.ydoc.transact(() => {
-            //fire events that set this rec as BT in collaborators
-            window.playerConfig.set('backingTrackRecording', {
-              id: collabId,
-              sharer: userParam,
-              recName: recAsBackingTrack.recName,
+        reader.onload = function() {
+          try {
+            //setting relevant global parameters in order to be used in loadAudioFiles
+            recAsBackingTrack.hasBeenSet = true;
+  
+            loadAudioFile(reader.result);
+            // Set new key to this collabId and undo others
+            window.ydoc.transact(() => {
+              //fire events that set this rec as BT in collaborators
+              window.playerConfig.set('backingTrackRecording', {
+                sharer: userParam,
+                recorderName,
+                recordingName: recAsBackingTrack.recName,
+                dataURL: reader.result
+              });
+              //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
+              window.playerConfig.delete('backingTrack');
+              window.playerConfig.delete('backingTrackRepository');
+              //fire events that delete the recording used as backing track in collaborators
+              window.deletedSharedRecordedBlobIds.push([collabId]);
+              window.sharedRecordedBlobs.get(index).set('data', [0]);
             });
-            //delete shared object s rest paramaters that have to do with backing track, so as a single backing track exists
-            window.playerConfig.delete('backingTrack');
-            window.playerConfig.delete('backingTrackRepository');
-            //fire events that delete the recording used as backing track in collaborators
-            window.deletedSharedRecordedBlobIds.push([collabId]);
-          });
-          //delete recording used as backing track
-          deleteWaveForm();
-          removeFileURLParam();
-        } catch (err) {
-          console.error('Failed to load blob as backing track', { blob, err });
-        }
+            //delete recording used as backing track
+            deleteWaveform();
+            removeFileURLParam();
+          } catch (err) {
+            console.error('Failed to load dataURL as backing track', { blob: recBlob, dataURL: reader.result , err });
+          }
+        };
+
+
       }
     }
   });
@@ -598,14 +610,13 @@ function fillRecordingTemplate(
   var backingButton = document.createElement('button');
   backingButton.innerHTML =
     '<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M151.6 42.4C145.5 35.8 137 32 128 32s-17.5 3.8-23.6 10.4l-88 96c-11.9 13-11.1 33.3 2 45.2s33.3 11.1 45.2-2L96 146.3V448c0 17.7 14.3 32 32 32s32-14.3 32-32V146.3l32.4 35.4c11.9 13 32.2 13.9 45.2 2s13.9-32.2 2-45.2l-88-96zM320 480h32c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32zm0-128H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-17.7 0-32 14.3-32 32s14.3 32 32 32z"/></svg>';
-  backingButton.className =
-    'wavesurfer-button btn btn-lg wavesurfer-button backing-btn';
+  backingButton.className = 'wavesurfer-button btn btn-lg wavesurfer-button backing-btn';
   backingButton.setAttribute('title', 'Use as backing track');
   backingButton.dataset.collabId = id;
   backingButton.disabled = true;
 
   function backingButtonHandler() {
-    useAsBackingTrackCollab(scrollContainer, deleteWaveForm);
+    useAsBackingTrackCollab(scrollContainer, deleteWaveForm, recUserData.name);
   }
 
   backingButton.addEventListener('click', backingButtonHandler);
@@ -614,12 +625,14 @@ function fillRecordingTemplate(
 
   function deleteWaveForm() {
     wavesurfer.stop();
+
     if (firstWaveform) {
-      try {
-        wavesurfer.destroy();
-      } catch (err) {
-        console.error(err);
-      }
+    //not needed. wavesurfer destroyed in deleteWavesurfer() that runs below
+    //   try {
+    //     wavesurfer.destroy();
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
       firstWaveform = false;
     }
     var buttonsId = buttonContainer.id;
@@ -711,8 +724,21 @@ function fillRecordingTemplate(
     },
   });
 
+  /* count creates bug when augmented here. Count now gets augmented in handleSharedRecordingData (sharedTypesHandlers.js)
   // increase the count variable
   count++;
+  */
+
+  // Load first recording as backing track (during collab)
+  // A) Recorder & B) Collaborator
+  if (Collab) {
+    wavesurfer.on('ready', function () {
+      if (!backingTrack.isReady) {
+        if (recUserData.name !== userParam) return;
+        backingButtonHandler();
+      }
+    });
+  }
 }
 
 /**
@@ -1005,7 +1031,7 @@ function createRecordingTrack(
   }
 
   function backingButtonHandlerCollab() {
-    useAsBackingTrackCollab(scrollContainer, deleteWaveForm);
+    useAsBackingTrackCollab(scrollContainer, deleteWaveForm, recUserData.name);
   }
 
   //create use_as_backing_track buttons
@@ -1128,6 +1154,22 @@ function createRecordingTrack(
 
   // increase the count variable
   count++;
+
+    // Load first recording as backing track
+  // A) NO Collab & B) Later Collaborator???
+  wavesurfer.on('ready', function () {
+    if (Collab) {
+      // Case of late collaborator FIXME. Works 1/3 cases
+      // Collaborator connects...
+      // 1) ..while someone records --> BUG
+      // 2) ..after someone has recorded, and is in the stage of load as bTrack WORKS!
+      // 3) ..after someone has recorded and used as backing track BUG
+    } else {
+      if (!backingTrack.isReady) {
+        backingButtonHandler();
+      }
+    }
+  });
 }
 
 /**

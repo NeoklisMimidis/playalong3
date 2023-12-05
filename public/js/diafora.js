@@ -146,26 +146,26 @@ function combineSelected() {
 	  return data;
 	};
   
-// create an array of promises for loading the audio data
-const promises = selectedBlobs.map((blob) => {
-	return new Promise((resolve, reject) => {
-	  const fileReader = new FileReader();
-	  fileReader.readAsArrayBuffer(blob);
-	  fileReader.onload = () => {
-		console.log('Loaded data byte length:', fileReader.result.byteLength);
-		resolve(fileReader.result);
-	  };
-	  fileReader.onerror = () => {
-		reject(fileReader.error);
-	  };
-	}).then(checkBufferLength); // check the length of the decoded audio buffer
-  });
-  
-  // wait for all promises to resolve and add the loaded data to the loadedData array
-  Promise.all(promises)
-	.then((data) => {
-	  console.log("loadedData:", data);
-	  loadedData.push(...data);
+	// create an array of promises for loading the audio data
+	const promises = selectedBlobs.map((blob) => {
+		return new Promise((resolve, reject) => {
+		const fileReader = new FileReader();
+		fileReader.readAsArrayBuffer(blob);
+		fileReader.onload = () => {
+			console.log('Loaded data byte length:', fileReader.result.byteLength);
+			resolve(fileReader.result);
+		};
+		fileReader.onerror = () => {
+			reject(fileReader.error);
+		};
+		}).then(checkBufferLength); // check the length of the decoded audio buffer
+	});
+	
+	// wait for all promises to resolve and add the loaded data to the loadedData array
+	Promise.all(promises)
+		.then((data) => {
+		console.log("loadedData:", data);
+		loadedData.push(...data);
   
 	  // wait for all promises to resolve before calculating maxLength
 	  Promise.all(

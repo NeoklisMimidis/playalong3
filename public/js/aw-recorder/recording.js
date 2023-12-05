@@ -407,6 +407,7 @@ function onSuccessfulRecording(audioBuffer) {
         userId: idParam,
         sampleRate,
         count,
+        clientId: window.awareness.clientID
       };
       addSharedBuffer(data, obj);
     }
