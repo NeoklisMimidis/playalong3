@@ -74,7 +74,6 @@ function setupCollaboration() {
   websocketProvider.awareness.on('update', (changes) => awaranessUpdateHandler(changes));
   websocketProvider.awareness.on('change', (changes) => stateChangeHandler(changes));
 
-
   const sharedRecordedBlobs = ydoc.getArray('blobs');
   //sharedRecBlobs (Y.array) has --> ymap recordings have --> metadata (id, name, recid, speed, pitch, sample rate, count) keys
   //and data key (Y.array)
@@ -95,9 +94,10 @@ function setupCollaboration() {
             //case:late collaborator, i.e. user that was not present when recording was initially shared. rec template constructed
             //with createRecordingTrack
             //TODO: alx. sometimes late collaborator is mistakenly referred to else events. that causes error. Update: that happens...
-            //...because when the late user is connected, the observer is called sometimes with ratio of downloaded/total<1...
-            //FillRecordingTemplate is then called but normally returns without completeing any action
-            //In the final call ratio=1, so late user is referred to else and recording template is constructed as it should
+            //  a. because when the late user is connected, the observer is called sometimes with ratio of downloaded/total<1
+            //    FillRecordingTemplate is then called but normally returns without completing any action
+            //    In the final call ratio=1, so late user is referred to else and recording template is constructed as it should
+            //  b. when shared recording has been deleted. In that case length=1 (zeroed entry) and total>1
             map.has('data') &&
             (map.get('data').length / insert.total) * 100 === 100.0
           ) {
@@ -128,8 +128,8 @@ function setupCollaboration() {
             );
           }
         }
-        if(lateUser.entersDuringRec)
-          lateUser.hasReceivedSessionRecs = true;
+        // if(lateUser.entersDuringRec)
+        //   lateUser.hasReceivedSessionRecs = true;
       }
     }
   });

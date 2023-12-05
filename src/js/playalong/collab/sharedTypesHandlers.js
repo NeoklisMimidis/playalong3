@@ -2,7 +2,7 @@ import tippy from 'tippy.js';
 import {
   _colorizeTableSelections,
 } from '../../annotation-tools/right-toolbar-tools';
-import { mainWaveform, wavesurfer } from '../../audio-player';
+import { mainWaveform, timeRulerBtn, wavesurfer } from '../../audio-player';
 import { MARKER_LABEL_SPAN_COLOR } from '../../config';
 import {
   annotationList,
@@ -18,8 +18,13 @@ import {
   addMarkerAtTime,
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
-import { annotationChangeAfterSaveReceived } from './awarenessHandlers';
+import { annotationChangeAfterSaveReceived, intervalFunction } from './awarenessHandlers';
 
+export let recReceptionInProgress = {
+  status: false,
+  data: null,
+  progressInstances: []
+};
 
 /**
  * @param event {Y.YArrayEvent}
@@ -27,8 +32,21 @@ import { annotationChangeAfterSaveReceived } from './awarenessHandlers';
 export function handleSharedRecordingDataEvent(event) {
   const array = event.target;
   const parentMap = array.parent;
+  
+  const recInfo = {
+    'clientId': null,
+    'id': null,
+    'userName': null
+  };
+  for (let key of Object.keys(recInfo)) 
+    recInfo[key] = parentMap.get(key);
+
+  recReceptionInProgress.status = true;
+  recReceptionInProgress.data = recInfo;
+
   const downloadProgress = (array.length / parentMap.get('total')) * 100;
   console.log('current progress', downloadProgress);
+  recReceptionInProgress.progressInstances.push(downloadProgress);
   //Commented out because it creates bug in the following case:...
   //...user records --> deletes the rec --> late enters with count var having been re-set to 1
   //  a: late records, passes the count=1 property --> collaborator runs fillRecordingTemplate with count=2 (count hasn t been re-set here) --> count=1 is used here to determine the right wavesurfer --> no wavesurfer with that count 
@@ -42,6 +60,12 @@ export function handleSharedRecordingDataEvent(event) {
 
   if (downloadProgress === 100.0) {
     console.log(`rec reception is complete. Count variable=${count}`);
+
+    recReceptionInProgress.status = false;
+    recReceptionInProgress.data = null;
+
+    recReceptionInProgress.progressInstances = [];
+    clearInterval(intervalFunction);
 
     const f32Array = Float32Array.from(array.toArray());
     const blob = window.recordingToBlob(f32Array, parentMap.get('sampleRate'));
@@ -69,9 +93,9 @@ export function handleSharedRecordingDataEvent(event) {
       window.sharedRecReception.set(userParam, true);
     }
 
-
     // this is needed to show or hide: playAll, stopAll, mix&download, playback speed
     window.hideUnhideElements();
+
   }
 }
 

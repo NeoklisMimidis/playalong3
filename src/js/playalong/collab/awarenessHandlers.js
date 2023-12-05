@@ -30,32 +30,41 @@ import {
   updateMarkerDisplayWithColorizedRegions,
 } from '../../audio-player/render-annotations';
 import { setUserImageUrl, renderUserList } from './users';
-import {handleChordSelection, handleMarkerSelection } from './sharedTypesHandlers';
+import {handleChordSelection, handleMarkerSelection, recReceptionInProgress } from './sharedTypesHandlers';
 import { compareArrays } from '../../components/utilities';
+import { getLastKey } from 'lib0/indexeddb';
 
 export let annotationChangeAfterSaveReceived //part of collab annotation sharing optimization for 'late 'user! useful in case someone enters after save has been clicked and before annotation has been changed
 //part of collab rec sharing mechanism optimization for 'late' user! useful in cases someone enters during recording
 export let lateUser = {
   entersDuringRec: true,
-  hasReceivedSessionRecs: false,
-  recInProgressData: null
+  //hasReceivedSessionRecs: false,
 };
 
-lateUser = new Proxy(lateUser, {
-  set(target, prop, val) {
-    target[prop] = val;
-    if (prop == 'hasReceivedSessionRecs' && val == true) {
-      const recInprogress = [...window.awareness.getStates().entries()]
-        .find(([id, state]) => state.record?.status == 'inProgress')
-      console.log(recInprogress);
-      //condition 2 not really needed but written for extra safety
-      if (recInprogress && target.recInProgressData) {
-        actOnStartRecording(me, target.recInProgressData);
-      }
-    }
-    return true;
-  }
-});
+//unfortunately it can t be implemented because when late enters, they run awareness...
+//There, it must be decided whether to run actOnStartRecording immediately or not, according to the existence (or not)
+///of sharedRecordings. This cannot be known at that moment, because awareness always runs first, when sharedRecordedBlobs haven t
+//yet been updated
+// lateUser = new Proxy(lateUser, {
+//   set(target, prop, val) {
+//     console.log({prop, val});
+//     target[prop] = val;
+//     if (target.entersDuringRec && prop == 'hasReceivedSessionRecs' && val == true) {
+//       const recInprogress = [...window.awareness.getStates().entries()]
+//         .find(([id, state]) => state.record?.status == 'inProgress')
+//       console.log(recInprogress);
+//       if (recInprogress) {
+//         const recInProgressData = recInprogress
+//           .map(([id, state]) => state.record.recUserData)[0];
+//         actOnStartRecording(me, recInProgressData);
+//       }
+//     }
+//     return true;
+//   }
+// });
+let awProccessesInProgress = [];
+export let intervalFunction;
+let currentProgressInstancesLength;
 
 export function stateChangeHandler(changes) {
   const awStates = Array.from(window.awareness.getStates().entries());
@@ -63,12 +72,18 @@ export function stateChangeHandler(changes) {
   console.log({ awStates, myClientId, changes });
 
   //it has to be done for every state update that enters inProgress status
-  //maybe an object which will contain all active inProgress states has to be constructed. also a function that contains all relative actions according to state that was abrupted
-  //for now recInProgressData is used, that substitutes the recordingInProgress state property of the above object
-  if (changes.removed.length && lateUser.recInProgressData) {
-    const recorderId = lateUser.recInProgressData.clientId;
-    if (changes.removed.includes(recorderId))
-      actOnStopRecording(false, null, false);
+  if (changes.removed.length) {
+    actOnRemovedTriggerer(changes.removed);
+
+    if (
+      recReceptionInProgress?.status &&
+      changes.removed.includes(recReceptionInProgress.data.clientId)
+    ) {
+      console.log(count);
+
+      currentProgressInstancesLength = recReceptionInProgress.progressInstances.length;
+      intervalFunction = setInterval(actOnRemovedRecSender, 8000);
+    }
   }
 
   actOnBTAnalysisStateUpdate(awStates, myClientId);
@@ -79,10 +94,63 @@ export function stateChangeHandler(changes) {
   actOnDeleteAnnotationStateUpdate(awStates, myClientId);
 }
 
+function actOnRemovedRecSender() {
+  const futureProgressInstancesLength = recReceptionInProgress.progressInstances.length
+  console.log({currentProgressInstancesLength});
+
+  const recReceptionProgressing = (futureProgressInstancesLength > currentProgressInstancesLength)
+  currentProgressInstancesLength = futureProgressInstancesLength;
+  console.log({currentProgressInstancesLength, futureProgressInstancesLength});
+  if (recReceptionProgressing)
+    return;
+
+  const {userName: recName, id: recId} = recReceptionInProgress.data;
+
+  const notifText = `${recName} was abruptly disconnected`;
+  const notifContext = 'danger';
+  notify(notifText, notifContext);
+  //? added in case recordState hasn t been nullified and the 'record' case in actOnRemovedTriggerer has run. scrollContainer is removed in actOnStartRecording
+  const scrollContainer = document.getElementById(`scrollContainer${count}`);
+  scrollContainer?.parentElement.remove();
+  //no reason for ?. added for extra safety
+  const buttonsContainer = document.getElementById(`buttons${count}`);
+  buttonsContainer?.remove();
+
+  let index = -1;
+  for (let i = 0; i < window.sharedRecordedBlobs.length; i++) {
+    if (window.sharedRecordedBlobs.get(i)?.get('id') === recId) {
+      index = i;
+      break;
+    }
+  }
+  window.sharedRecordedBlobs.get(index).set('data', [0]);
+
+  recReceptionInProgress.status = false;
+  recReceptionInProgress.data = null;
+
+  recReceptionInProgress.progressInstances = [];
+  clearInterval(intervalFunction);
+
+}
+
+function actOnRemovedTriggerer(removedUsers) {
+  awProccessesInProgress
+    .forEach(process => {
+      switch (process.state) {
+        case 'record': {
+          if (removedUsers.includes(process.data.clientId)) {
+            actOnStopRecording(false, null, false);
+          }
+        }
+          break;
+      }
+    });
+}
+
 export function awaranessUpdateHandler(changes) {
   //runs every time (i.e. automatically every 30s or when state changes-user is added/removed etc...)
   const { connectedUsers, disconnectedUsers, reconnectedUserNames } = formatUserList();
-  console.log(changes);
+  //console.log(changes);
 
   enableButtonsOfNewRec();
   populateSharedRecTransmissionList(connectedUsers);
@@ -623,19 +691,26 @@ function actOnRecordStateUpdate(awStates, myClientId) {
         break;
       case 'stop':{
         //useful in cases of late that hasn t yet received shared recs and run actOnStartRecording
-        if (lateUser.entersDuringRec && !lateUser.hasReceivedSessionRecs) {
-          actOnStartRecording(myStateUpdating, recUserData);        
+        if (lateUser.entersDuringRec) {
+          createRecordingTemplate(recUserData);
+          lateUser.entersDuringRec = 'false';
         }
         actOnStopRecording(myStateUpdating, recUserData.name, rState.isValid);
       }
         break;
       //part of collab rec sharing mechanism optimization for late user!
       case 'inProgress':{
-        lateUser.recInProgressData = recUserData;
-        if(lateUser.entersDuringRec) {
-          lateUser.hasReceivedSessionRecs
-            ? actOnStartRecording(myStateUpdating,recUserData)
-            : null;
+        if (lateUser.entersDuringRec) {
+          otherUserRecording = true;
+
+          recordButton.classList.add('flash');
+
+          awProccessesInProgress.push({state: 'record', data: recUserData});
+
+          const notifText = `You have entered the session while ${recUserData.name} is recording.
+            You can't record at the same time.`;
+          const notifContext = 'info';
+          notify(notifText, notifContext);
         }
       }
         break;
@@ -644,12 +719,14 @@ function actOnRecordStateUpdate(awStates, myClientId) {
 }
 
 function actOnStartRecording(me, recUserData) {
-  //case:late enters during rec. Restoring lateUser object so that its events are not triggered randomly
+  //case:late enters during rec. Restoring lateUser object
   lateUser.entersDuringRec = false;
 
   recordButton.classList.add('flash');
 
   createRecordingTemplate(recUserData);
+
+  awProccessesInProgress.push({state: 'record', data: recUserData});
 
   if (!me) {
     otherUserRecording = true;
@@ -671,34 +748,22 @@ function actOnStartRecording(me, recUserData) {
 function actOnStopRecording(me, userName, isValid) {
   //removing user image and recording button flashing
   recordButton.classList.remove('flash');
+  //deleting inProgress array entry
+  const indexOfRecInProgress = awProccessesInProgress
+    .findIndex(process => process.state === 'record');
+  indexOfRecInProgress !== -1
+    ? awProccessesInProgress.splice(indexOfRecInProgress, 1)
+    : null;
 
   if (isValid) {
-    //case:late enters during rec. Restoring lateUser object so that its events are not triggered randomly
-    lateUser.recInProgressData = null;
-
     document
       .getElementById(`scrollContainer${count}`)
       .previousElementSibling.classList.remove('flash');
-    //commented out because hideUnhideElements runs in handleSharedRecordingDataEvent when progress=100%.
-    // if (!me) {
-    //   //display all buttons needed when rec exists. enable playback speed bar
-    //   let additionalButtonsToDisplay = [
-    //     'stopallButton',
-    //     'combineselectedButton',
-    //     'playpauseallButton',
-    //   ];
-    //   additionalButtonsToDisplay = additionalButtonsToDisplay.map(id =>
-    //     document.getElementById(id)
-    //   );
-    //   additionalButtonsToDisplay.forEach(e =>
-    //     e.removeAttribute('hidden', false)
-    //   );
-    //   additionalButtonsToDisplay[2].innerHTML =
-    //     '<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="green" class="bi bi-play-fill" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>';
-    //   document.getElementById('speedSlider').disabled = false;
-    // }
   } else {
-    document.getElementById(`scrollContainer${count}`).parentElement.remove();
+    //? added in case actOnStopRecording has been called in actOnRemovedTrigerrer after
+    //handleSharedRecordingData has run its progress=100% code), and count has been already augmented.
+    //in that case recording track s construction is complete and valid, so no need to remove
+    document.getElementById(`scrollContainer${count}`)?.parentElement.remove();
   }
 
   if (me) {
@@ -711,7 +776,7 @@ function actOnStopRecording(me, userName, isValid) {
     const notifText = userName
       ? `${userName} has stopped recording.
         ${isValid ? 'Recording is valid.' : 'Recording is not valid.'}`
-      : `Recorder user was abruptly disconnected.`;
+      : `Recorder was abruptly disconnected.`;
     const notifContext = !userName
       ? 'danger'
       : 'info';
@@ -846,7 +911,7 @@ function enableButtonsOfNewRec() {
   //...awareness on-update event, it runs for the first time, before sharedRecReception is created
   if (!window.sharedRecReception) return;
   const sharedRecReceptionValuesArray = Array.from(window.sharedRecReception.values());
-  console.log(sharedRecReceptionValuesArray);
+  //console.log(sharedRecReceptionValuesArray);
   if (
     !sharedRecReceptionValuesArray.length ||
     sharedRecReceptionValuesArray.filter(e => e === false).length
@@ -863,20 +928,19 @@ function enableButtonsOfNewRec() {
     );
   } catch (e) {
     console.error(e);
-    //enable last delete and backing btn created after 3 min (problematic)
-    /*const deleteBtns = document
+    //enable last delete and backing btn created after 2 min (problematic)
+    const deleteBtns = document
       .querySelectorAll('button.delete-button');
     const backingBtns = document
       .querySelectorAll('button.backing-btn');
 
     setTimeout(() => {
-      deleteBtns.item(deleteBtns.length - 1).removeAttribute('disabled');
-      backingBtns.item(backingBtns.length - 1).removeAttribute('disabled');
+      deleteBtns?.forEach(btn => btn.removeAttribute('disabled'));
+      backingBtns?.forEach(btn => btn.removeAttribute('disabled'));
+      window.sharedRecReception.forEach( (v, k, thisMap) => thisMap.set(k, false) );
     }
-    , 3000);
-
+    , 15000);
     return;
-    */
   }
 
   const disabledDeleteBtn = document.querySelector(`button.delete-button[data-collab-id="${recId}"]`)
