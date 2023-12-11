@@ -119,7 +119,7 @@ joinCallButton_video_only.addEventListener('click', function (e) {
     }
     */
   // Load the default name of the Jitsi Meet Room
-  const roomNameInput = document.querySelector(fv);
+  const roomNameInput = document.querySelector('#meet-room');
   const roomName = roomNameInput.value;
   // Create a new Jitsi Meet iframe
   const domain = 'musicolab.hmu.gr:8443';
