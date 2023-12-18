@@ -414,13 +414,13 @@ export const variations = [
     encoded: '2',
   },
   {
-    shorthand: 'b9(11,13)',
+    shorthand: '7(b9,11,13)',
     simplified: '13b9',
     description: 'Thirteenth flat ninth',
     encoded: 'u',
   },
   {
-    shorthand: '#9(11,13)',
+    shorthand: '7(#9,11,13)',
     simplified: '13#9',
     description: 'Thirteenth sharp ninth',
     encoded: 'o',

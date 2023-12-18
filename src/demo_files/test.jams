@@ -403,13 +403,13 @@
         {
           "time": 32,
           "duration": 0.5,
-          "value": "A:b9(11,13)",
+          "value": "A:7(b9,11,13)",
           "confidence": null
         },
         {
           "time": 32.5,
           "duration": 0.5,
-          "value": "A:#9(11,13)",
+          "value": "A:7(#9,11,13)",
           "confidence": null
         },
         {
